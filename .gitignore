@@ -5,6 +5,7 @@ node_modules/
 
 # Expo
 .expo/
+.expo-shared/
 dist/
 web-build/
 
@@ -33,3 +34,35 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# React Native
+*.hmap
+*.lock
+*.xcuserstate
+*.xcworkspace
+build/
+*.pbxproj
+
+# Misc
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+*~
