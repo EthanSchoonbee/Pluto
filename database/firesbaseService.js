@@ -1,6 +1,6 @@
 import { db, auth } from "./firebaseConfig";
 import {collection, addDoc, getDoc, doc, updateDoc, getFirestore} from "firebase/firestore";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 
 class FirebaseService {
     // Authentication Methods:
@@ -79,6 +79,17 @@ class FirebaseService {
             console.log('Error updating document:', error);
             throw error;
         }
+    }
+
+    // Check if the current user is still authenticated
+    onAuthenticationStateChanged(callback) {
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                callback(user);//signed in
+            } else {
+                callback(null);//signed out
+            }
+        });
     }
 }
 
