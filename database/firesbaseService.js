@@ -85,7 +85,12 @@ class FirebaseService {
     onAuthenticationStateChanged(callback) {
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                callback(user);//signed in
+                user.getIdToken(true).then((token) => {
+                    callback(user);
+                }).catch((error) => {
+                    console.error("Token invalid or expired:", error);
+                    callback(null);
+                })
             } else {
                 callback(null);//signed out
             }
