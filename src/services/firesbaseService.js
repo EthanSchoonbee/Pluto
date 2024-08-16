@@ -29,7 +29,7 @@ class FirebaseService {
     }
 
     // Logout the current user account
-    async logoutUser(email, password) {
+    async logoutUser() {
         try {
             await signOut(auth);
             console.log('User logged out');
@@ -81,19 +81,17 @@ class FirebaseService {
         }
     }
 
-    // Check if the current user is still authenticated
-    onAuthenticationStateChanged(callback) {
+    // Observe authentication state changes
+    observeAuthState(callback) {
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                user.getIdToken(true).then((token) => {
-                    callback(user);
-                }).catch((error) => {
-                    console.error("Token invalid or expired:", error);
-                    callback(null);
-                })
+                callback(user); // User is authenticated
             } else {
-                callback(null);//signed out
+                callback(null); // User is signed out
             }
+        }, (error) => {
+            console.error("Error observing authentication state:", error);
+            callback(null); // Handle errors by treating user as signed out
         });
     }
 }
