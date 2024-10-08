@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const LoginScreen = ({ navigation }) => {
@@ -12,60 +12,62 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const handleLogin = async () => {
-        navigation.navigate('Register');
-    }
+        //navigation.navigate('');
+    };
 
     return (
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on platform
         >
-            <View style={styles.logoContainer}>
-                <Image
-                    source={require('../../assets/pluto_logo.png')}
-                    style={styles.logo}
-                />
-                <Text style={styles.title}>PLUTO</Text>
-            </View>
-
-            <View style={styles.inputContainer}>
-                {/* Email Input with Icon */}
-                <View style={styles.inputWrapper}>
-                    <Icon name="email" size={20} color="#aaa" style={styles.icon} />
-                    <TextInput
-                        style={styles.inputUnderline}
-                        placeholder="EMAIL"
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
+            <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+                <View style={styles.logoContainer}>
+                    <Image
+                        source={require('../../assets/pluto_logo.png')}
+                        style={styles.logo}
                     />
+                    <Text style={styles.title}>PLUTO</Text>
                 </View>
 
-                {/* Password Input with Icon */}
-                <View style={styles.inputWrapper}>
-                    <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
-                    <TextInput
-                        style={styles.inputUnderline}
-                        placeholder="PASSWORD"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={secureTextEntry}
-                    />
-                    <TouchableOpacity onPress={togglePasswordVisibility}>
-                        <Icon name={secureTextEntry ? 'visibility' : 'visibility-off'} size={20} color="#aaa" />
-                    </TouchableOpacity>
+                <View style={styles.inputContainer}>
+                    {/* Email Input with Icon */}
+                    <View style={styles.inputWrapper}>
+                        <Icon name="email" size={20} color="#aaa" style={styles.icon} />
+                        <TextInput
+                            style={styles.inputUnderline}
+                            placeholder="EMAIL"
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                    </View>
+
+                    {/* Password Input with Icon */}
+                    <View style={styles.inputWrapper}>
+                        <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
+                        <TextInput
+                            style={styles.inputUnderline}
+                            placeholder="PASSWORD"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry={secureTextEntry}
+                        />
+                        <TouchableOpacity onPress={togglePasswordVisibility}>
+                            <Icon name={secureTextEntry ? 'visibility' : 'visibility-off'} size={20} color="#aaa" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
 
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                <Text style={styles.loginText}>LOGIN</Text>
-            </TouchableOpacity>
+                <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+                    <Text style={styles.loginText}>LOGIN</Text>
+                </TouchableOpacity>
 
-            <Text style={styles.signupText}>
-                Don't have an account yet?{'\n'}
-                <Text style={styles.signupLink}>Create one now.</Text>
-            </Text>
+                <Text style={styles.signupText}>
+                    Don't have an account yet?{'\n'}
+                    <Text onPress={() => navigation.navigate('Register')} style={styles.signupLink}>Create one now.</Text>
+                </Text>
+            </ScrollView>
         </KeyboardAvoidingView>
     );
 };
@@ -74,14 +76,16 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
-        justifyContent: 'center',
+    },
+    scrollContainer: {
         alignItems: 'center',
         padding: 20,
-        marginBottom: 60,
+        paddingBottom: 60,
     },
     logoContainer: {
         alignItems: 'center',
         marginBottom: 110,
+        marginTop: 20,
     },
     logo: {
         width: 217.7,
