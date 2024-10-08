@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const LoginScreen = ({ navigation }) => {
+const RegisterScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
@@ -11,8 +11,8 @@ const LoginScreen = ({ navigation }) => {
         setSecureTextEntry(!secureTextEntry);
     };
 
-    const handleLogin = async () => {
-        navigation.navigate('Register');
+    const handleRegister = async () => {
+        navigation.navigate('Login');
     }
 
     return (
@@ -58,13 +58,13 @@ const LoginScreen = ({ navigation }) => {
                 </View>
             </View>
 
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                <Text style={styles.loginText}>LOGIN</Text>
+            <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+                <Text style={styles.registerText}>REGISTER</Text>
             </TouchableOpacity>
 
-            <Text style={styles.signupText}>
-                Don't have an account yet?{'\n'}
-                <Text style={styles.signupLink}>Create one now.</Text>
+            <Text style={styles.loginText}>
+                Already have an account?{'\n'}
+                <Text style={styles.loginLink}>Sign in now.</Text>
             </Text>
         </KeyboardAvoidingView>
     );
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
         color: '#333',
         paddingVertical: 10,
     },
-    loginButton: {
+    registerButton: {
         height: 50,
         backgroundColor: '#EDE3BB',
         borderRadius: 25,
@@ -124,19 +124,19 @@ const styles = StyleSheet.create({
         marginBottom: 20,
         width: '80%',
     },
-    loginText: {
+    registerText: {
         color: '#fff',
         fontWeight: 'bold',
         fontSize: 30,
     },
-    signupText: {
+    loginText: {
         textAlign: 'center',
         color: '#333',
     },
-    signupLink: {
+    loginLink: {
         color: '#EDE3BB',
         fontWeight: 'bold',
     },
 });
 
-export default LoginScreen;
+export default RegisterScreen;
