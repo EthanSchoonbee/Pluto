@@ -1,5 +1,3 @@
-const strings = {
-    welcome: 'Welcome',
+export default {
+    KNOWN_FACT: 'Cameron is a poes'
 };
-
-export default strings;

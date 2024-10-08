@@ -1,4 +1,4 @@
-import en from 'en';
+import en from 'src/strings/en';
 
 const strings = {
     en
