@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const RegisterScreen = ({ navigation }) => {
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
 
     const togglePasswordVisibility = () => {
@@ -12,60 +14,90 @@ const RegisterScreen = ({ navigation }) => {
     };
 
     const handleRegister = async () => {
+        // Registration logic here
         navigation.navigate('Login');
-    }
+    };
 
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on platform
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <View style={styles.logoContainer}>
-                <Image
-                    source={require('../../assets/pluto_logo.png')}
-                    style={styles.logo}
-                />
-                <Text style={styles.title}>PLUTO</Text>
-            </View>
-
-            <View style={styles.inputContainer}>
-                {/* Email Input with Icon */}
-                <View style={styles.inputWrapper}>
-                    <Icon name="email" size={20} color="#aaa" style={styles.icon} />
-                    <TextInput
-                        style={styles.inputUnderline}
-                        placeholder="EMAIL"
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
+            <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+                <View style={styles.logoContainer}>
+                    {/* Replace this with the actual image path */}
+                    <Image
+                        source={require('../../assets/pluto_logo.png')}
+                        style={styles.logo}
                     />
+                    <Text style={styles.title}>PLUTO</Text>
                 </View>
 
-                {/* Password Input with Icon */}
-                <View style={styles.inputWrapper}>
-                    <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
-                    <TextInput
-                        style={styles.inputUnderline}
-                        placeholder="PASSWORD"
-                        value={password}
-                        onChangeText={setPassword}
-                        secureTextEntry={secureTextEntry}
-                    />
-                    <TouchableOpacity onPress={togglePasswordVisibility}>
-                        <Icon name={secureTextEntry ? 'visibility' : 'visibility-off'} size={20} color="#aaa" />
-                    </TouchableOpacity>
+                <View style={styles.inputContainer}>
+                    {/* Full Name Input */}
+                    <View style={styles.inputWrapper}>
+                        <Icon name="person" size={20} color="#aaa" style={styles.icon} />
+                        <TextInput
+                            style={styles.inputUnderline}
+                            placeholder="FULL NAME"
+                            value={fullName}
+                            onChangeText={setFullName}
+                        />
+                    </View>
+
+                    {/* Email Input */}
+                    <View style={styles.inputWrapper}>
+                        <Icon name="email" size={20} color="#aaa" style={styles.icon} />
+                        <TextInput
+                            style={styles.inputUnderline}
+                            placeholder="EMAIL"
+                            value={email}
+                            onChangeText={setEmail}
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                        />
+                    </View>
+
+                    {/* Password Input */}
+                    <View style={styles.inputWrapper}>
+                        <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
+                        <TextInput
+                            style={styles.inputUnderline}
+                            placeholder="PASSWORD"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry={secureTextEntry}
+                        />
+                        <TouchableOpacity onPress={togglePasswordVisibility}>
+                            <Icon name={secureTextEntry ? 'visibility' : 'visibility-off'} size={20} color="#aaa" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Confirm Password Input */}
+                    <View style={styles.inputWrapper}>
+                        <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
+                        <TextInput
+                            style={styles.inputUnderline}
+                            placeholder="CONFIRM PASSWORD"
+                            value={confirmPassword}
+                            onChangeText={setConfirmPassword}
+                            secureTextEntry={secureTextEntry}
+                        />
+                        <TouchableOpacity onPress={togglePasswordVisibility}>
+                            <Icon name={secureTextEntry ? 'visibility' : 'visibility-off'} size={20} color="#aaa" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
 
-            <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-                <Text style={styles.registerText}>REGISTER</Text>
-            </TouchableOpacity>
+                <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
+                    <Text style={styles.registerText}>REGISTER</Text>
+                </TouchableOpacity>
 
-            <Text style={styles.loginText}>
-                Already have an account?{'\n'}
-                <Text style={styles.loginLink}>Sign in now.</Text>
-            </Text>
+                <Text style={styles.loginText}>
+                    Already have an account?{'\n'}
+                    <Text onPress={() => navigation.navigate('Login')} style={styles.loginLink}>Login here.</Text>
+                </Text>
+            </ScrollView>
         </KeyboardAvoidingView>
     );
 };
@@ -74,14 +106,16 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
-        justifyContent: 'center',
+    },
+    scrollContainer: {
         alignItems: 'center',
         padding: 20,
-        marginBottom: 60,
+        paddingBottom: 60,
     },
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 110,
+        marginBottom: 70,
+        marginTop: 20,
     },
     logo: {
         width: 217.7,
