@@ -1,15 +1,136 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [secureTextEntry, setSecureTextEntry] = useState(true);
+
+    const togglePasswordVisibility = () => {
+        setSecureTextEntry(!secureTextEntry);
+    };
 
     return (
-        <View>
+        <View style={styles.container}>
+            <View style={styles.logoContainer}>
+                <Image
+                    source={require('../../assets/pluto_logo.png')}
+                    style={styles.logo}
+                />
+                <Text style={styles.title}>PLUTO</Text>
+            </View>
 
+            <View style={styles.inputContainer}>
+                {/* Email Input with Icon */}
+                <View style={styles.inputWrapper}>
+                    <Icon name="email" size={20} color="#aaa" style={styles.icon} />
+                    <TextInput
+                        style={styles.inputUnderline}
+                        placeholder="EMAIL"
+                        value={email}
+                        onChangeText={setEmail}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+                </View>
+
+                {/* Password Input with Icon */}
+                <View style={styles.inputWrapper}>
+                    <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
+                    <TextInput
+                        style={styles.inputUnderline}
+                        placeholder="PASSWORD"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={secureTextEntry}
+                    />
+                    <TouchableOpacity onPress={togglePasswordVisibility}>
+                        <Icon name={secureTextEntry ? 'visibility' : 'visibility-off'} size={20} color="#aaa" />
+                    </TouchableOpacity>
+                </View>
+            </View>
+
+            <TouchableOpacity style={styles.loginButton}>
+                <Text style={styles.loginText}>LOGIN</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.signupText}>
+                Don't have an account yet?{'\n'}
+                <Text style={styles.signupLink}>Create one now.</Text>
+            </Text>
         </View>
     );
 };
 
-export default LoginScreen
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#FFFFFF', // Background color
+        justifyContent: 'center',
+        alignItems: 'center', // Centers all content horizontally
+        padding: 20,
+        marginBottom: 60,
+    },
+    logoContainer: {
+        alignItems: 'center',
+        marginBottom: 110,
+    },
+    logo: {
+        width: 217.7,  // Set width
+        height: 145.16, // Set height
+        marginBottom: 20,
+    },
+    title: {
+        fontSize: 40,
+        fontWeight: '600',
+        color: '#333',
+    },
+    inputContainer: {
+        marginBottom: 20,
+        width: '80%', // Input fields are now 30% smaller (70% of screen width)
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15, // Spacing between input fields
+        borderBottomWidth: 1, // Underline effect
+        borderBottomColor: '#ddd',
+        paddingHorizontal: 10, // Adds some padding inside the input box
+    },
+    icon: {
+        marginRight: 10,
+    },
+    inputUnderline: {
+        flex: 1,
+        height: 40,
+        fontSize: 16,
+        color: '#333',
+        paddingVertical: 10,
+    },
+    loginButton: {
+        height: 50,
+        backgroundColor: '#EDE3BB',
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+        width: '80%', // Match the width of the input fields
+    },
+    loginText: {
+        color: '#fff',
+        fontWeight: 'bold',
+        fontSize: 30,
+    },
+    signupText: {
+        textAlign: 'center',
+        color: '#333',
+    },
+    signupLink: {
+        color: '#EDE3BB',
+        fontWeight: 'bold',
+    },
+});
+
+export default LoginScreen;
