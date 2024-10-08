@@ -1,3 +1,6 @@
+import 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -9,13 +12,21 @@ const Stack = createNativeStackNavigator();
 
 const App = () => {
     return (
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName="Login">
-                <Stack.Screen name="Login" component={Login} />
-                <Stack.Screen name="Register" component={Register} />
-            </Stack.Navigator>
-        </NavigationContainer>
+        <GestureHandlerRootView style={styles.container}>
+            <NavigationContainer>
+                <Stack.Navigator initialRouteName="Login">
+                    <Stack.Screen name="Login" component={Login} />
+                    <Stack.Screen name="Register" component={Register} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </GestureHandlerRootView>
     );
 };
 
-export default App;
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+});
+
+export default App;
