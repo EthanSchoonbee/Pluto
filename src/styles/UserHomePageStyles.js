@@ -16,7 +16,7 @@ const styles = StyleSheet.create({
             floatingImageLeft: {
                 position: 'absolute',
                 top: '-15%',
-                left: '-28%',
+                left: '30%',
                 width: 400,
                 height: 400,
                 zIndex: 10,
@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
             floatingImageRight: {
                 position: 'absolute',
                 top: '-15%',
-                right: '-25%',
+                right: '32%',
                 width: 400,
                 height: 400,
                 zIndex: 10,

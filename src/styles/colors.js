@@ -17,10 +17,10 @@ const colors = {
     transparent: 'transparent', // Transparent color for overlays
 
     // User Home Page
-    inactiveNoButton: '#8ece8e',
-    inactiveYesButton: '#ea9595',
-    activeNoButton: '#4ea44e',
-    activeYesButton: '#ff2645',
+    inactiveYesButton: '#8ece8e',
+    inactiveNoButton: '#ea9595',
+    activeYesButton: '#4ea44e',
+    activeNoButton: '#ff2645',
     genderMaleBlue: '#4072d2',
     genderFemalePink: '#c55fc9',
 };

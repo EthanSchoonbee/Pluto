@@ -35,19 +35,18 @@ const UserHomeScreen = () => {
     }, []);
 
     const Swiping = (positionX) => {
-        const currentCardIndex = index;
         const likeOpacityValue = Math.min(Math.max(positionX / 100, 0), 1);
         const dislikeOpacityValue = Math.min(Math.max(-positionX / 100, 0), 1);
 
         if (positionX < 0) {
             // swiping left
             Animated.parallel([
-                Animated.timing(dislikeOpacity[currentCardIndex], {
+                Animated.timing(dislikeOpacity[index], {
                     toValue: dislikeOpacityValue,
                     duration: 0,
                     useNativeDriver: true,
                 }),
-                Animated.timing(likeOpacity[currentCardIndex], {
+                Animated.timing(likeOpacity[index], {
                     toValue: 0,
                     duration: 0,
                     useNativeDriver: true,
@@ -62,12 +61,12 @@ const UserHomeScreen = () => {
         } else if (positionX > 0) {
             // swiping right
             Animated.parallel([
-                Animated.timing(likeOpacity[currentCardIndex], {
+                Animated.timing(likeOpacity[index], {
                     toValue: likeOpacityValue,
                     duration: 0,
                     useNativeDriver: true,
                 }),
-                Animated.timing(dislikeOpacity[currentCardIndex], {
+                Animated.timing(dislikeOpacity[index], {
                     toValue: 0,
                     duration: 0,
                     useNativeDriver: true,
@@ -92,50 +91,42 @@ const UserHomeScreen = () => {
     };
 
     const SwipedLeft = () => {
-        const currentCardIndex = index;
-        resetOpacity(currentCardIndex);
+        resetOpacity(index);
 
-        setIndex((prevIndex) => {
-            const newIndex =  Math.min(prevIndex + 1, animals.length - 1);
-            resetOpacity(newIndex);
-            return newIndex;
-        });
+        setIndex((prevIndex) => (prevIndex + 1) % animals.length);
 
         setNoButtonColor(colors.white);
         setNoButtonIconColor(colors.inactiveNoButton);
 
-        console.log('Swiped left on card index:', currentCardIndex);
+        console.log('Swiped left on card index:', index);
     };
 
     const SwipedRight = () => {
-        const currentCardIndex = index;
-        resetOpacity(currentCardIndex);
+        resetOpacity(index);
 
-        setIndex((prevIndex) => {
-            const newIndex = Math.min(prevIndex + 1, animals.length - 1);
-            resetOpacity(newIndex);
-            return newIndex;
-        });
+        setIndex((prevIndex) => (prevIndex + 1) % animals.length);
 
         setYesButtonColor(colors.white);
         setYesButtonIconColor(colors.inactiveYesButton);
 
-        console.log('Swiped right on card index:', currentCardIndex);
+        console.log('Swiped right on card index:', index);
     };
 
     const resetOpacity = (currentIndex) => {
-        Animated.parallel([
-            Animated.timing(likeOpacity[currentIndex], {
-                toValue: 0,
-                duration: 0,
-                useNativeDriver: true,
-            }),
-            Animated.timing(dislikeOpacity[currentIndex], {
-                toValue: 0,
-                duration: 0,
-                useNativeDriver: true,
-            })
-        ]).start();
+        if (currentIndex >= 0 && currentIndex < animals.length) {
+            Animated.parallel([
+                Animated.timing(likeOpacity[currentIndex], {
+                    toValue: 0,
+                    duration: 0,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(dislikeOpacity[currentIndex], {
+                    toValue: 0,
+                    duration: 0,
+                    useNativeDriver: true,
+                })
+            ]).start();
+        }
     };
 
     const renderGenderIcon = (gender) => {
@@ -155,15 +146,15 @@ const UserHomeScreen = () => {
                 <Swiper
                     ref={swiperRef}
                     cards={ animals }
-                    renderCard={(card) => (
+                    renderCard={(card, cardIndex) => (
                         <View style={styles.card}>
                             <Animated.Image
                                 source={floatingImageLike}
-                                style={[styles.floatingImageRight, { opacity: likeOpacity[index] }]}
+                                style={[styles.floatingImageRight, { opacity: likeOpacity[cardIndex] }]}
                             />
                             <Animated.Image
                                 source={floatingImageDislike}
-                                style={[styles.floatingImageLeft, { opacity: dislikeOpacity[index] }]}
+                                style={[styles.floatingImageLeft, { opacity: dislikeOpacity[cardIndex] }]}
                             />
 
 
