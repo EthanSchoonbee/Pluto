@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import strings from "../strings/en"
+import { StatusBar } from 'react-native';
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -12,21 +14,31 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const handleLogin = async () => {
-        //navigation.navigate('');
+        // Handle login logic
     };
 
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on platform
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+            {/* Set the status bar style to dark-content */}
+            <StatusBar barStyle="dark-content" />
+            {/* Background Image with absolute positioning */}
+            <ImageBackground
+                source={require('../../assets/wave_background.png')}
+                style={styles.backgroundImage}
+                resizeMode="cover"
+            />
+
+            {/* ScrollView for the login content */}
             <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
                 <View style={styles.logoContainer}>
                     <Image
                         source={require('../../assets/pluto_logo.png')}
                         style={styles.logo}
                     />
-                    <Text style={styles.title}>PLUTO</Text>
+                    <Text style={styles.title}>{strings.pluto_title}</Text>
                 </View>
 
                 <View style={styles.inputContainer}>
@@ -35,7 +47,7 @@ const LoginScreen = ({ navigation }) => {
                         <Icon name="email" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder="EMAIL"
+                            placeholder={strings.email_placeholder}
                             value={email}
                             onChangeText={setEmail}
                             keyboardType="email-address"
@@ -48,7 +60,7 @@ const LoginScreen = ({ navigation }) => {
                         <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder="PASSWORD"
+                            placeholder={strings.password_placeholder}
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry={secureTextEntry}
@@ -60,12 +72,12 @@ const LoginScreen = ({ navigation }) => {
                 </View>
 
                 <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                    <Text style={styles.loginText}>LOGIN</Text>
+                    <Text style={styles.loginText}>{strings.login_button}</Text>
                 </TouchableOpacity>
 
                 <Text style={styles.signupText}>
-                    Don't have an account yet?{'\n'}
-                    <Text onPress={() => navigation.navigate('Register')} style={styles.signupLink}>Create one now.</Text>
+                    {strings.dont_have_account}{'\n'}
+                    <Text onPress={() => navigation.navigate('Register')} style={styles.signupLink}>{strings.register_link}</Text>
                 </Text>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -77,15 +89,26 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
+    backgroundImage: {
+        position: 'absolute',
+        top: -100,  // Push the wave up while keeping the full image
+        left: 0,
+        right: 0,
+        height: 550,  // Keep height at 380 or less, as required by your design
+        zIndex: -1,
+        resizeMode: 'cover',  // Ensure the background fills the space without cutting off
+    },
     scrollContainer: {
         alignItems: 'center',
         padding: 20,
         paddingBottom: 60,
+        zIndex: 1,  // Ensure content stays above the background
     },
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 110,
-        marginTop: 20,
+        marginBottom: 120,
+        marginTop: 70,
+        zIndex: 1,
     },
     logo: {
         width: 217.7,
@@ -100,6 +123,7 @@ const styles = StyleSheet.create({
     inputContainer: {
         marginBottom: 20,
         width: '80%',
+        zIndex: 1,
     },
     inputWrapper: {
         flexDirection: 'row',
@@ -127,6 +151,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 20,
         width: '80%',
+        zIndex: 1,
     },
     loginText: {
         color: '#fff',
@@ -136,11 +161,14 @@ const styles = StyleSheet.create({
     signupText: {
         textAlign: 'center',
         color: '#333',
+        fontSize: 15,
+        zIndex: 1,
     },
     signupLink: {
         color: '#EDE3BB',
         fontWeight: 'bold',
     },
 });
+
 
 export default LoginScreen;
