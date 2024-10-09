@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import strings from "../strings/en"
 
 const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');
@@ -37,7 +38,7 @@ const RegisterScreen = ({ navigation }) => {
                         source={require('../../assets/pluto_logo.png')}
                         style={styles.logo}
                     />
-                    <Text style={styles.title}>PLUTO</Text>
+                    <Text style={styles.title}>{strings.pluto_title}</Text>
                 </View>
 
                 <View style={styles.inputContainer}>
@@ -46,7 +47,7 @@ const RegisterScreen = ({ navigation }) => {
                         <Icon name="person" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder="FULL NAME"
+                            placeholder={strings.full_name_placeholder}
                             value={fullName}
                             onChangeText={setFullName}
                         />
@@ -57,7 +58,7 @@ const RegisterScreen = ({ navigation }) => {
                         <Icon name="email" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder="EMAIL"
+                            placeholder={strings.email_placeholder}
                             value={email}
                             onChangeText={setEmail}
                             keyboardType="email-address"
@@ -70,7 +71,7 @@ const RegisterScreen = ({ navigation }) => {
                         <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder="PASSWORD"
+                            placeholder={strings.password_placeholder}
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry={secureTextEntry}
@@ -85,7 +86,7 @@ const RegisterScreen = ({ navigation }) => {
                         <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder="CONFIRM PASSWORD"
+                            placeholder={strings.confirm_password_placeholder}
                             value={confirmPassword}
                             onChangeText={setConfirmPassword}
                             secureTextEntry={secureTextEntry}
@@ -97,12 +98,12 @@ const RegisterScreen = ({ navigation }) => {
                 </View>
 
                 <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-                    <Text style={styles.registerText}>REGISTER</Text>
+                    <Text style={styles.registerText}>{strings.register_button}</Text>
                 </TouchableOpacity>
 
                 <Text style={styles.loginText}>
-                    Already have an account?{'\n'}
-                    <Text onPress={() => navigation.navigate('Login')} style={styles.loginLink}>Login here.</Text>
+                    {strings.already_have_account}{'\n'}
+                    <Text onPress={() => navigation.navigate('Login')} style={styles.loginLink}>{strings.login_link}</Text>
                 </Text>
             </ScrollView>
         </KeyboardAvoidingView>

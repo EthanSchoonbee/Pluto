@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import strings from "../strings/en"
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -34,7 +35,7 @@ const LoginScreen = ({ navigation }) => {
                         source={require('../../assets/pluto_logo.png')}
                         style={styles.logo}
                     />
-                    <Text style={styles.title}>PLUTO</Text>
+                    <Text style={styles.title}>{strings.pluto_title}</Text>
                 </View>
 
                 <View style={styles.inputContainer}>
@@ -43,7 +44,7 @@ const LoginScreen = ({ navigation }) => {
                         <Icon name="email" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder="EMAIL"
+                            placeholder={strings.email_placeholder}
                             value={email}
                             onChangeText={setEmail}
                             keyboardType="email-address"
@@ -56,7 +57,7 @@ const LoginScreen = ({ navigation }) => {
                         <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder="PASSWORD"
+                            placeholder={strings.password_placeholder}
                             value={password}
                             onChangeText={setPassword}
                             secureTextEntry={secureTextEntry}
@@ -68,12 +69,12 @@ const LoginScreen = ({ navigation }) => {
                 </View>
 
                 <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-                    <Text style={styles.loginText}>LOGIN</Text>
+                    <Text style={styles.loginText}>{strings.login_button}</Text>
                 </TouchableOpacity>
 
                 <Text style={styles.signupText}>
-                    Don't have an account yet?{'\n'}
-                    <Text onPress={() => navigation.navigate('Register')} style={styles.signupLink}>Create one now.</Text>
+                    {strings.dont_have_account}{'\n'}
+                    <Text onPress={() => navigation.navigate('Register')} style={styles.signupLink}>{strings.register_link}</Text>
                 </Text>
             </ScrollView>
         </KeyboardAvoidingView>
