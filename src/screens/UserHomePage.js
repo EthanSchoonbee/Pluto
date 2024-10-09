@@ -26,6 +26,8 @@ const UserHomeScreen = () => {
     const [yesButtonColor, setYesButtonColor] = useState(colors.white);
     const [noButtonIconColor, setNoButtonIconColor] = useState(colors.inactiveNoButton);
     const [yesButtonIconColor, setYesButtonIconColor] = useState(colors.inactiveYesButton);
+    const [isNoButtonPressed, setIsNoButtonPressed] = useState(false);
+    const [isYesButtonPressed, setIsYesButtonPressed] = useState(false);
 
     const likeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
     const dislikeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
@@ -33,6 +35,36 @@ const UserHomeScreen = () => {
     useEffect(() => {
         resetOpacity(0);
     }, []);
+
+    const animateSwipe = (direction) => {
+        if (direction === 'left') {
+            Animated.parallel([
+                Animated.timing(dislikeOpacity[index], {
+                    toValue: 1,
+                    duration: 0,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(likeOpacity[index], {
+                    toValue: 0,
+                    duration: 0,
+                    useNativeDriver: true,
+                })
+            ]).start();
+        } else if (direction === 'right') {
+            Animated.parallel([
+                Animated.timing(likeOpacity[index], {
+                    toValue: 1,
+                    duration: 0,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(dislikeOpacity[index], {
+                    toValue: 0,
+                    duration: 0,
+                    useNativeDriver: true,
+                })
+            ]).start();
+        }
+    };
 
     const Swiping = (positionX) => {
         const likeOpacityValue = Math.min(Math.max(positionX / 100, 0), 1);
@@ -91,9 +123,9 @@ const UserHomeScreen = () => {
     };
 
     const SwipedLeft = () => {
-        resetOpacity(index);
-
         setIndex((prevIndex) => (prevIndex + 1) % animals.length);
+
+        resetOpacity(index);
 
         setNoButtonColor(colors.white);
         setNoButtonIconColor(colors.inactiveNoButton);
@@ -102,9 +134,9 @@ const UserHomeScreen = () => {
     };
 
     const SwipedRight = () => {
-        resetOpacity(index);
-
         setIndex((prevIndex) => (prevIndex + 1) % animals.length);
+
+        resetOpacity(index);
 
         setYesButtonColor(colors.white);
         setYesButtonIconColor(colors.inactiveYesButton);
@@ -200,14 +232,30 @@ const UserHomeScreen = () => {
             <Navbar />
             <View style={styles.buttonsContainer}>
                 <TouchableOpacity
-                    style={[styles.button, { backgroundColor: noButtonColor }]}
-                    onPress={() => swiperRef.current.swipeLeft()}
+                    style={[styles.button,
+                        { backgroundColor:  noButtonColor }
+                    ]}
+                    onPressIn={() => setNoButtonColor(colors.activeNoButton)}
+                    onPressOut={() => setNoButtonColor(colors.white)}
+                    onPress={() => {
+                        resetOpacity(index);
+                        animateSwipe('left');
+                        swiperRef.current.swipeLeft();
+                    }}
                 >
                     <Ionicons name="close" size={50} color={noButtonIconColor} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                    style={[styles.button, { backgroundColor: yesButtonColor }]}
-                    onPress={() => swiperRef.current.swipeRight()}
+                    style={[styles.button,
+                        { backgroundColor: yesButtonColor }
+                    ]}
+                    onPressIn={() => setYesButtonColor(colors.activeYesButton)}
+                    onPressOut={() => setYesButtonColor(colors.white)}
+                    onPress={() => {
+                        resetOpacity(index);
+                        animateSwipe('right');
+                        swiperRef.current.swipeRight();
+                    }}
                 >
                     <Ionicons name="heart" size={45} color={yesButtonIconColor} />
                 </TouchableOpacity>

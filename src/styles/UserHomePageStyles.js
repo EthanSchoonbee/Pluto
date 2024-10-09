@@ -114,10 +114,15 @@ const styles = StyleSheet.create({
             },
                 noButton: {
                     backgroundColor: colors.white,
+
                 },
                 yesButton: {
                     backgroundColor: colors.white,
                 },
+                pressed: {
+                    opacity: 0.5,
+
+                }
 });
 
 export default styles;
