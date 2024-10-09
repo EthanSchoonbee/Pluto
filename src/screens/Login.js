@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const LoginScreen = ({ navigation }) => {
@@ -12,14 +12,22 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const handleLogin = async () => {
-        //navigation.navigate('');
+        // Handle login logic
     };
 
     return (
         <KeyboardAvoidingView
             style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // Adjust behavior based on platform
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+            {/* Background Image with absolute positioning */}
+            <ImageBackground
+                source={require('../../assets/wave_background.png')}
+                style={styles.backgroundImage}
+                resizeMode="cover"
+            />
+
+            {/* ScrollView for the login content */}
             <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
                 <View style={styles.logoContainer}>
                     <Image
@@ -77,15 +85,26 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#FFFFFF',
     },
+    backgroundImage: {
+        position: 'absolute',
+        top: -100,  // Push the wave up while keeping the full image
+        left: 0,
+        right: 0,
+        height: 480,  // Keep height at 380 or less, as required by your design
+        zIndex: -1,
+        resizeMode: 'cover',  // Ensure the background fills the space without cutting off
+    },
     scrollContainer: {
         alignItems: 'center',
         padding: 20,
         paddingBottom: 60,
+        zIndex: 1,  // Ensure content stays above the background
     },
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 110,
+        marginBottom: 80,
         marginTop: 20,
+        zIndex: 1,
     },
     logo: {
         width: 217.7,
@@ -100,6 +119,7 @@ const styles = StyleSheet.create({
     inputContainer: {
         marginBottom: 20,
         width: '80%',
+        zIndex: 1,
     },
     inputWrapper: {
         flexDirection: 'row',
@@ -127,6 +147,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginBottom: 20,
         width: '80%',
+        zIndex: 1,
     },
     loginText: {
         color: '#fff',
@@ -136,11 +157,13 @@ const styles = StyleSheet.create({
     signupText: {
         textAlign: 'center',
         color: '#333',
+        zIndex: 1,
     },
     signupLink: {
         color: '#EDE3BB',
         fontWeight: 'bold',
     },
 });
+
 
 export default LoginScreen;

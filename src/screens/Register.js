@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const RegisterScreen = ({ navigation }) => {
@@ -23,9 +23,16 @@ const RegisterScreen = ({ navigation }) => {
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+            {/* Background Image with absolute positioning */}
+            <ImageBackground
+                source={require('../../assets/wave_background.png')}
+                style={styles.backgroundImage}
+                resizeMode="cover"
+            />
+
+            {/* ScrollView for the registration content */}
             <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
                 <View style={styles.logoContainer}>
-                    {/* Replace this with the actual image path */}
                     <Image
                         source={require('../../assets/pluto_logo.png')}
                         style={styles.logo}
@@ -106,6 +113,15 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#FFFFFF',
+    },
+    backgroundImage: {
+        position: 'absolute',
+        top: -100,  // Adjust based on design
+        left: 0,
+        right: 0,
+        height: 480,  // Same height as in LoginScreen
+        zIndex: -1,
+        resizeMode: 'cover',  // Ensure it covers the screen without cutting off
     },
     scrollContainer: {
         alignItems: 'center',
