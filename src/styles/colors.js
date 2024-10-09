@@ -14,7 +14,15 @@ const colors = {
     disabled: '#BDBDBD',       // Color for disabled states (buttons, inputs)
     white: '#FFFFFF',          // White color
     black: '#000000',          // Black color
-    transparent: 'transparent' // Transparent color for overlays
+    transparent: 'transparent', // Transparent color for overlays
+
+    // User Home Page
+    inactiveNoButton: '#8ece8e',
+    inactiveYesButton: '#ea9595',
+    activeNoButton: '#4ea44e',
+    activeYesButton: '#ff2645',
+    genderMaleBlue: '#4072d2',
+    genderFemalePink: '#c55fc9',
 };
 
 export default colors;

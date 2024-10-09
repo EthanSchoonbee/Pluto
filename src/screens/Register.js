@@ -17,7 +17,7 @@ const RegisterScreen = ({ navigation }) => {
 
     const handleRegister = async () => {
         // Registration logic here
-        navigation.navigate('Login');
+        navigation.navigate('UserHome');
     };
 
     return (
