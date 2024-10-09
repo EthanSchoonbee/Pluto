@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import strings from "../strings/en"
+import { StatusBar } from 'react-native';
 
 const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');
@@ -24,6 +25,8 @@ const RegisterScreen = ({ navigation }) => {
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+            {/* Set the status bar style to dark-content */}
+            <StatusBar barStyle="dark-content" />
             {/* Background Image with absolute positioning */}
             <ImageBackground
                 source={require('../../assets/wave_background.png')}
@@ -120,7 +123,7 @@ const styles = StyleSheet.create({
         top: -100,  // Adjust based on design
         left: 0,
         right: 0,
-        height: 480,  // Same height as in LoginScreen
+        height: 550,  // Same height as in LoginScreen
         zIndex: -1,
         resizeMode: 'cover',  // Ensure it covers the screen without cutting off
     },
@@ -131,8 +134,8 @@ const styles = StyleSheet.create({
     },
     logoContainer: {
         alignItems: 'center',
-        marginBottom: 70,
-        marginTop: 20,
+        marginBottom: 90,
+        marginTop: 70,
     },
     logo: {
         width: 217.7,
@@ -183,6 +186,7 @@ const styles = StyleSheet.create({
     loginText: {
         textAlign: 'center',
         color: '#333',
+        fontSize: 15,
     },
     loginLink: {
         color: '#EDE3BB',
