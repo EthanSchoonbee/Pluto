@@ -14,7 +14,7 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const handleLogin = async () => {
-        // Handle login logic
+        navigation.navigate('UserHome');
     };
 
     return (
