@@ -23,6 +23,15 @@ const colors = {
     activeNoButton: '#ff2645',
     genderMaleBlue: '#4072d2',
     genderFemalePink: '#c55fc9',
+
+    // Settings pages colours
+    userSettingsWhite: '#fff',       // White background in user settings
+    userSettingsLightGray: '#f5f5f5', // Light gray background in user settings
+    userSettingsDarkGrayText: '#333', // Dark gray text in user settings
+    userSettingsMediumGrayText: '#555', // Medium gray text in user settings
+    userSettingsLightGrayBorder: '#ddd', // Light gray border in user settings
+    userSettingsBlueBorder: '#007BFF', // Blue border in user settings
+    userSettingsRedBorder: '#d9534f', // Red border in user settings
 };
 
 export default colors;

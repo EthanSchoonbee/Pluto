@@ -32,4 +32,20 @@ export default {
     closeButton: "Close",
     selectFurColors: "Select Fur Colors:",
 
+    // User Settings page
+    user_settings: {
+        user_name: "User Name:",
+        location: "Location:",
+        your_details_title: "Your Details:",
+        name_label: "Name:",
+        surname_label: "Surname:",
+        email_label: "Email:",
+        password_label: "Password:",
+        confirm_password_label: "Confirm Password:",
+        privacy_title: "Privacy:",
+        push_notifications: "Push Notifications",
+        update_button: "Update",
+        logout_button: "Logout",
+    }
+
 };
