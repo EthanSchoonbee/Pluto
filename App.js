@@ -1,23 +1,49 @@
 import 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './src/screens/Login';
 import Register from './src/screens/Register';
-import UserHomeScreen from "./src/screens/UserHomePage";
+import UserHomePage from './src/screens/UserHomePage';
+import { auth } from './src/services/firebaseConfig'; // Import auth from your firebaseConfig
+import { onAuthStateChanged } from "firebase/auth"; // Import onAuthStateChanged
 
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+    const [isLoading, setIsLoading] = useState(true); // Manage loading state
+    const [initialRoute, setInitialRoute] = useState('Login'); // Default route
+
+    useEffect(() => {
+        const checkUserSession = () => {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is signed in, navigate to UserHome
+                    setInitialRoute('UserHome');
+                } else {
+                    // No user is signed in, navigate to Login
+                    setInitialRoute('Login');
+                }
+                setIsLoading(false); // Set loading to false after checking session
+            });
+        };
+
+        checkUserSession();
+    }, []);
+
+    if (isLoading) {
+        return null; // Or a loading spinner while checking auth state
+    }
+
     return (
         <GestureHandlerRootView style={styles.container}>
             <NavigationContainer>
-                <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
+                <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="Login" component={Login} />
                     <Stack.Screen name="Register" component={Register} />
-                    <Stack.Screen name="UserHome" component={UserHomeScreen} />
+                    <Stack.Screen name="UserHome" component={UserHomePage} />
                 </Stack.Navigator>
             </NavigationContainer>
         </GestureHandlerRootView>

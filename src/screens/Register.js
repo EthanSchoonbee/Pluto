@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvo
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import strings from "../strings/en"
 import { StatusBar } from 'react-native';
+import firebaseService from '../services/firesbaseService';
 
 const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');
@@ -16,9 +17,21 @@ const RegisterScreen = ({ navigation }) => {
     };
 
     const handleRegister = async () => {
-        // Registration logic here
-        navigation.navigate('UserHome');
+        if (password !== confirmPassword) {
+            console.log('Passwords do not match!');
+            return;
+        }
+
+        try {
+            const user = await firebaseService.registerUser(fullName, email, password);
+            console.log('User registered:', user);
+            navigation.navigate('UserHome'); // Navigate to UserHome upon success
+        } catch (error) {
+            console.log('Error during registration:', error);
+            // Optionally: show error message to user
+        }
     };
+
 
     return (
         <KeyboardAvoidingView

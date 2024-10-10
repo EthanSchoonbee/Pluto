@@ -1,15 +1,19 @@
 import { db, auth } from "./firebaseConfig";
+import userSession from './UserSession';
 import {collection, addDoc, getDoc, doc, updateDoc, getFirestore} from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 
 class FirebaseService {
     // Authentication Methods:
     // Register a new user account
-    async registerUser(email, password) {
+    async registerUser(fullName, email, password) {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            console.log('User registered:', userCredential.user);
-            return userCredential.user;
+            const user = userCredential.user;
+            const token = await user.getIdToken(); // Get token
+            userSession.setUser(user, token); // Store in singleton
+            console.log('User registered and session initialized:', user);
+            return user;
         } catch (error) {
             console.log('Error registering user:', error);
             throw error;
@@ -20,8 +24,11 @@ class FirebaseService {
     async loginUser(email, password) {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            console.log('User logged in:', userCredential.user);
-            return userCredential.user;
+            const user = userCredential.user;
+            const token = await user.getIdToken(); // Get token
+            userSession.setUser(user, token); // Store in singleton
+            console.log('User logged in and session initialized:', user);
+            return user;
         } catch (error) {
             console.log('Error logging user in:', error);
             throw error;
@@ -32,7 +39,8 @@ class FirebaseService {
     async logoutUser() {
         try {
             await signOut(auth);
-            console.log('User logged out');
+            userSession.clearUser(); // Clear the session on logout
+            console.log('User logged out and session cleared');
         } catch (error) {
             console.log('Error logging out:', error);
             throw error;
