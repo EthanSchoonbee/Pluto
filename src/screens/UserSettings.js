@@ -87,8 +87,7 @@ const UserSettingsScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Add extra space before the Navbar to avoid clipping */}
-                <View style={{ height: 50 }} />  {/* Optional: Add some space before the navbar */}
+                <View style={{ height: 50 }}> <Text></Text></View>
                 {/* Navbar at the bottom */}
                 <Navbar />
             </ScrollView>
