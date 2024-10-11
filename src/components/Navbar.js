@@ -19,7 +19,7 @@ const Navbar = () => {
                 name="paw"
                 size={30}
                 color="black"
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate('AddAnimal')}
             />
             <Ionicons
                 name="chatbubble"
