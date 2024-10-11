@@ -71,7 +71,9 @@ export default {
         push_notifications: "Push Notifications",
         update_button: "Update",
         logout_button: "Logout",
-        sample_text: "Sample Text"
+        sample_text: "Sample Text",
+        password_placeholder: "********",
+        confirm_password_placeholder: "********"
     }
 
 };
