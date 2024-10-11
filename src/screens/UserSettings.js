@@ -28,8 +28,8 @@ const UserSettingsScreen = () => {
             <ScrollView style={UserSettingsStyles.container} contentContainerStyle={{ paddingBottom: 100 }}> {/* Added paddingBottom here */}
                 {/* User Name and Location */}
                 <View style={UserSettingsStyles.headerSection}>
-                    <Text style={UserSettingsStyles.headerText}>{strings.user_settings.user_name} Sample Text</Text>
-                    <Text style={UserSettingsStyles.headerText}>{strings.user_settings.location} Sample</Text>
+                    <Text style={UserSettingsStyles.headerText}>{strings.user_settings.user_name}</Text>
+                    <Text style={UserSettingsStyles.headerText}>{strings.user_settings.location}</Text>
                 </View>
 
                 {/* Your Details Section */}
@@ -37,11 +37,11 @@ const UserSettingsScreen = () => {
                 <View style={UserSettingsStyles.detailsContainer}>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.name_label}</Text>
-                        <Text style={UserSettingsStyles.detailsValue}>Sample Text</Text>
+                        <Text style={UserSettingsStyles.detailsValue}>{strings.user_settings.sample_text}</Text>
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.surname_label}</Text>
-                        <Text style={UserSettingsStyles.detailsValue}>Sample Text</Text>
+                        <Text style={UserSettingsStyles.detailsValue}>{strings.user_settings.sample_text}</Text>
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.email_label}</Text>
@@ -57,7 +57,7 @@ const UserSettingsScreen = () => {
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
-                        <Text style={UserSettingsStyles.detailsValue}>Sample Location</Text>
+                        <Text style={UserSettingsStyles.detailsValue}>{strings.user_settings.sample_text}</Text>
                     </View>
                 </View>
 
@@ -93,8 +93,6 @@ const UserSettingsScreen = () => {
                 {/* Navbar at the bottom */}
                 <Navbar />
             </ScrollView>
-
-
         </View>
     );
 };
