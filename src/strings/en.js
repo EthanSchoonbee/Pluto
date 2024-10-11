@@ -71,6 +71,7 @@ export default {
         push_notifications: "Push Notifications",
         update_button: "Update",
         logout_button: "Logout",
+        sample_text: "Sample Text"  // Added this string as a singular value
     }
 
 };
