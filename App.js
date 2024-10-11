@@ -9,6 +9,8 @@ import Register from './src/screens/Register';
 import UserHomeScreen from "./src/screens/UserHomePage";
 import Filter from './src/screens/Filter';
 import AddAnimal from "./src/screens/AddAnimal";
+import UserSettings from "./src/screens/UserSettings";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -19,9 +21,10 @@ const App = () => {
                 <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="Login" component={Login} />
                     <Stack.Screen name="Register" component={Register} />
-                    <Stack.Screen name="UserHome" component={UserHomeScreen}/>
                     <Stack.Screen name="Filter" component={Filter}/>
                     <Stack.Screen name="AddAnimal" component={AddAnimal}/>
+                    <Stack.Screen name="UserHome" component={UserHomeScreen} />
+                    <Stack.Screen name="UserSettings" component={UserSettings} />
                 </Stack.Navigator>
             </NavigationContainer>
         </GestureHandlerRootView>
