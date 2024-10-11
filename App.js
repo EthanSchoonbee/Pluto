@@ -10,6 +10,7 @@ import UserHomeScreen from "./src/screens/UserHomePage";
 import Filter from './src/screens/Filter';
 import AddAnimal from "./src/screens/AddAnimal";
 import UserSettings from "./src/screens/UserSettings";
+import ShelterSettings from "./src/screens/ShelterSettings";
 
 
 const Stack = createNativeStackNavigator();
@@ -25,6 +26,7 @@ const App = () => {
                     <Stack.Screen name="AddAnimal" component={AddAnimal}/>
                     <Stack.Screen name="UserHome" component={UserHomeScreen} />
                     <Stack.Screen name="UserSettings" component={UserSettings} />
+                    <Stack.Screen name={"ShelterSettings"} component={ShelterSettings}/>
                 </Stack.Navigator>
             </NavigationContainer>
         </GestureHandlerRootView>
