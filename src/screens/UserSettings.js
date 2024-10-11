@@ -87,7 +87,7 @@ const UserSettingsScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                <View style={{ height: 50 }}> <Text></Text></View>
+                <View style={{ height: 50 }}><Text></Text></View>
                 {/* Navbar at the bottom */}
                 <Navbar />
             </ScrollView>
