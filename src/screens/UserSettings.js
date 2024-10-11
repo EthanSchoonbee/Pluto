@@ -49,11 +49,11 @@ const UserSettingsScreen = () => {
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.password_label}</Text>
-                        <Text style={UserSettingsStyles.detailsValue}>********</Text>
+                        <Text style={UserSettingsStyles.detailsValue}>{strings.user_settings.password_hidden}</Text>
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.confirm_password_label}</Text>
-                        <Text style={UserSettingsStyles.detailsValue}>********</Text>
+                        <Text style={UserSettingsStyles.detailsValue}>{strings.user_settings.confirm_password_hidden}</Text>
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
