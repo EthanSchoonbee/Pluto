@@ -74,6 +74,24 @@ export default {
         sample_text: "Sample Text",
         password_placeholder: "********",
         confirm_password_placeholder: "********"
-    }
+    },
 
+    // Shelter Settings page
+    shelter_settings: {
+        shelter_name: "Shelter Name:",
+        shelter_location: "Location:",
+        shelter_email: "Email:",
+        shelter_tel: "Telephone:",
+        shelter_password: "Password:",
+        shelter_confirm_password: "Confirm Password:",
+        shelter_details_title: "Shelter Details:",
+        shelter_update_button: "Update Shelter",
+        shelter_logout_button: "Logout Shelter",
+        shelter_sample_text: "Sample Shelter Info",
+        shelter_password_placeholder: "********",
+        shelter_confirm_password_placeholder: "********",
+        shelter_image: "Shelter Image:",
+        shelter_privacy_title: "Privacy:",
+        shelter_push_notifications: "Push Notifications"
+    }
 };
