@@ -7,6 +7,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from './src/screens/Login';
 import Register from './src/screens/Register';
 import UserHomeScreen from "./src/screens/UserHomePage";
+import Filter from './src/screens/Filter';
+import AddAnimal from "./src/screens/AddAnimal";
 
 const Stack = createNativeStackNavigator();
 
@@ -17,7 +19,9 @@ const App = () => {
                 <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="Login" component={Login} />
                     <Stack.Screen name="Register" component={Register} />
-                    <Stack.Screen name="UserHome" component={UserHomeScreen} />
+                    <Stack.Screen name="UserHome" component={UserHomeScreen}/>
+                    <Stack.Screen name="Filter" component={Filter}/>
+                    <Stack.Screen name="AddAnimal" component={AddAnimal}/>
                 </Stack.Navigator>
             </NavigationContainer>
         </GestureHandlerRootView>

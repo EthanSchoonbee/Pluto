@@ -14,7 +14,7 @@ const Header = () => {
                 name="filter"
                 size={30}
                 color="black"
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate('Filter')}
             />
         </View>
     );
