@@ -57,7 +57,7 @@ export default {
     selectBreed: "Select Breed:",
     selectFur: "Select Fur Color:",
 
-    // User Settings page
+    // User Settings page //
     user_settings: {
         user_name: "User Name:",
         location: "Location:",
@@ -71,7 +71,9 @@ export default {
         push_notifications: "Push Notifications",
         update_button: "Update",
         logout_button: "Logout",
-        sample_text: "Sample Text"
+        sample_text: "Sample Text",  // Added this string as a singular value
+        password_hidden: "********",  // Adding the hidden password as a string variable
+        confirm_password_hidden: "********"  // Adding the confirm password as a string variable
     }
 
 };
