@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Switch, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';  // Import useNavigation hook
-import UserSettingsStyles from "../styles/UserSettingsStyles";  // Import the styles from the external file
-import strings from '../strings/en.js';   // Import the strings from en.js
-import Navbar from "../components/Navbar";  // Import your Navbar component
+import { useNavigation } from '@react-navigation/native';
+import UserSettingsStyles from "../styles/UserSettingsStyles";
+import strings from '../strings/en.js';
+import Navbar from "../components/Navbar";
 
 const UserSettingsScreen = () => {
     const [isPushNotificationsEnabled, setIsPushNotificationsEnabled] = useState(false);
-    const navigation = useNavigation(); // Hook to navigate to other screens
+    const navigation = useNavigation();
 
     const togglePushNotifications = () => setIsPushNotificationsEnabled(previousState => !previousState);
 
@@ -19,13 +19,12 @@ const UserSettingsScreen = () => {
     const handleLogout = () => {
         // Handle logout action and navigate to the Login screen
         console.log('Logout button pressed');
-        navigation.navigate('Login');  // Navigate to the Login screen
+        navigation.navigate('Login');
     };
 
     return (
         <View style={{ flex: 1 }}>
-            {/* ScrollView for the content */}
-            <ScrollView style={UserSettingsStyles.container} contentContainerStyle={{ paddingBottom: 100 }}> {/* Added paddingBottom here */}
+            <ScrollView style={UserSettingsStyles.container} contentContainerStyle={{ paddingBottom: 100 }}>
                 {/* User Name and Location */}
                 <View style={UserSettingsStyles.headerSection}>
                     <Text style={UserSettingsStyles.headerText}>{strings.user_settings.user_name}</Text>
@@ -49,11 +48,11 @@ const UserSettingsScreen = () => {
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.password_label}</Text>
-                        <Text style={UserSettingsStyles.detailsValue}>********</Text>
+                        <Text style={UserSettingsStyles.detailsValue}>{strings.user_settings.password_placeholder}</Text>
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.confirm_password_label}</Text>
-                        <Text style={UserSettingsStyles.detailsValue}>********</Text>
+                        <Text style={UserSettingsStyles.detailsValue}>{strings.user_settings.confirm_password_placeholder}</Text>
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
