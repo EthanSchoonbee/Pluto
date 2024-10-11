@@ -1,41 +1,75 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Dimensions } from 'react-native';
+import { useState } from "react";
 import Slider from '@react-native-community/slider';
-import { Picker } from '@react-native-picker/picker';
-import MultiSlider from '@ptomasroos/react-native-multi-slider';
-import strings from '../strings/en.js'; // Import the strings file
-import CustomButton from '../components/Button'
+import React from "react";
+import { View, Text, TextInput, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import strings from "../strings/en";
+import styles from '../styles/AddAnimalPageStyles';
+import { Picker } from "@react-native-picker/picker"; // Import the stylesheet
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
+import Icon from 'react-native-vector-icons/Ionicons'; // or any other icon set you prefer
 
 
-
-const Filter = ({navigation})  =>  {
+const AddAnimal = ({ navigation }) => {
     const [isDog, setIsDog] = useState(true);
     const [selectedBreed, setSelectedBreed] = useState(strings.anyBreed); // Use strings.anyBreed
-    const [maxDistance, setMaxDistance] = useState(32);
-    const [ageRange, setAgeRange] = useState([3, 13]);
+    const [images, setImages] = useState([]);
+    const [name, setName] = useState("");
+    const [age, setAge] = useState("");
+    const [biography, setBiography] = useState("");
     const [activityLevel, setActivityLevel] = useState(0);
-    const [size, setSize] = useState(1);
+    const [size, setSize] = useState(0);
     const [isPickerVisible, setIsPickerVisible] = useState(false);
     const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
     const [furColors, setFurColors] = useState([]);
-    const [scrollEnabled, setScrollEnabled] = useState(true);
-
-
+    const activityLevels = ['Couch Cushion', 'Lap Cat', 'Playful Pup', 'Adventure Hound'];
+    const sizes = ['Small', 'Medium', 'Large'];
     const dogBreeds = ['Labrador', 'Poodle', 'Bulldog', 'German Shepherd'];
     const catBreeds = ['Siamese', 'Persian', 'Maine Coon', 'Bengal'];
     const availableFurColors = ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
+
+    const relevantBreeds = isDog ? dogBreeds : catBreeds;
+
+    const handleImageUpload = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Sorry, we need media library permissions to make this work!');
+            return;
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsMultipleSelection: true,
+            quality: 1,
+            selectionLimit: 7,
+        });
+
+        if (!result.canceled) {
+            if (result.assets && result.assets.length + images.length <= 7) {
+                const selectedUris = result.assets.map((asset) => asset.uri);
+                setImages([...images, ...selectedUris]);
+            } else {
+                Alert.alert('Upload Limit', 'You can only upload a maximum of 7 images.');
+            }
+        }
+    };
+
+    const removeImage = (index) => {
+        setImages(images.filter((_, i) => i !== index));
+    };
+
+    const handleSubmit = () => {
+        if (images.length < 3) {
+            alert("Please add at least 3 images.");
+            return;
+        }
+        console.log("Form submitted");
+    };
 
     const toggleAnimalType = (type) => {
         setIsDog(type === 'dogs');
         setSelectedBreed(strings.anyBreed); // Reset using strings.anyBreed
     };
-
-
-    const activityLevels = ['Couch Cushion', 'Lap Cat', 'Playful Pup', 'Adventure Hound'];
-    const sizes = ['Small', 'Medium', 'Large'];
-
-    const screenWidth = Dimensions.get('window').width;
-    const relevantBreeds = isDog ? dogBreeds : catBreeds;
 
     const toggleFurColor = (color) => {
         if (furColors.includes(color)) {
@@ -47,12 +81,12 @@ const Filter = ({navigation})  =>  {
 
     return (
         <SafeAreaView style={styles.container}>
-            <ScrollView scrollEnabled={scrollEnabled} contentContainerStyle={styles.scrollContent}>
-                <Text style={styles.title}>{strings.title}</Text>
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                <Text style={styles.title}>{strings.addAnimalTitle}</Text>
 
                 {/* Dog/Cat Toggle */}
                 <View style={styles.switchContainer}>
-                    <Text style={styles.label}>{strings.lookingForLabel}</Text>
+                    <Text style={styles.label}>{strings.selectSpecies}</Text>
                     <View style={styles.toggleButtonGroup}>
                         <TouchableOpacity
                             style={[styles.toggleButton, isDog && styles.selectedButton]}
@@ -70,11 +104,57 @@ const Filter = ({navigation})  =>  {
                     </View>
                 </View>
 
+                {/* Image Upload */}
+                <View style={styles.imageContainer}>
+                    {images.map((img, index) => (
+                        <View key={index} style={styles.imageWrapper}>
+                            <Image source={{ uri: img }} style={styles.image} />
+                            <TouchableOpacity
+                                style={styles.deleteImageButton}
+                                onPress={() => removeImage(index)}
+                            >
+                                <Text style={styles.deleteImageText}>×</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ))}
+                    {images.length < 7 && (
+                        <TouchableOpacity style={styles.uploadImage} onPress={handleImageUpload}>
+                            <Text style={styles.uploadImageText}>+</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+
+
+                {/* Name, Breed, Age, Biography */}
+                <View style={styles.inputContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder={strings.namePlaceholder}
+                        value={name}
+                        onChangeText={setName}
+                    />
+                    <TextInput
+                        style={styles.input}
+                        placeholder={strings.agePlaceholder}
+                        value={age}
+                        onChangeText={setAge}
+                    />
+                    <TextInput
+                        style={styles.textArea}
+                        placeholder={strings.biographyPlaceholder}
+                        value={biography}
+                        onChangeText={setBiography}
+                        multiline
+                    />
+                </View>
+
                 {/* Breed Picker */}
                 <View style={styles.pickerContainer}>
-                    <Text style={styles.label}>{strings.breedLabel}</Text>
                     <TouchableOpacity onPress={() => setIsPickerVisible(true)} style={styles.pickerButton}>
-                        <Text style={styles.pickerText}>{selectedBreed}</Text>
+                        <Text style={styles.pickerText}>
+                            {selectedBreed === strings.anyBreed ? strings.selectBreed : selectedBreed}
+                        </Text>
+                        <Icon name="chevron-down" size={20} color="#000" style={styles.arrowIcon} />
                     </TouchableOpacity>
                     <Modal
                         visible={isPickerVisible}
@@ -91,7 +171,6 @@ const Filter = ({navigation})  =>  {
                                         setIsPickerVisible(false);
                                     }}
                                 >
-                                    <Picker.Item label={strings.anyBreed} value={strings.anyBreed} />
                                     {relevantBreeds.map((breed, index) => (
                                         <Picker.Item key={index} label={breed} value={breed} />
                                     ))}
@@ -102,13 +181,16 @@ const Filter = ({navigation})  =>  {
                     </Modal>
                 </View>
 
+
+
+
                 {/* Fur Color Selection */}
                 <View style={styles.colorPickerContainer}>
-                    <Text style={styles.label}>{strings.furColorLabel}</Text>
                     <TouchableOpacity onPress={() => setIsColorPickerVisible(true)} style={styles.pickerButton}>
                         <Text style={styles.pickerText}>
-                            {furColors.length > 0 ? furColors.join(', ') : strings.selectFurColor}
+                            {furColors.length > 0 ? furColors.join(', ') : strings.selectFur}
                         </Text>
+                        <Icon name="chevron-down" size={20} color="#000" style={styles.arrowIcon} />
                     </TouchableOpacity>
                     <Modal
                         visible={isColorPickerVisible}
@@ -135,42 +217,6 @@ const Filter = ({navigation})  =>  {
                     </Modal>
                 </View>
 
-                {/* Maximum Distance Slider */}
-                <View style={styles.sliderContainer}>
-                    <Text style={styles.label}>{strings.maximumDistanceLabel(maxDistance)}</Text>
-                    <Slider
-                        style={styles.slider}
-                        minimumValue={0}
-                        maximumValue={500}
-                        step={1}
-                        minimumTrackTintColor="gold"
-                        maximumTrackTintColor="gray"
-                        onValueChange={setMaxDistance}
-                        value={maxDistance}
-                    />
-                </View>
-
-                {/* Age Range Multi-Slider */}
-                <View style={styles.sliderContainer}>
-                    <Text style={styles.label}>{strings.ageRangeLabel(ageRange[0], ageRange[1])}</Text>
-                    <View style={styles.multiSliderContainer}>
-                        <MultiSlider
-                            values={ageRange}
-                            onValuesChange={setAgeRange}
-                            onValuesChangeStart={() => setScrollEnabled(false)}
-                            onValuesChangeFinish={() => setScrollEnabled(true)}
-                            min={0}
-                            max={20}
-                            step={1}
-                            selectedStyle={{ backgroundColor: 'gold' }}
-                            unselectedStyle={{ backgroundColor: 'gray' }}
-                            markerStyle={{ backgroundColor: 'gold' }}
-                            containerStyle={styles.slider}
-                            sliderLength={screenWidth - 45}
-                            trackStyle={{ height: 4 }}
-                        />
-                    </View>
-                </View>
 
                 {/* Activity Level Slider */}
                 <View style={styles.sliderContainer}>
@@ -204,121 +250,13 @@ const Filter = ({navigation})  =>  {
 
                 {/* Done Button */}
                 <View style={styles.buttonWrapper}>
-                    <CustomButton
-                        title={strings.applyFilterButton}
-                        onPress={() => navigation.navigate('UserHome')} // Navigate back to the previous page
-                    />
+                    <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                        <Text style={styles.buttonText}>{strings.doneButton}</Text>
+                    </TouchableOpacity>
                 </View>
-
             </ScrollView>
         </SafeAreaView>
     );
-}
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f9f9f9',
-    },
-    scrollContent: {
-        paddingBottom: 20,  // Extra padding to prevent cutting off at the bottom
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginVertical: 10,
-    },
-    buttonWrapper: {
-        alignItems: 'center', // Centers the button horizontally
-        marginVertical: 20,   // Adds space around the button
-    },
-    switchContainer: {
-        marginVertical: 10,
-        paddingHorizontal: 20,
-    },
-    toggleButtonGroup: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        borderRadius: 20,
-        overflow: 'hidden',
-        backgroundColor: 'gray', // Background color for unselected buttons
-    },
-    toggleButton: {
-        flexGrow: 1,
-        alignItems: 'center',
-        paddingVertical: 10,
-        backgroundColor: 'transparent',
-    },
-    selectedButton: {
-        backgroundColor: 'gold', // Background color for selected button
-    },
-    toggleButtonText: {
-        fontSize: 18,
-        color: 'black', // Text color
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: '600',
-        marginVertical: 5,
-        paddingHorizontal: 20,
-    },
-    pickerContainer: {
-        marginVertical: 10,
-        paddingHorizontal: 20,
-    },
-    colorPickerContainer: {
-        marginVertical: 10,
-        paddingHorizontal: 20,
-    },
-    pickerButton: {
-        borderWidth: 1,
-        borderColor: 'gray',
-        padding: 10,
-        borderRadius: 5,
-    },
-    pickerText: {
-        fontSize: 16,
-    },
-    modalContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dim background
-    },
-    modalContent: {
-        backgroundColor: 'white',
-        marginHorizontal: 20,
-        padding: 20,
-        borderRadius: 10,
-    },
-    sliderContainer: {
-        marginVertical: 10,
-        paddingHorizontal: 20,
-    },
-    slider: {
-        width: '100%', // Ensures the slider width is consistent
-        height: 40,
-    },
-    multiSliderContainer: {
-        width: '100%', // Ensures MultiSlider has the same width as other sliders
-    },
-    buttonContainer: {
-        paddingHorizontal: 20,
-        marginVertical: 20,
-    },
-    colorOption: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 5,
-    },
-    colorIndicator: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        marginRight: 10,
-    },
-    checkboxLabel: {
-        fontSize: 16,
-    },
-});
+};
 
-export default Filter;
+export default AddAnimal;
