@@ -20,8 +20,7 @@ export default StyleSheet.create({
     petInfoContainer: {
         alignItems: "center",
         padding: 16,
-        backgroundColor: colors.surface,
-        marginBottom: 1,
+        marginBottom: 16
     },
     petImage: {
         width: 120,
