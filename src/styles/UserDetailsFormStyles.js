@@ -81,7 +81,7 @@ export default StyleSheet.create({
     notificationButton: {
         backgroundColor: "#EDE3BB",
         padding: 15,
-        borderRadius: 10,
+        borderRadius: 25,
         alignItems: "center",
         marginTop: 20,
     },
@@ -89,6 +89,7 @@ export default StyleSheet.create({
         color: colors.white,
         fontSize: 16,
         fontWeight: "bold",
+        textTransform: "uppercase",
     },
     centeredView: {
         flex: 1,
