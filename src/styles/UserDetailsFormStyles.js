@@ -81,13 +81,13 @@ export default StyleSheet.create({
     notificationButton: {
         backgroundColor: "#EDE3BB",
         padding: 15,
-        borderRadius: 25,
+        borderRadius: 40,
         alignItems: "center",
         marginTop: 20,
     },
     notificationButtonText: {
         color: colors.white,
-        fontSize: 30,
+        fontSize: 25,
         fontWeight: "bold",
         textTransform: "uppercase",
     },
