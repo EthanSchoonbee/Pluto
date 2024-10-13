@@ -23,6 +23,7 @@ const colors = {
     activeNoButton: '#ff2645',
     genderMaleBlue: '#4072d2',
     genderFemalePink: '#c55fc9',
+    darkGrey: '#1a1a1a',
 
     // Settings pages colours
     userSettingsWhite: '#fff',       // White background in user settings
