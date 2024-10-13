@@ -33,8 +33,8 @@ export default StyleSheet.create({
     },
     //Styling for the active tab
     activeTab: {
-        borderBottomWidth: 4, //This will allow the bottom of the active tab to be highlighted
-        borderBottomColor: colors.primary, //Setting the colour of the bottom of the active tab to the primary colour defined in colors.js
+        borderBottomWidth: 5, //This will allow the bottom of the active tab to be highlighted
+        borderBottomColor:"#EDE3BB" , //Setting the colour of the bottom of the active tab
     },
     //Styling for the tab text
     tabText: {
