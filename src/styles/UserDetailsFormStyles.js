@@ -87,7 +87,7 @@ export default StyleSheet.create({
     },
     notificationButtonText: {
         color: colors.white,
-        fontSize: 16,
+        fontSize: 30,
         fontWeight: "bold",
         textTransform: "uppercase",
     },
