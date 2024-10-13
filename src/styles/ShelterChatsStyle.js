@@ -11,7 +11,6 @@ export default StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         padding: 16,
-        backgroundColor: colors.surface,
     },
     headerTitle: {
         fontSize: 18,

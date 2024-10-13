@@ -11,7 +11,6 @@ export default StyleSheet.create({
         justifyContent: "space-between", //space between component elements
         alignItems: "center",
         padding: 16,
-        backgroundColor: colors.surface,
     },
     headerContent: {
         flexDirection: "row",
@@ -80,7 +79,7 @@ export default StyleSheet.create({
         color: colors.textSecondary,
     },
     notificationButton: {
-        backgroundColor: "gold",
+        backgroundColor: "#EDE3BB",
         padding: 15,
         borderRadius: 10,
         alignItems: "center",
