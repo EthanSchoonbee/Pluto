@@ -9,7 +9,7 @@ import {
     ScrollView,
     Platform,
 } from "react-native";
-import Header from "../components/Header";
+import PetPageHeader from "../components/PetPageHeader";
 import Navbar from "../components/Navbar";
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
 import styles from "../styles/PetPageStyles";
@@ -102,7 +102,7 @@ const PetList = ({ navigation }) => {
     //The entire pet Page component frontend elements
     return (
         <SafeAreaWrapper>
-            <Header />
+            <PetPageHeader />
             {/* in a scroll view so the content can scroll up and down */}
             <ScrollView
                 contentContainerStyle={styles.scrollContainer}
