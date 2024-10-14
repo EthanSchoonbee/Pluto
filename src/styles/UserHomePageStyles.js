@@ -13,22 +13,7 @@ const styles = StyleSheet.create({
             width: '100%',
             justifyContent: 'flex-start',
         },
-            floatingImageLeft: {
-                position: 'absolute',
-                top: '-15%',
-                left: '30%',
-                width: 400,
-                height: 400,
-                zIndex: 10,
-            },
-            floatingImageRight: {
-                position: 'absolute',
-                top: '-15%',
-                right: '32%',
-                width: 400,
-                height: 400,
-                zIndex: 10,
-            },
+
             card: {
                 height: '80%',
                 borderRadius: 10,
@@ -37,57 +22,117 @@ const styles = StyleSheet.create({
                 backgroundColor: '#ffffff',
                 marginTop: 10,
                 position: 'absolute',
-                top: 0,
             },
+                leftTouchableArea: {
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: '20%',
+                    width: '50%',
+                    zIndex: 100,
+                    //backgroundColor: 'rgba(255, 0, 0, 0.2)',
+                    borderWidth: 0,
+                    borderColor: 'red',
+                },
+                rightTouchableArea: {
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    bottom: '20%',
+                    width: '50%',
+                    zIndex: 100,
+                    //backgroundColor: 'rgba(0, 0, 255, 0.2)',
+                    borderWidth: 0,
+                    borderColor: 'red',
+                },
+                floatingImageLeft: {
+                    position: 'absolute',
+                    top: '-15%',
+                    left: '30%',
+                    width: '100%',
+                    height: '50%',
+                    zIndex: 1,
+                },
+                floatingImageRight: {
+                    position: 'absolute',
+                    top: '-15%',
+                    right: '32%',
+                    width: '100%',
+                    height: '50%',
+                    zIndex: 1,
+                },
                 image: {
                     height: '100%',
                     width: '100%',
                     borderRadius: 10,
                     resizeMode: 'cover',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: colors.darkGrey,
+                },
+                gradient: {
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: '25%',
+                    zIndex: 1,
                 },
                 cardInfo: {
                     borderBottomLeftRadius: 10,
                     borderBottomRightRadius: 10,
                     position: 'absolute',
-                    bottom: 90,
+                    bottom: '12%',
                     width: '100%',
                     padding: 15,
-                    zIndex: 2
+                    zIndex: 2,
+                    flexDirection: 'row',
+                    alignItems: 'center',
                 },
-                    nameAgeContainer: {
-                        flexDirection: 'row',
-                        alignItems: 'baseline',
+                    leftContainer: {
+                        flex: 1,
+                        justifyContent: 'center',
                     },
-                        name: {
-                            fontSize: 30,
-                            color: '#1a1a18',
-                            fontWeight: 'bold',
+                        nameAgeContainer: {
+                            flexDirection: 'row',
+                            alignItems: 'baseline',
                         },
-                        age: {
-                            fontSize: 20,
-                            color: '#2f2f2e',
+                            name: {
+                                fontSize: 30,
+                                color: '#1a1a18',
+                                fontWeight: 'bold',
+                            },
+                            age: {
+                                fontSize: 20,
+                                color: '#2f2f2e',
+                            },
+                        genderBreedContainer: {
+                            flexDirection: 'row',
+                            alignItems: 'center',
                         },
-                    genderBreedContainer: {
-                        flexDirection: 'row',
-                        alignItems: 'center',
+                            gender: {
+                                fontSize: 18,
+                                marginRight: 7
+                            },
+                            breed: {
+                                fontSize: 18,
+                                color: '#2f2f2e',
+                            },
+                    rightContainer: {
+                        flex: 1,
+                        justifyContent: 'center',
                     },
-                        gender: {
-                            fontSize: 18,
-                            marginRight: 7
+                        infoIconContainer: {
+                            marginLeft: 'auto',
                         },
-                        breed: {
-                            fontSize: 18,
-                            color: '#2f2f2e',
-                        },
-                    gradient: {
-                        position: 'absolute',
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        height: '25%',
-                        zIndex: 1,
-                    },
+        infoContainer: {
+            padding: 10,
+            backgroundColor: colors.black, // Adjust as needed
+            borderRadius: 5,
+            marginTop: 10,
+        },
+        infoText: {
+            fontSize: 16,
+            color: colors.black,
+        },
         buttonsContainer: {
             position: 'absolute',
             bottom: 80,

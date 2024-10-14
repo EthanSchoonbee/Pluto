@@ -19,10 +19,10 @@ const Navbar = () => {
                 name="paw"
                 size={30}
                 color="black"
-                onPress={() => navigation.navigate('Login')}
+                onPress={() => navigation.navigate('AddAnimal')}
             />
             <Ionicons
-                name="chatbubble"
+                name="heart"
                 size={30}
                 color="black"
                 onPress={() => navigation.navigate('Register')}
@@ -31,7 +31,7 @@ const Navbar = () => {
                 name="person"
                 size={30}
                 color="black"
-                onPress={() => navigation.navigate('UserHome')}
+                onPress={() => navigation.navigate('UserSettings')}
             />
         </View>
     );
