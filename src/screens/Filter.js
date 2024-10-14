@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
