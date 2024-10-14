@@ -1,18 +1,11 @@
 import 'react-native-gesture-handler';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Login from './src/screens/Login';
-import Register from './src/screens/Register';
 import UserHomePage from './src/screens/UserHomePage';
 import { auth } from './src/services/firebaseConfig'; // Import auth from your firebaseConfig
 import { onAuthStateChanged } from "firebase/auth"; // Import onAuthStateChanged
 import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { SafeAreaView } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -42,7 +35,7 @@ const App = () => {
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     // User is signed in, navigate to UserHome
-                    setInitialRoute('UserHome');
+                    setInitialRoute('Login');
                 } else {
                     // No user is signed in, navigate to Login
                     setInitialRoute('Login');
