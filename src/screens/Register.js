@@ -8,8 +8,9 @@ import firebaseService from '../services/firesbaseService';
 const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
+    const [phoneNo, setPhoneNo] = useState('');
+    const [address, setAddress] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
 
     const togglePasswordVisibility = () => {
@@ -17,14 +18,9 @@ const RegisterScreen = ({ navigation }) => {
     };
 
     const handleRegister = async () => {
-        if (password !== confirmPassword) {
-            console.log('Passwords do not match!');
-            return;
-        }
-
         try {
             // Register the user and save to Firestore
-            const user = await firebaseService.registerUser(fullName, email, password);
+            const user = await firebaseService.registerUser(fullName, email, password, phoneNo, address);
             console.log('User registered:', user);
             navigation.navigate('UserHome'); // Navigate to UserHome upon success
         } catch (error) {
@@ -32,7 +28,6 @@ const RegisterScreen = ({ navigation }) => {
             // Optionally: show error message to user
         }
     };
-
 
 
     return (
@@ -84,6 +79,29 @@ const RegisterScreen = ({ navigation }) => {
                         />
                     </View>
 
+                    {/* Phone Number Input */}
+                    <View style={styles.inputWrapper}>
+                        <Icon name="phone" size={20} color="#aaa" style={styles.icon} />
+                        <TextInput
+                            style={styles.inputUnderline}
+                            placeholder={strings.phone_placeholder} // Add a new string in your strings file for this placeholder
+                            value={phoneNo}
+                            onChangeText={setPhoneNo}
+                            keyboardType="phone-pad"
+                        />
+                    </View>
+
+                    {/* Address Input */}
+                    <View style={styles.inputWrapper}>
+                        <Icon name="home" size={20} color="#aaa" style={styles.icon} />
+                        <TextInput
+                            style={styles.inputUnderline}
+                            placeholder={strings.address_placeholder} // Add this placeholder string in your strings file
+                            value={address}
+                            onChangeText={setAddress}
+                        />
+                    </View>
+
                     {/* Password Input */}
                     <View style={styles.inputWrapper}>
                         <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
@@ -99,20 +117,6 @@ const RegisterScreen = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {/* Confirm Password Input */}
-                    <View style={styles.inputWrapper}>
-                        <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
-                        <TextInput
-                            style={styles.inputUnderline}
-                            placeholder={strings.confirm_password_placeholder}
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            secureTextEntry={secureTextEntry}
-                        />
-                        <TouchableOpacity onPress={togglePasswordVisibility}>
-                            <Icon name={secureTextEntry ? 'visibility' : 'visibility-off'} size={20} color="#aaa" />
-                        </TouchableOpacity>
-                    </View>
                 </View>
 
                 <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>

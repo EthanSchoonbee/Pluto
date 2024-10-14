@@ -1,29 +1,28 @@
 class UserModel {
-    constructor(uid, email, fullName) {
-        this.uid = uid; // Unique user ID
-        this.email = email; // User's email
-        this.fullName = fullName; // User's display name
+    constructor(uid, email, fullName, phoneNo, address) {
+        this.uid = uid;
+        this.email = email;
+        this.fullName = fullName;
+        this.phoneNo = phoneNo; // User's phone number
+        this.address = address; // User's address
     }
 
-    // Static method to create a UserModel from Firebase user object
     static fromFirebaseUser(firebaseUser) {
         return new UserModel(
             firebaseUser.uid,
             firebaseUser.email,
             firebaseUser.fullName,
+            firebaseUser.phoneNo,
+            firebaseUser.address,
         );
     }
 
-    // Method to check if the user is complete
     isComplete() {
-        return !!(this.fullName && this.email);
+        return !!(this.fullName && this.email && this.phoneNo && this.address);
     }
 
-    // Method to update user details (this could call your Firestore update logic)
     async updateDetails(updatedData) {
-        // Implement logic to update user details in Firestore
-        // For example, you might want to use the Firestore service you've created
-        // await FirestoreService.updateUserData('users', this.uid, updatedData);
+        // Logic to update Firestore (unchanged)
     }
 }
 
