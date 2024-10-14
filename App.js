@@ -1,3 +1,14 @@
+import 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Login from './src/screens/Login';
+import Register from './src/screens/Register';
+import UserHomePage from './src/screens/UserHomePage';
+import { auth } from './src/services/firebaseConfig'; // Import auth from your firebaseConfig
+import { onAuthStateChanged } from "firebase/auth"; // Import onAuthStateChanged
 import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
@@ -23,6 +34,30 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 const Stack = createNativeStackNavigator();
 
 const App = () => {
+    const [isLoading, setIsLoading] = useState(true); // Manage loading state
+    const [initialRoute, setInitialRoute] = useState('Login'); // Default route
+
+    useEffect(() => {
+        const checkUserSession = () => {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is signed in, navigate to UserHome
+                    setInitialRoute('UserHome');
+                } else {
+                    // No user is signed in, navigate to Login
+                    setInitialRoute('Login');
+                }
+                setIsLoading(false); // Set loading to false after checking session
+            });
+        };
+
+        checkUserSession();
+    }, []);
+
+    if (isLoading) {
+        return null; // Or a loading spinner while checking auth state
+    }
+
     return (
         //Navigation container is wrapped in the SafeAreaProvider to ensure that the content is displayed within the safe area of the device
         <SafeAreaProvider>
