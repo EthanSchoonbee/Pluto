@@ -23,6 +23,7 @@ const RegisterScreen = ({ navigation }) => {
         }
 
         try {
+            // Register the user and save to Firestore
             const user = await firebaseService.registerUser(fullName, email, password);
             console.log('User registered:', user);
             navigation.navigate('UserHome'); // Navigate to UserHome upon success
@@ -31,6 +32,7 @@ const RegisterScreen = ({ navigation }) => {
             // Optionally: show error message to user
         }
     };
+
 
 
     return (

@@ -8,11 +8,26 @@ class FirebaseService {
     // Register a new user account
     async registerUser(fullName, email, password) {
         try {
+            // Create user in Firebase Auth
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            const token = await user.getIdToken(); // Get token
-            userSession.setUser(user, token); // Store in singleton
-            console.log('User registered and session initialized:', user);
+
+            // Prepare user data to save to Firestore
+            const userData = {
+                uid: user.uid,
+                email: user.email,
+                fullName: fullName,
+                createdAt: new Date().toISOString(),
+            };
+
+            // Save user data to Firestore "users" collection
+            await this.addUserData('users', userData);
+
+            // Get token and initialize session
+            const token = await user.getIdToken();
+            userSession.setUser(user, token);
+
+            console.log('User registered and saved to Firestore:', user);
             return user;
         } catch (error) {
             console.log('Error registering user:', error);
