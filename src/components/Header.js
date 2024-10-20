@@ -4,18 +4,23 @@ import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/HeaderStyles';
 import { useNavigation } from '@react-navigation/native';
 
-const Header = () => {
+const Header = ({ rightComponent }) => {
     const navigation = useNavigation();
 
     return (
         <View style={styles.header}>
             <Text style={styles.headerText}>PLUTO</Text>
-            <Ionicons
-                name="filter"
-                size={30}
-                color="black"
-                onPress={() => navigation.navigate('Filter')}
-            />
+            {/* Render the custom right component if provided, otherwise render a default filter icon */}
+            {rightComponent ? (
+                rightComponent()
+            ) : (
+                <Ionicons
+                    name="filter"
+                    size={30}
+                    color="black"
+                    onPress={() => navigation.navigate('Filter')}
+                />
+            )}
         </View>
     );
 };
