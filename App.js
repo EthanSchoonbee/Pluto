@@ -1,5 +1,4 @@
 import 'react-native-gesture-handler';
-import UserHomePage from './src/screens/UserHomePage';
 import { auth } from './src/services/firebaseConfig'; // Import auth from your firebaseConfig
 import { onAuthStateChanged } from "firebase/auth"; // Import onAuthStateChanged
 import "react-native-gesture-handler";
@@ -22,6 +21,7 @@ import ShelterSettings from "./src/screens/ShelterSettings";
 
 //an import for the SafeAreaProvider from react-native-safe-area-context
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import ShelterHomeScreen from "./src/screens/ShelterHomePage";
 
 
 const Stack = createNativeStackNavigator();
@@ -56,17 +56,18 @@ const App = () => {
         <SafeAreaProvider>
             <GestureHandlerRootView style={styles.container}>
                 <NavigationContainer>
-                    <Stack.Navigator initialRouteName="PetPage" screenOptions={{ headerShown: false }}>
+                    <Stack.Navigator initialRouteName="ShelterHome" screenOptions={{ headerShown: false }}>
                         <Stack.Screen name="Login" component={Login} />
                         <Stack.Screen name="Register" component={Register} />
+                        <Stack.Screen name="ShelterHome" component={ShelterHomeScreen}/>
+                        <Stack.Screen name="UserHome" component={UserHomeScreen} />
                         <Stack.Screen name="Filter" component={Filter}/>
                         <Stack.Screen name="AddAnimal" component={AddAnimal}/>
-                        <Stack.Screen name="UserHome" component={UserHomeScreen} />
                         <Stack.Screen name="PetPage" component={PetPage} options={{ title: 'Pets' }} />
                         <Stack.Screen name="ShelterChats" component={ShelterChats} options={{ title: 'Chat' }} />
                         <Stack.Screen name="UserDetailForm" component={UserDetailForm} options={{ title: 'Chat Detail' }} />
                         <Stack.Screen name="UserSettings" component={UserSettings} />
-                        <Stack.Screen name={"ShelterSettings"} component={ShelterSettings}/>
+                        <Stack.Screen name="ShelterSettings" component={ShelterSettings}/>
                     </Stack.Navigator>
                 </NavigationContainer>
             </GestureHandlerRootView>

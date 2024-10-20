@@ -1,8 +1,9 @@
 import { StyleSheet } from 'react-native';
+import colors from "./colors";
 
 const styles = StyleSheet.create({
     navbar: {
-        height: 60,
+        height: '7%',
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
@@ -11,7 +12,7 @@ const styles = StyleSheet.create({
         bottom: 25,
         left: 0,
         right: 0,
-        zIndex: 1
+        zIndex: 1,
     },
 });
 

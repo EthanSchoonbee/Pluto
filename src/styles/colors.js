@@ -21,7 +21,7 @@ const colors = {
     inactiveNoButton: '#ea9595',
     activeYesButton: '#4ea44e',
     activeNoButton: '#ff2645',
-    genderMaleBlue: '#4072d2',
+    genderMaleBlue: '#007AFF',
     genderFemalePink: '#c55fc9',
     darkGrey: '#1a1a1a',
 
@@ -31,7 +31,7 @@ const colors = {
     userSettingsDarkGrayText: '#333', // Dark gray text in user settings
     userSettingsMediumGrayText: '#555', // Medium gray text in user settings
     userSettingsLightGrayBorder: '#ddd', // Light gray border in user settings
-    userSettingsBlueBorder: '#007BFF', // Blue border in user settings
+    userSettingsBlueBorder: '#007AFF', // Blue border in user settings
     userSettingsRedBorder: '#d9534f', // Red border in user settings
 };
 
