@@ -11,7 +11,6 @@ export default StyleSheet.create({
         backgroundColor: '#fff',
     },
         scrollView: {
-            flex: 1,
             maxHeight: '90%',
         },
             card: {
