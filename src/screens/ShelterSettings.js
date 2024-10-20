@@ -139,11 +139,9 @@ const ShelterSettingsScreen = () => {
                         <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.shelter_logout_button}</Text>
                     </TouchableOpacity>
                 </View>
-
-                <View style={{ height: 50 }}><Text></Text></View>
-                {/* Navbar at the bottom */}
-                <Navbar />
             </ScrollView>
+            {/* Navbar at the bottom */}
+            <Navbar />
         </View>
     );
 };

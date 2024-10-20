@@ -31,106 +31,105 @@ const UserSettingsScreen = () => {
 
     return (
         <View style={{ flex: 1 }}>
-            <ScrollView style={UserSettingsStyles.container} contentContainerStyle={{ paddingBottom: 100 }}>
-                {/* User Name and Location */}
-                <View style={UserSettingsStyles.headerSection}>
-                    <Text style={UserSettingsStyles.headerText}>{strings.user_settings.user_name}</Text>
-                    <Text style={UserSettingsStyles.headerText}>{strings.user_settings.location}</Text>
-                </View>
+            <View style={UserSettingsStyles.scrollView}>
+                <ScrollView contentContainerStyle={{}}>
+                    {/* User Name and Location */}
+                    <View style={UserSettingsStyles.headerSection}>
+                        <Text style={UserSettingsStyles.headerText}>{strings.user_settings.user_name}</Text>
+                        <Text style={UserSettingsStyles.headerText}>{strings.user_settings.location}</Text>
+                    </View>
 
-                {/* Your Details Section */}
-                <Text style={UserSettingsStyles.detailsTitle}>{strings.user_settings.your_details_title}</Text>
-                <View style={UserSettingsStyles.detailsContainer}>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.name_label}</Text>
-                        <TextInput
-                            style={UserSettingsStyles.detailsValue}
-                            value={name}
-                            onChangeText={setName}
-                            placeholder={strings.user_settings.sample_text}
-                        />
+                    {/* Your Details Section */}
+                    <Text style={UserSettingsStyles.detailsTitle}>{strings.user_settings.your_details_title}</Text>
+                    <View style={UserSettingsStyles.detailsContainer}>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.name_label}</Text>
+                            <TextInput
+                                style={UserSettingsStyles.detailsValue}
+                                value={name}
+                                onChangeText={setName}
+                                placeholder={strings.user_settings.sample_text}
+                            />
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.surname_label}</Text>
+                            <TextInput
+                                style={UserSettingsStyles.detailsValue}
+                                value={surname}
+                                onChangeText={setSurname}
+                                placeholder={strings.user_settings.sample_text}
+                            />
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.email_label}</Text>
+                            <TextInput
+                                style={UserSettingsStyles.detailsValue}
+                                value={email}
+                                onChangeText={setEmail}
+                                placeholder="sample@example.com"
+                            />
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.password_label}</Text>
+                            <TextInput
+                                style={UserSettingsStyles.detailsValue}
+                                value={password}
+                                onChangeText={setPassword}
+                                placeholder={strings.user_settings.password_placeholder}
+                                secureTextEntry={true}
+                            />
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.confirm_password_label}</Text>
+                            <TextInput
+                                style={UserSettingsStyles.detailsValue}
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                placeholder={strings.user_settings.confirm_password_placeholder}
+                                secureTextEntry={true}
+                            />
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
+                            <TextInput
+                                style={UserSettingsStyles.detailsValue}
+                                value={location}
+                                onChangeText={setLocation}
+                                placeholder={strings.user_settings.sample_text}
+                            />
+                        </View>
                     </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.surname_label}</Text>
-                        <TextInput
-                            style={UserSettingsStyles.detailsValue}
-                            value={surname}
-                            onChangeText={setSurname}
-                            placeholder={strings.user_settings.sample_text}
-                        />
-                    </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.email_label}</Text>
-                        <TextInput
-                            style={UserSettingsStyles.detailsValue}
-                            value={email}
-                            onChangeText={setEmail}
-                            placeholder="sample@example.com"
-                        />
-                    </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.password_label}</Text>
-                        <TextInput
-                            style={UserSettingsStyles.detailsValue}
-                            value={password}
-                            onChangeText={setPassword}
-                            placeholder={strings.user_settings.password_placeholder}
-                            secureTextEntry={true}
-                        />
-                    </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.confirm_password_label}</Text>
-                        <TextInput
-                            style={UserSettingsStyles.detailsValue}
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            placeholder={strings.user_settings.confirm_password_placeholder}
-                            secureTextEntry={true}
-                        />
-                    </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
-                        <TextInput
-                            style={UserSettingsStyles.detailsValue}
-                            value={location}
-                            onChangeText={setLocation}
-                            placeholder={strings.user_settings.sample_text}
-                        />
-                    </View>
-                </View>
 
-                {/* Privacy Section */}
-                <Text style={UserSettingsStyles.privacyTitle}>{strings.user_settings.privacy_title}</Text>
-                <View style={UserSettingsStyles.privacyContainer}>
-                    <View style={UserSettingsStyles.notificationRow}>
-                        <Text style={UserSettingsStyles.notificationText}>{strings.user_settings.push_notifications}</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={isPushNotificationsEnabled ? "#f5dd4b" : "#f4f3f4"}
-                            onValueChange={togglePushNotifications}
-                            value={isPushNotificationsEnabled}
-                        />
+                    {/* Privacy Section */}
+                    <Text style={UserSettingsStyles.privacyTitle}>{strings.user_settings.privacy_title}</Text>
+                    <View style={UserSettingsStyles.privacyContainer}>
+                        <View style={UserSettingsStyles.notificationRow}>
+                            <Text style={UserSettingsStyles.notificationText}>{strings.user_settings.push_notifications}</Text>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={isPushNotificationsEnabled ? "#f5dd4b" : "#f4f3f4"}
+                                onValueChange={togglePushNotifications}
+                                value={isPushNotificationsEnabled}
+                            />
+                        </View>
                     </View>
-                </View>
 
-                {/* Buttons Section */}
-                <View style={UserSettingsStyles.buttonContainer}>
-                    {/* Update Button */}
-                    <TouchableOpacity style={UserSettingsStyles.customButton} onPress={handleUpdate}>
-                        <Text style={UserSettingsStyles.customButtonText}>{strings.user_settings.update_button}</Text>
-                    </TouchableOpacity>
+                    {/* Buttons Section */}
+                    <View style={UserSettingsStyles.buttonContainer}>
+                        {/* Update Button */}
+                        <TouchableOpacity style={UserSettingsStyles.customButton} onPress={handleUpdate}>
+                            <Text style={UserSettingsStyles.customButtonText}>{strings.user_settings.update_button}</Text>
+                        </TouchableOpacity>
 
-                    {/* Logout Button */}
-                    <TouchableOpacity style={[UserSettingsStyles.customButton, UserSettingsStyles.logoutButton]} onPress={handleLogout}>
-                        <Text style={[UserSettingsStyles.customButtonText, UserSettingsStyles.logoutButtonText]}>{strings.user_settings.logout_button}</Text>
-                    </TouchableOpacity>
-                </View>
+                        {/* Logout Button */}
+                        <TouchableOpacity style={[UserSettingsStyles.customButton, UserSettingsStyles.logoutButton]} onPress={handleLogout}>
+                            <Text style={[UserSettingsStyles.customButtonText, UserSettingsStyles.logoutButtonText]}>{strings.user_settings.logout_button}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
+            </View>
 
-                <View style={{ height: 50 }}><Text></Text></View>
-                {/* Navbar at the bottom */}
-
-            </ScrollView>
-            <Navbar />
+            <Navbar style={{ flex: 1 }}/>
         </View>
     );
 };
