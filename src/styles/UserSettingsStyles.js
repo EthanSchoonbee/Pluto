@@ -12,12 +12,12 @@ const UserSettingsStyles = StyleSheet.create({
         marginBottom: 20,
         alignItems: 'center',
     },
-    headerText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: colors.userSettingsDarkGrayText, // Dark gray text
-        marginBottom: 10,
-    },
+        headerText: {
+            fontSize: 18,
+            fontWeight: 'bold',
+            color: colors.userSettingsDarkGrayText, // Dark gray text
+            marginBottom: 10,
+        },
     detailsContainer: {
         padding: 20,
         backgroundColor: colors.userSettingsLightGray, // Light gray background

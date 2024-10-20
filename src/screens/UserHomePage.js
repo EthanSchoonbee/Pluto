@@ -36,7 +36,8 @@ const UserHomeScreen = () => {
     const [cardIndex, setCardIndex] = useState(0); //  the card index
     const [imageIndexes, setImageIndexes] = useState(animals.map(() => 0));
     const [forceRerender, setForceRerender] = useState(1);
-    const [showInfo, setShowInfo] = useState(Array(animals.length).fill(false));
+    const [showOverlay, setShowOverlay] = useState(false);
+    const [selectedAnimal, setSelectedAnimal] = useState(null);
     // like and dislike coloring:
     const [noButtonColor, setNoButtonColor] = useState(colors.white);
     const [yesButtonColor, setYesButtonColor] = useState(colors.white);
@@ -46,14 +47,20 @@ const UserHomeScreen = () => {
     // calculate and keep track of floating image opacity
     const likeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
     const dislikeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
+    const upArrowOpacity = useRef(new Animated.Value(1)).current;
 
     // reset current card floating image opacities on load
     useEffect(() => {
         resetOpacity(cardIndex);
-        console.log('Image index updated:', imageIndexes[cardIndex]);
     }, [imageIndexes[cardIndex],cardIndex]);
 
     const animateSwipe = (direction) => {
+        Animated.timing(upArrowOpacity, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+        }).start();
+
         if (direction === 'left') {
             Animated.parallel([
                 Animated.timing(dislikeOpacity[cardIndex], {
@@ -127,6 +134,12 @@ const UserHomeScreen = () => {
             setNoButtonIconColor(colors.inactiveNoButton);
             setYesButtonIconColor(colors.white);
         }
+
+        Animated.timing(upArrowOpacity, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+        }).start();
     };
 
     const SwipedAborted = () => {
@@ -149,12 +162,6 @@ const UserHomeScreen = () => {
             return newIndexes;
         });
 
-        setShowInfo((prev) => {
-            const newShowInfo = [...prev];
-            newShowInfo[cardIndex + 1] = false; // or reset based on your needs
-            return newShowInfo;
-        });
-
         setNoButtonColor(colors.white);
         setNoButtonIconColor(colors.inactiveNoButton);
 
@@ -171,12 +178,6 @@ const UserHomeScreen = () => {
             const newIndexes = [...prevIndexes];
             newIndexes[cardIndex] = 0;
             return newIndexes;
-        });
-
-        setShowInfo((prev) => {
-            const newShowInfo = [...prev];
-            newShowInfo[cardIndex + 1] = false; // or reset based on your needs
-            return newShowInfo;
         });
 
         setYesButtonColor(colors.white);
@@ -201,6 +202,12 @@ const UserHomeScreen = () => {
                 })
             ]).start();
         }
+
+        Animated.timing(upArrowOpacity, {
+            toValue: 1,
+            duration: 0,
+            useNativeDriver: true,
+        }).start();
     };
 
     const renderGenderIcon = (gender) => {
@@ -231,14 +238,6 @@ const UserHomeScreen = () => {
         });
 
         setForceRerender(forceRerender + 1);
-    };
-
-    const toggleInfo = (index) => {
-        setShowInfo((prev) => {
-            const newShowInfo = [...prev];
-            newShowInfo[index] = !newShowInfo[index]; // Toggle info visibility for the current card
-            return newShowInfo;
-        });
     };
 
     const renderCard = (card, cardIndex) => (
@@ -275,6 +274,11 @@ const UserHomeScreen = () => {
                     'rgba(255, 255, 255, 1)']}
                 style={styles.gradient}
             />
+
+            <View style={styles.infoArrow}>
+
+            </View>
+
             <View style={styles.cardInfo}>
                 <View style={styles.leftContainer}>
                     <View style={styles.nameAgeContainer}>
@@ -287,27 +291,27 @@ const UserHomeScreen = () => {
                         <Text style={styles.breed}>{card.breed}</Text>
                     </View>
                 </View>
-
-                <View style={styles.rightContainer}>
-                    <View style={styles.infoIconContainer}>
-                        <TouchableOpacity
-                            onPress={ () => {
-                                console.log('info button pressed');
-                                toggleInfo(cardIndex);
-                            }}
-                        >
-                            <Ionicons name="arrow-up" size={30} color={colors.black} />
-                        </TouchableOpacity>
-                        {showInfo[cardIndex] && (
-                            <View style={styles.infoContainer}>
-                                <Text style={styles.infoText}>This is additional information about the animal.</Text>
-                            </View>
-                        )}
-                    </View>
-                </View>
             </View>
         </View>
-);
+    );
+
+
+    const AnimalInfoOverlay = ({ animal, onClose }) => (
+        <View style={styles.overlayContainer}>
+            <View style={styles.overlayContent}>
+                <Text style={styles.overlayName}>{animal.name}</Text>
+                <Text style={styles.overlayDetails}>Age: {animal.age} years</Text>
+                <Text style={styles.overlayDetails}>Breed: {animal.breed}</Text>
+                <Text style={styles.overlayDetails}>Age: {animal.age} years</Text>
+                <Text style={styles.overlayDetails}>Breed: {animal.breed}</Text>
+                <Text style={styles.overlayDetails}>Age: {animal.age} years</Text>
+                <Text style={styles.overlayDetails}>Breed: {animal.breed}</Text>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                    <Text style={styles.closeButtonText}>Close</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
 
     return (
         <SafeAreaView style={styles.container} edges={['left', 'right']}>
@@ -331,6 +335,15 @@ const UserHomeScreen = () => {
                         infinite={ true }
                         cardVerticalMargin={ 0 }>
                     </Swiper>
+                    <Animated.View style={[styles.arrowButton, { opacity: upArrowOpacity }]}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setSelectedAnimal(animals[cardIndex]);
+                                setShowOverlay(true);
+                            }}>
+                            <Ionicons name="arrow-up" size={30} color={colors.black} />
+                        </TouchableOpacity>
+                    </Animated.View>
                 </View>
             <Navbar />
             <View style={styles.buttonsContainer}>
@@ -363,6 +376,14 @@ const UserHomeScreen = () => {
                     <Ionicons name="heart" size={45} color={yesButtonIconColor} />
                 </TouchableOpacity>
             </View>
+
+            {/* Render the overlay if it should be shown */}
+            {showOverlay && (
+                <AnimalInfoOverlay
+                    animal={selectedAnimal}
+                    onClose={() => setShowOverlay(false)}
+                />
+            )}
         </SafeAreaView>
     );
 };
