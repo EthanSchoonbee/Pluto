@@ -128,8 +128,9 @@ const UserSettingsScreen = () => {
 
                 <View style={{ height: 50 }}><Text></Text></View>
                 {/* Navbar at the bottom */}
-                <Navbar />
+
             </ScrollView>
+            <Navbar />
         </View>
     );
 };

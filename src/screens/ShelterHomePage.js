@@ -85,11 +85,11 @@ const ShelterHomeScreen = () => {
     return (
         <SafeAreaView style={styles.container} edges={['left', 'right']}>
             <Header rightComponent={() => customRightComponent(navigation)} />
-            <ScrollView style={styles.scrollView}>
-                {animals.map((animal) => (
-                    <AnimalCard key={animal.id} {...animal} />
-                ))}
-            </ScrollView>
+                <ScrollView style={styles.scrollView}>
+                    {animals.map((animal) => (
+                        <AnimalCard key={animal.id} {...animal} />
+                    ))}
+                </ScrollView>
             <Navbar />
         </SafeAreaView>
     );

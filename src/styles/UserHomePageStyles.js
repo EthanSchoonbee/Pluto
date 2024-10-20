@@ -123,51 +123,93 @@ const styles = StyleSheet.create({
                         infoIconContainer: {
                             marginLeft: 'auto',
                         },
-        infoContainer: {
-            padding: 10,
-            backgroundColor: colors.black, // Adjust as needed
-            borderRadius: 5,
-            marginTop: 10,
-        },
-        infoText: {
-            fontSize: 16,
-            color: colors.black,
-        },
-        buttonsContainer: {
+                buttonsContainer: {
+                    position: 'absolute',
+                    bottom: 80,
+                    left: 0,
+                    right: 0,
+                    flexDirection: 'row',
+                    justifyContent: 'space-evenly',
+                    paddingVertical: 20,
+                },
+                    button: {
+                        width: 70,
+                        height: 70,
+                        borderRadius: 35,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        // shadow for IOS:
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.3,
+                        shadowRadius: 5,
+                        // shadow for Android
+                        elevation: 5,
+                        zIndex: 2
+                    },
+                        noButton: {
+                            backgroundColor: colors.white,
+
+                        },
+                        yesButton: {
+                            backgroundColor: colors.white,
+                        },
+                        pressed: {
+                            opacity: 0.5,
+
+                        },
+                    arrowButton: {
+                        position: 'absolute',
+                        bottom: 200, // Adjust based on your layout
+                        right: 20, // Adjust based on your layout
+                        backgroundColor: 'transparent', // Optional: Background color for visibility
+                        borderRadius: 15, // Optional: Rounded corners
+                        padding: 10, // Optional: Padding around the icon
+                        elevation: 5, // Optional: Shadow effect
+                    },
+        overlayContainer: {
             position: 'absolute',
-            bottom: 80,
+            top: 0,
             left: 0,
             right: 0,
-            flexDirection: 'row',
-            justifyContent: 'space-evenly',
-            paddingVertical: 20,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.7)', // Semi-transparent background
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000, // Ensures it is above other content
         },
-            button: {
-                width: 70,
-                height: 70,
-                borderRadius: 35,
-                justifyContent: 'center',
+            overlayContent: {
+                width: '90%',
+                height: '50%',
+                backgroundColor: 'white',
+                borderRadius: 10,
+                padding: 20,
                 alignItems: 'center',
-                // shadow for IOS:
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.3,
-                shadowRadius: 5,
-                // shadow for Android
-                elevation: 5,
-                zIndex: 2
             },
-                noButton: {
-                    backgroundColor: colors.white,
-
+                overlayName: {
+                    fontSize: 24,
+                    fontWeight: 'bold',
+                    marginBottom: 25
                 },
-                yesButton: {
-                    backgroundColor: colors.white,
+                overlayDetails: {
+                    flex: 1,
+                    fontSize: 18,
+                    marginVertical: 5,
+                    textAlignVertical: 'center',
                 },
-                pressed: {
-                    opacity: 0.5,
-
-                }
+                closeButton: {
+                    marginTop: 20,
+                    paddingHorizontal: 20,
+                    paddingVertical: 10,
+                    backgroundColor: colors.darkGrey, // Use your primary color
+                    color: colors.darkGrey,
+                    alignSelf: 'center',
+                    borderRadius: 5,
+                },
+                closeButtonText: {
+                    color: 'white',
+                    fontSize: 16,
+                },
 });
 
 export default styles;
