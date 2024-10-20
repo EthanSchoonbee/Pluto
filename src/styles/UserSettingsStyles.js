@@ -7,6 +7,14 @@ const UserSettingsStyles = StyleSheet.create({
         backgroundColor: colors.userSettingsWhite,   // White background
         paddingHorizontal: 20,
         paddingTop: 30,
+        color: colors.white,
+    },
+    scrollView: {
+        backgroundColor: colors.userSettingsWhite, // Match background color
+        paddingRight: 12,
+        paddingLeft: 12,
+        paddingBottom: 50,
+        paddingTop: 40,
     },
     headerSection: {
         marginBottom: 20,
