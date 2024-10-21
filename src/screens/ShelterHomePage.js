@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import colors from "../styles/colors";
 import { useNavigation } from '@react-navigation/native';
+import { Platform } from 'react-native';
 
 // test animals
 const animals = [
@@ -83,7 +84,7 @@ const ShelterHomeScreen = () => {
     const navigation = useNavigation();
 
     return (
-        <SafeAreaView style={styles.container} edges={['left', 'right']}>
+        <SafeAreaView style={[styles.container, {paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight: 0}]} edges={['left', 'right']}>
             <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
             <Header rightComponent={() => customRightComponent(navigation)} />
                 <ScrollView style={styles.scrollView}>
