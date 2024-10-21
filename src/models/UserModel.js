@@ -1,35 +1,14 @@
 class UserModel {
 
-    /*
-    {
-        "firstName": "John",
-        "lastName": "Doe",
-        "email": "johndoe@example.com",
-        "phoneNumber": "+123456789",
-        "location": "Cape Town",
-        "likedAnimals": ["animalId1", "animalId2"],
-        "createdAt": "2024-10-01T12:00:00Z",
-        "updatedAt": "2024-10-10T12:00:00Z"
-    }
+        //likedAnimals: [], // Array of liked animal IDs
 
-    export const User = {
-        firstName: "",
-        lastName: "",
-        email: "",
-        phoneNumber: "",
-        location: "", // Location for filtering animals
-        likedAnimals: [], // Array of liked animal IDs
-        createdAt: null,
-        updatedAt: null,
-    };
-     */
-
-    constructor(uid, email, fullName, phoneNo, address) {
+    constructor(uid, email, fullName, phoneNo, location, role) {
         this.uid = uid;
         this.email = email;
         this.fullName = fullName;
-        this.phoneNo = phoneNo; // User's phone number
-        this.address = address; // User's address
+        this.phoneNo = phoneNo;
+        this.location = location;
+        this.role = role;
     }
 
     static fromFirebaseUser(firebaseUser) {
@@ -38,16 +17,17 @@ class UserModel {
             firebaseUser.email,
             firebaseUser.fullName,
             firebaseUser.phoneNo,
-            firebaseUser.address,
+            firebaseUser.location,
+            firebaseUser.role
         );
     }
 
     isComplete() {
-        return !!(this.fullName && this.email && this.phoneNo && this.address);
+        return !!(this.fullName && this.email && this.phoneNo && this.location);
     }
 
     async updateDetails(updatedData) {
-        // Logic to update Firestore (unchanged)
+        // Logic to update Firestore
     }
 }
 

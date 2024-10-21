@@ -9,7 +9,7 @@ const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNo, setPhoneNo] = useState('');
-    const [address, setAddress] = useState('');
+    const [location, setLocation] = useState('');
     const [password, setPassword] = useState('');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
 
@@ -20,7 +20,7 @@ const RegisterScreen = ({ navigation }) => {
     const handleRegister = async () => {
         try {
             // Register the user and save to Firestore
-            const user = await firebaseService.registerUser(fullName, email, password, phoneNo, address);
+            const user = await firebaseService.registerUser(fullName, email, password, phoneNo, location);
             console.log('User registered:', user);
             navigation.navigate('UserHome'); // Navigate to UserHome upon success
         } catch (error) {
@@ -91,14 +91,14 @@ const RegisterScreen = ({ navigation }) => {
                         />
                     </View>
 
-                    {/* Address Input */}
+                    {/* Location Input */}
                     <View style={styles.inputWrapper}>
                         <Icon name="home" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder={strings.address_placeholder} // Add this placeholder string in your strings file
-                            value={address}
-                            onChangeText={setAddress}
+                            placeholder={strings.location_placeholder} // Add this placeholder string in your strings file
+                            value={location}
+                            onChangeText={setLocation}
                         />
                     </View>
 
