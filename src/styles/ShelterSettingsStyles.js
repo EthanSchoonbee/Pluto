@@ -25,13 +25,14 @@ const ShelterSettingsStyles = StyleSheet.create({
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 10,
-        marginBottom: 20, // Separate details from the privacy section
+        marginBottom: 5, // Separate details from the privacy section
     },
     detailsTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
-        marginBottom: 15, // Spacing between title and the content
+        paddingLeft: 5,
+
     },
     detailsRow: {
         flexDirection: 'row',
@@ -52,7 +53,7 @@ const ShelterSettingsStyles = StyleSheet.create({
     },
     // Privacy Section Styles
     privacyContainer: {
-        padding: 20,
+        padding: 10,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 20, // Adds spacing above the privacy section
@@ -61,7 +62,7 @@ const ShelterSettingsStyles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
-        marginBottom: 15, // Spacing between title and content
+        paddingLeft: 5,
     },
     notificationRow: {
         flexDirection: 'row',
@@ -106,13 +107,15 @@ const ShelterSettingsStyles = StyleSheet.create({
         flex: 1, // Take up full available space
         justifyContent: 'center', // Vertically center the content
         alignItems: 'center', // Horizontally center the content
-        marginTop: 30, // Optional top margin for spacing
+
     },
     centerImage: {
-        width: 150, // Width of the image (can adjust as needed)
-        height: 150, // Height of the image (can adjust as needed)
-        borderRadius: 75, // Make it circular (optional)
+        width: 100,    // Set width to 150
+        height: 100,   // Set height to 150
+        borderRadius: 75, // Keep it circular (optional, remove if not needed)
+        resizeMode: "cover", // Ensure the image fills the container
     }
+
 });
 
 export default ShelterSettingsStyles;
