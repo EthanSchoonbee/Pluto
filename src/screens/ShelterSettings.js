@@ -178,12 +178,12 @@ const ShelterSettingsScreen = () => {
                 <View style={ShelterSettingsStyles.buttonContainer}>
                     {/* Update Button */}
                     <TouchableOpacity style={ShelterSettingsStyles.customButton} onPress={handleUpdate}>
-                        <Text style={ShelterSettingsStyles.customButtonText}>{strings.shelter_settings.update_button}</Text>
+                        <Text style={ShelterSettingsStyles.customButtonText}>{strings.shelter_settings.shelter_update_button}</Text>
                     </TouchableOpacity>
 
                     {/* Logout Button */}
                     <TouchableOpacity style={[ShelterSettingsStyles.customButton, ShelterSettingsStyles.logoutButton]} onPress={handleLogout}>
-                        <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.logout_button}</Text>
+                        <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.shelter_logout_button}</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
