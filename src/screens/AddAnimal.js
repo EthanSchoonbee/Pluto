@@ -14,6 +14,7 @@ import userSession from '../services/UserSession';
 import { useEffect } from "react";
 import {Animal} from "../models/AnimalModel";
 import firebaseService from "../services/firebaseService";
+import { db, auth } from "../services/firebaseConfig";
 
 const AddAnimal = ({ navigation }) => {
     const [isDog, setIsDog] = useState(true);
@@ -33,10 +34,6 @@ const AddAnimal = ({ navigation }) => {
     const catBreeds = ['Siamese', 'Persian', 'Maine Coon', 'Bengal'];
     const availableFurColors = ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
     const relevantBreeds = isDog ? dogBreeds : catBreeds;
-
-    const db = getFirestore(); // Initialize Firestore
-
-
 
     const handleImageUpload = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -72,11 +69,10 @@ const AddAnimal = ({ navigation }) => {
             return;
         }
 
-        const user = firebaseService.getCurrentUser();
-        if (user) {
-            console.log("Current User:", user);
-        } else {
-            console.log("No user is currently signed in.");
+        const user = auth.currentUser;
+        if (!user) {
+            console.log("You must be signed in.");
+            return;
         }
 
         try {
