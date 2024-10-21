@@ -3,7 +3,7 @@ import colors from "./colors";
 
 const styles = StyleSheet.create({
     navbar: {
-        height: 60,
+        height: 80,
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
@@ -13,7 +13,15 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         zIndex: 1,
-        paddingBottom: 10,
+
+        // Shadow for iOS
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+
+        // Shadow for Android
+        elevation: 5,
     },
 });
 

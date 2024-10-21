@@ -13,7 +13,7 @@ const Navbar = () => {
                 name="home"
                 size={30}
                 color="black"
-                onPress={() => navigation.navigate('ShelterHome')}
+                onPress={() => navigation.navigate('UserHome')}
             />
             <Ionicons
                 name="paw"

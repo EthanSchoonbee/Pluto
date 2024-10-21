@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, Image, SafeAreaView, ScrollView, TouchableOpacity} from 'react-native';
+import {View, Text, Image, SafeAreaView, ScrollView, TouchableOpacity, StatusBar} from 'react-native';
 import styles from '../styles/ShelterHomePageStyle';
 import {Ionicons} from "@expo/vector-icons";
 import Header from "../components/Header";
@@ -84,6 +84,7 @@ const ShelterHomeScreen = () => {
 
     return (
         <SafeAreaView style={styles.container} edges={['left', 'right']}>
+            <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
             <Header rightComponent={() => customRightComponent(navigation)} />
                 <ScrollView style={styles.scrollView}>
                     {animals.map((animal) => (
