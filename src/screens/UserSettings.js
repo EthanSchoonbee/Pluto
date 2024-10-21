@@ -34,7 +34,7 @@ const UserSettingsScreen = () => {
         checkDetailsInputs()
     };
 
-// Check if details inputs are valid
+    // Check if details inputs are valid
     const checkDetailsInputs = () => {
 
         // Start of checking for null inputs
@@ -71,7 +71,6 @@ const UserSettingsScreen = () => {
         }
 
         // Check Name, Surname and Location for digits
-
         if(SettingsInputValidations.containsNumber(name)){
             Alert.alert(strings.user_settings.validation_error,strings.user_settings.name_number)
             return false;
@@ -84,6 +83,11 @@ const UserSettingsScreen = () => {
 
         if(SettingsInputValidations.containsNumber(location)){
             Alert.alert(strings.user_settings.validation_error,strings.user_settings.location_number)
+            return false;
+        }
+
+        if(!SettingsInputValidations.areStringsEqual(password, confirmPassword)){
+            Alert.alert(strings.user_settings.validation_error,strings.user_settings.password_match)
             return false;
         }
 

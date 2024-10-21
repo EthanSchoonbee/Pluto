@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Switch, TouchableOpacity, TextInput, Image } from 'react-native';
+import {View, Text, ScrollView, Switch, TouchableOpacity, TextInput, Image, Alert} from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles"; // New style file
 import strings from '../strings/en.js'; // Import strings
 import Navbar from "../components/Navbar";
+import SettingsInputValidations from "../services/SettingsInputValidations";
 
 const defaultProfileImage = require('../../assets/handsome_squidward.jpg')
 
@@ -13,8 +14,8 @@ const ShelterSettingsScreen = () => {
         location: "Sample Location",
         email: "shelter@example.com",
         tel: "+1234567890",
-        password: "",
-        confirmPassword: ""
+        password: "aaaaaaa",
+        confirmPassword: "aaaaaaa"
     };
 
     const [isPushNotificationsEnabled, setIsPushNotificationsEnabled] = useState(false);
@@ -31,8 +32,66 @@ const ShelterSettingsScreen = () => {
     const togglePushNotifications = () => setIsPushNotificationsEnabled(previousState => !previousState);
 
     const handleUpdate = () => {
-        console.log('Update button pressed', { shelterName, location, email, tel, password, confirmPassword });
+        checkDetailsInputs()
     };
+
+
+    // Check if details inputs are valid
+    const checkDetailsInputs = () => {
+
+        // Start of checking for null inputs
+        if (SettingsInputValidations.isEmptyOrWhitespace(shelterName)) {
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.name_required);
+            return false;
+        }
+
+        if(SettingsInputValidations.isEmptyOrWhitespace(location)){
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.location_required);
+            return false;
+        }
+
+        if(SettingsInputValidations.isEmptyOrWhitespace(email)){
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.email_required);
+            return false;
+        }
+
+        if(SettingsInputValidations.isEmptyOrWhitespace(tel)){
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.phone_required);
+            return false;
+        }
+
+        if(SettingsInputValidations.isEmptyOrWhitespace(password)){
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.password_required);
+            return false;
+        }
+
+        if(SettingsInputValidations.isEmptyOrWhitespace(confirmPassword)){
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.confirm_required);
+            return false;
+        }
+        // End of checking for null inputs
+
+        // Check Email for @ sign
+        if(!SettingsInputValidations.containsAtSymbol(email)){
+            Alert.alert(strings.shelter_settings.validation_error,strings.shelter_settings.valid_email);
+            return false;
+        }
+
+        // Check phone number to just be numbers
+        if(!SettingsInputValidations.isValidNumberInput(tel)){
+            Alert.alert(strings.shelter_settings.validation_error,strings.shelter_settings.valid_number);
+            return false;
+        }
+
+        // Check if passowrd and confirm password match
+        if(!SettingsInputValidations.areStringsEqual(password,confirmPassword)){
+            Alert.alert(strings.shelter_settings.validation_error,strings.shelter_settings.password_match);
+            return false;
+        }
+        // If all inputs are valid
+        return true;
+    };
+
 
     const handleLogout = () => {
         console.log('Logout button pressed');
