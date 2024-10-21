@@ -7,7 +7,7 @@ export default {
     email_placeholder: "EMAIL",
     phone_placeholder: "PHONE NUMBER",
     password_placeholder: "PASSWORD",
-    address_placeholder: "HOME ADDRESS",
+    location_placeholder: "LOCATION",
     login_button: "LOGIN",
     register_button: "REGISTER",
     dont_have_account: "Don't have an account?",

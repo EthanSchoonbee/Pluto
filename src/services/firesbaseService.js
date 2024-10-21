@@ -6,7 +6,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, on
 class FirebaseService {
     // Authentication Methods:
     // Register a new user account
-    async registerUser(fullName, email, password, phoneNo, address) {
+    async registerUser(fullName, email, password, phoneNo, location, role) {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
@@ -16,8 +16,8 @@ class FirebaseService {
                 email: user.email,
                 fullName: fullName,
                 phoneNo: phoneNo,
-                address: address,
-                createdAt: new Date().toISOString(),
+                location: location,
+                role: "customer",
             };
 
             await this.addUserData('users', userData);

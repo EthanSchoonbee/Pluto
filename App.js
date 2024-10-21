@@ -56,7 +56,7 @@ const App = () => {
         <SafeAreaProvider>
             <GestureHandlerRootView style={styles.container}>
                 <NavigationContainer>
-                    <Stack.Navigator initialRouteName="UserHome" screenOptions={{ headerShown: false, animation: 'none' }}>
+                    <Stack.Navigator initialRouteName="Login" screenOptions={{ headerShown: false, animation: 'none' }}>
                         <Stack.Screen name="Login" component={Login} />
                         <Stack.Screen name="Register" component={Register} />
                         <Stack.Screen name="ShelterHome" component={ShelterHomeScreen}/>
