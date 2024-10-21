@@ -31,14 +31,8 @@ class UserSession {
         this.user = null;
         this.token = null;
     }
-
-    // Check if the session is valid (user and token are not null)
-    isValidSession() {
-        return this.user !== null && this.token !== null;
-    }
 }
 
-// Export a single instance of the class
 const userSessionInstance = new UserSession();
 Object.freeze(userSessionInstance);
 export default userSessionInstance;

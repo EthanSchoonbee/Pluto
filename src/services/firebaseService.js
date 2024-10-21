@@ -6,7 +6,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, on
 class FirebaseService {
     // Authentication Methods:
     // Register a new user account
-    async registerUser(fullName, email, password, phoneNo, location, role) {
+    async registerUser(fullName, email, password, phoneNo, location) {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
@@ -23,9 +23,9 @@ class FirebaseService {
             await this.addUserData('users', userData);
 
             const token = await user.getIdToken();
-            userSession.setUser(user, token);
+            userSession.setUser(userData, token);
 
-            console.log('User registered and saved to Firestore:', user);
+            console.log('User registered and saved to Firestore:', userData);
             return user;
         } catch (error) {
             console.log('Error registering user:', error);
@@ -38,15 +38,22 @@ class FirebaseService {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            const token = await user.getIdToken(); // Get token
-            userSession.setUser(user, token); // Store in singleton
-            console.log('User logged in and session initialized:', user);
+            const token = await user.getIdToken();
+
+            // Fetch user data from Firestore
+            const userData = await this.getUserData('users', user.uid);
+
+            // Store the user data and token in UserSession
+            userSession.setUser(userData, token);
+
+            console.log('User logged in and session initialized:', userData);
             return user;
         } catch (error) {
             console.log('Error logging user in:', error);
             throw error;
         }
     }
+
 
     // Logout the current user account
     async logoutUser() {
