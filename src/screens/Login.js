@@ -3,28 +3,45 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvo
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import strings from "../strings/en"
 import { StatusBar } from 'react-native';
-import { useAuth } from '../hooks/useAuth';
 import firebaseService from "../services/firebaseService";
+import userSession from "../services/UserSession";
+
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const { login, loading, error } = useAuth();
     const [secureTextEntry, setSecureTextEntry] = useState(true);
 
     const togglePasswordVisibility = () => {
         setSecureTextEntry(!secureTextEntry);
     };
 
-    const handleLogin = async () => {
-        try {
-            const user = await firebaseService.loginUser(email, password);
-            console.log('User logged in:', user);
-            navigation.navigate('UserHome'); // Navigate to UserHome upon success
-        } catch (error) {
-            console.log('Error during login:', error);
-            // Optionally: show error message to user
-        }
+    const handleLogin = () => {
+        // Call the loginUser method without async/await, using the callback style
+        firebaseService.loginUser(email, password, async (success, errorMessage) => {
+            if (success) {
+                const user =  firebaseService.getCurrentUser(); // Get the user object
+
+                // Fetch user data from Firestore using the user's UID
+                const userData = await firebaseService.getUserData('users', user.uid);
+
+                if (userData) {
+                    console.log('Fetched user data:', userData);
+
+                    // Get the token
+                    const token = await user.getIdToken();
+                    userSession.setUser(userData, token);
+                    console.log('User session initialized with:', userData);
+
+                    // Navigate to the home screen
+                    navigation.navigate('UserHome');
+                } else {
+                    console.log('No user data found in Firestore');
+                }
+            } else {
+                console.log('Error during login:', errorMessage);
+            }
+        });
     };
 
     return (

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 import Slider from '@react-native-community/slider';
 import React from "react";
 import { View, Text, TextInput, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
@@ -8,7 +9,11 @@ import { Picker } from "@react-native-picker/picker"; // Import the stylesheet
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/Ionicons'; // or any other icon set you prefer
-
+import {useAuth} from "../hooks/useAuth"
+import userSession from '../services/UserSession';
+import { useEffect } from "react";
+import {Animal} from "../models/AnimalModel";
+import firebaseService from "../services/firebaseService";
 
 const AddAnimal = ({ navigation }) => {
     const [isDog, setIsDog] = useState(true);
@@ -27,8 +32,11 @@ const AddAnimal = ({ navigation }) => {
     const dogBreeds = ['Labrador', 'Poodle', 'Bulldog', 'German Shepherd'];
     const catBreeds = ['Siamese', 'Persian', 'Maine Coon', 'Bengal'];
     const availableFurColors = ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
-
     const relevantBreeds = isDog ? dogBreeds : catBreeds;
+
+    const db = getFirestore(); // Initialize Firestore
+
+
 
     const handleImageUpload = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -58,13 +66,49 @@ const AddAnimal = ({ navigation }) => {
         setImages(images.filter((_, i) => i !== index));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (images.length < 3) {
             alert("Please add at least 3 images.");
             return;
         }
-        console.log("Form submitted");
+
+        const user = firebaseService.getCurrentUser();
+        if (user) {
+            console.log("Current User:", user);
+        } else {
+            console.log("No user is currently signed in.");
+        }
+
+        try {
+            // Populate the Animal object
+            const newAnimal = { ...Animal }; // Create a new instance based on the class structure
+            newAnimal.name = name;
+            newAnimal.species = isDog ? "dog" : "cat";
+            newAnimal.breed = selectedBreed;
+            newAnimal.age = age;
+            newAnimal.activityLevel = activityLevel;
+            newAnimal.size = sizes[size];
+            newAnimal.furColor = furColors.join(", ");
+            newAnimal.description = biography;
+            newAnimal.shelterId = user.uid // Assume user represents a shelter
+            newAnimal.location = ""; // Add location logic here if needed
+            newAnimal.imageUrl = images[0]; // Assuming first image as a sample, you can adjust this as needed
+            newAnimal.likedByUsers = [];
+            newAnimal.createdAt = new Date();
+            newAnimal.updatedAt = new Date();
+
+            // Add the animal data to Firestore under the "animals" collection
+            await addDoc(collection(db, "animals"), newAnimal);
+
+            // Success feedback or redirection after submission
+            alert("Animal data has been saved successfully!");
+            navigation.navigate("UserHome");
+        } catch (error) {
+            console.error("Error adding animal data: ", error);
+            alert("Failed to save the animal data. Please try again.");
+        }
     };
+
 
     const toggleAnimalType = (type) => {
         setIsDog(type === 'dogs');
