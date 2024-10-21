@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvo
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import strings from "../strings/en"
 import { StatusBar } from 'react-native';
-import firebaseService from '../services/firesbaseService';
+import firebaseService from '../services/firebaseService';
 
 const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');

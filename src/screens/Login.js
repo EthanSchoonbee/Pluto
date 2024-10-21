@@ -4,8 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import strings from "../strings/en"
 import { StatusBar } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
-import firebaseService from '../services/firesbaseService';
-import firesbaseService from "../services/firesbaseService";
+import firebaseService from "../services/firebaseService";
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -19,7 +18,7 @@ const LoginScreen = ({ navigation }) => {
 
     const handleLogin = async () => {
         try {
-            const user = await firesbaseService.loginUser(email, password);
+            const user = await firebaseService.loginUser(email, password);
             console.log('User logged in:', user);
             navigation.navigate('UserHome'); // Navigate to UserHome upon success
         } catch (error) {
