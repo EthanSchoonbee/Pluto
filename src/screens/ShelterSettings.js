@@ -5,6 +5,8 @@ import ShelterSettingsStyles from "../styles/ShelterSettingsStyles"; // New styl
 import strings from '../strings/en.js'; // Import strings
 import Navbar from "../components/Navbar";
 
+const defaultProfileImage = require('../../assets/handsome_squidward.jpg')
+
 const ShelterSettingsScreen = () => {
     const defaultValues = {
         shelterName: "Sample Shelter",
@@ -62,18 +64,11 @@ const ShelterSettingsScreen = () => {
                 {/* Centered Image */}
                 <View style={ShelterSettingsStyles.centerImageContainer}>
                     <Image
-                        source={{ uri: 'https://via.placeholder.com/150' }} // Replace with your actual image URI
+                        source={defaultProfileImage} // Replace with your actual image URI
                         style={ShelterSettingsStyles.centerImage}
                     />
                 </View>
 
-                {/* Shelter Profile Image */}
-                <View style={ShelterSettingsStyles.imageContainer}>
-                    <Image
-                        source={{ uri: 'https://via.placeholder.com/150' }} // Replace with actual shelter image URI
-                        style={ShelterSettingsStyles.profileImage}
-                    />
-                </View>
 
                 {/* Shelter Details Section */}
                 <Text style={ShelterSettingsStyles.detailsTitle}>{strings.shelter_settings.shelter_details_title}</Text>
