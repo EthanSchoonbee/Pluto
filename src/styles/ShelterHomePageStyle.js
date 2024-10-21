@@ -11,14 +11,14 @@ export default StyleSheet.create({
         backgroundColor: '#fff',
     },
         scrollView: {
-            maxHeight: '90%',
+            maxHeight: '88%',
         },
             card: {
                 flex: 1,
                 marginHorizontal: 5,
                 marginVertical: 10,
                 borderRadius: 10,
-               // overflow: 'hidden',
+                // overflow: 'hidden'
                 backgroundColor: '#fff',
                 // shadow for IOS:
                 shadowColor: '#000',
@@ -89,6 +89,7 @@ export default StyleSheet.create({
                     flexDirection: 'row',
                     justifyContent: 'space-between',
                     padding: 0,
+                    borderRadius: 10,
                     backgroundColor: '#f0f0f0',
                 },
                     button: {

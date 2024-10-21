@@ -5,23 +5,22 @@ const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     container: {
-        height: height,
+        flex: 1,
         backgroundColor: '#ffffff',
     },
         swiperContainer: {
-            height: '100%',
-            width: '100%',
-            justifyContent: 'flex-start',
+            flex: 1,
         },
-
             card: {
+                flex: 1,
                 height: '80%',
-                borderRadius: 10,
                 alignSelf: 'center',
                 width:  width * 0.98,
+                maxHeight:  height * 0.9,
                 backgroundColor: '#ffffff',
                 marginTop: 10,
                 position: 'absolute',
+                overflow: 'hidden'
             },
                 leftTouchableArea: {
                     position: 'absolute',
@@ -29,10 +28,8 @@ const styles = StyleSheet.create({
                     top: 0,
                     bottom: '20%',
                     width: '50%',
-                    zIndex: 100,
+                    zIndex: 99,
                     //backgroundColor: 'rgba(255, 0, 0, 0.2)',
-                    borderWidth: 0,
-                    borderColor: 'red',
                 },
                 rightTouchableArea: {
                     position: 'absolute',
@@ -41,9 +38,7 @@ const styles = StyleSheet.create({
                     bottom: '20%',
                     width: '50%',
                     zIndex: 100,
-                    //backgroundColor: 'rgba(0, 0, 255, 0.2)',
-                    borderWidth: 0,
-                    borderColor: 'red',
+                    //backgroundColor: 'rgba(0, 0, 255, 0.2)'
                 },
                 floatingImageLeft: {
                     position: 'absolute',
@@ -51,7 +46,7 @@ const styles = StyleSheet.create({
                     left: '30%',
                     width: '100%',
                     height: '50%',
-                    zIndex: 1,
+                    zIndex: 1
                 },
                 floatingImageRight: {
                     position: 'absolute',
@@ -86,6 +81,7 @@ const styles = StyleSheet.create({
                     zIndex: 2,
                     flexDirection: 'row',
                     alignItems: 'center',
+                    justifyContent: 'space-between'
                 },
                     leftContainer: {
                         flex: 1,
@@ -118,14 +114,22 @@ const styles = StyleSheet.create({
                             },
                     rightContainer: {
                         flex: 1,
+                        alignItems: 'flex-end',
                         justifyContent: 'center',
                     },
-                        infoIconContainer: {
-                            marginLeft: 'auto',
+                        arrowButton: {
+                            position: 'absolute',
+                            bottom: '17%', // Adjust based on your layout
+                            right: 20, // Adjust based on your layout
+                            backgroundColor: 'transparent', // Optional: Background color for visibility
+                            borderRadius: 15, // Optional: Rounded corners
+                            padding: 10, // Optional: Padding around the icon
+                            opacity: 0.2,
+                            zIndex: 150
                         },
                 buttonsContainer: {
                     position: 'absolute',
-                    bottom: 80,
+                    bottom: 70,
                     left: 0,
                     right: 0,
                     flexDirection: 'row',
@@ -149,24 +153,13 @@ const styles = StyleSheet.create({
                     },
                         noButton: {
                             backgroundColor: colors.white,
-
                         },
                         yesButton: {
                             backgroundColor: colors.white,
                         },
                         pressed: {
                             opacity: 0.5,
-
                         },
-                    arrowButton: {
-                        position: 'absolute',
-                        bottom: 200, // Adjust based on your layout
-                        right: 20, // Adjust based on your layout
-                        backgroundColor: 'transparent', // Optional: Background color for visibility
-                        borderRadius: 15, // Optional: Rounded corners
-                        padding: 10, // Optional: Padding around the icon
-                        elevation: 5, // Optional: Shadow effect
-                    },
         overlayContainer: {
             position: 'absolute',
             top: 0,

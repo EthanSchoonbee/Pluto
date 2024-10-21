@@ -1,7 +1,8 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, Text, Image, SafeAreaView, Animated, ScrollView} from 'react-native';
+import {View, Text, Image, SafeAreaView, Animated, ScrollView, StatusBar} from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { Ionicons } from '@expo/vector-icons';
+import Entypo from '@expo/vector-icons/Entypo';
 import { TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import colors  from "../styles/colors";
@@ -47,7 +48,6 @@ const UserHomeScreen = () => {
     // calculate and keep track of floating image opacity
     const likeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
     const dislikeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
-    const upArrowOpacity = useRef(new Animated.Value(1)).current;
 
     // reset current card floating image opacities on load
     useEffect(() => {
@@ -55,12 +55,6 @@ const UserHomeScreen = () => {
     }, [imageIndexes[cardIndex],cardIndex]);
 
     const animateSwipe = (direction) => {
-        Animated.timing(upArrowOpacity, {
-            toValue: 0,
-            duration: 0,
-            useNativeDriver: true,
-        }).start();
-
         if (direction === 'left') {
             Animated.parallel([
                 Animated.timing(dislikeOpacity[cardIndex], {
@@ -134,12 +128,6 @@ const UserHomeScreen = () => {
             setNoButtonIconColor(colors.inactiveNoButton);
             setYesButtonIconColor(colors.white);
         }
-
-        Animated.timing(upArrowOpacity, {
-            toValue: 0,
-            duration: 0,
-            useNativeDriver: true,
-        }).start();
     };
 
     const SwipedAborted = () => {
@@ -202,12 +190,6 @@ const UserHomeScreen = () => {
                 })
             ]).start();
         }
-
-        Animated.timing(upArrowOpacity, {
-            toValue: 1,
-            duration: 0,
-            useNativeDriver: true,
-        }).start();
     };
 
     const renderGenderIcon = (gender) => {
@@ -275,10 +257,6 @@ const UserHomeScreen = () => {
                 style={styles.gradient}
             />
 
-            <View style={styles.infoArrow}>
-
-            </View>
-
             <View style={styles.cardInfo}>
                 <View style={styles.leftContainer}>
                     <View style={styles.nameAgeContainer}>
@@ -291,10 +269,19 @@ const UserHomeScreen = () => {
                         <Text style={styles.breed}>{card.breed}</Text>
                     </View>
                 </View>
+
+                <View style={styles.rightContainer}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setSelectedAnimal(animals[cardIndex]);
+                                setShowOverlay(true);
+                            }}>
+                            <Entypo name="info-with-circle" size={30} color={colors.genderMaleBlue} />
+                        </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
-
 
     const AnimalInfoOverlay = ({ animal, onClose }) => (
         <View style={styles.overlayContainer}>
@@ -315,6 +302,7 @@ const UserHomeScreen = () => {
 
     return (
         <SafeAreaView style={styles.container} edges={['left', 'right']}>
+            <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
             <Header />
                 <View style={styles.swiperContainer}>
                     <Swiper
@@ -335,15 +323,6 @@ const UserHomeScreen = () => {
                         infinite={ true }
                         cardVerticalMargin={ 0 }>
                     </Swiper>
-                    <Animated.View style={[styles.arrowButton, { opacity: upArrowOpacity }]}>
-                        <TouchableOpacity
-                            onPress={() => {
-                                setSelectedAnimal(animals[cardIndex]);
-                                setShowOverlay(true);
-                            }}>
-                            <Ionicons name="arrow-up" size={30} color={colors.black} />
-                        </TouchableOpacity>
-                    </Animated.View>
                 </View>
             <Navbar />
             <View style={styles.buttonsContainer}>
