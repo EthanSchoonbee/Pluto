@@ -1,4 +1,5 @@
-//class to store the logged-in user’s data and token globally
+import UserModel from "../models/UserModel";
+import { getAuth } from 'firebase/auth';
 
 class UserSession {
     constructor() {
@@ -12,13 +13,21 @@ class UserSession {
 
     // Set user data and token
     setUser(user, token) {
-        this.user = user;
+        // Ensure that the user is an instance of UserModel
+        if (!(user instanceof UserModel)) {
+            this.user = new UserModel(
+                user.uid,
+                user.email,
+                user.fullName,
+                user.phoneNo,
+                user.location,
+                user.role
+            );
+        } else {
+            this.user = user;
+        }
         this.token = token;
-    }
-
-    // Get the current user
-    getUser() {
-        return this.user;
+        console.log('User session set user called', { user, token });
     }
 
     // Get the current token
@@ -31,9 +40,14 @@ class UserSession {
         this.user = null;
         this.token = null;
     }
+
+    // Check if the session is valid (user and token are not null)
+    isValidSession() {
+        return this.user !== null && this.token !== null;
+    }
 }
 
+// Ensure that UserSession is a singleton
 const userSessionInstance = new UserSession();
 Object.freeze(userSessionInstance);
 export default userSessionInstance;
-
