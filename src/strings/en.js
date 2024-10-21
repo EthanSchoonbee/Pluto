@@ -88,6 +88,7 @@ export default {
         name_number: "Your name cannot contain a digit.",
         surname_number: "Your surname cannot contain a digit.",
         location_number: "Your location cannot contain a digit.",
+        password_match: "Passwords do not match.",
     },
 
     // Shelter Settings page
@@ -106,6 +107,19 @@ export default {
         shelter_confirm_password_placeholder: "********",
         shelter_image: "Shelter Image:",
         shelter_privacy_title: "Privacy:",
-        shelter_push_notifications: "Push Notifications"
+        shelter_push_notifications: "Push Notifications",
+
+        name_required: "Shelter name required.",
+        location_required: "Location required.",
+        email_required: "Email required.",
+        phone_required: "Telephone number required.",
+        password_required: "Password required.",
+        confirm_required: "Confirmed password required.",
+        validation_error: "Validation Error",
+
+        valid_email: "Enter a valid email address",
+        location_number: "Your location cannot contain a digit.",
+        valid_number: 'Enter a valid phone number',
+        password_match: "Passwords do not match.",
     }
 };
