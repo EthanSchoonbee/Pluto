@@ -17,8 +17,9 @@ const UserSettingsStyles = StyleSheet.create({
         paddingTop: 40,
     },
     headerSection: {
-        marginBottom: 20,
+        marginBottom: 15,
         alignItems: 'center',
+        paddingTop: 10,
     },
         headerText: {
             fontSize: 18,
@@ -31,13 +32,13 @@ const UserSettingsStyles = StyleSheet.create({
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 10,
-        marginBottom: 20,  // Added marginBottom to separate details from next section
+        marginBottom: 5,  // Added marginBottom to separate details from next section
     },
     detailsTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
-        marginBottom: 15,  // Spacing between title and the content
+        paddingLeft: 4,
     },
     detailsRow: {
         flexDirection: 'row',
@@ -61,13 +62,13 @@ const UserSettingsStyles = StyleSheet.create({
         padding: 20,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
-        marginTop: 20,
+        marginTop: 5,
     },
     privacyTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
-        marginBottom: 15,  // Spacing between title and content
+        paddingLeft: 4,
     },
     notificationRow: {
         flexDirection: 'row',

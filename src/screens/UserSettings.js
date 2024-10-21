@@ -59,7 +59,7 @@ const UserSettingsScreen = () => {
 
     return (
         <View style={{ flex: 1 }}>
-            <ScrollView style={UserSettingsStyles.container} contentContainerStyle={{ paddingBottom: 100 }}>
+            <View style={UserSettingsStyles.container} contentContainerStyle={{ paddingBottom: 100 }}>
                 {/* User Name and Location */}
                 <View style={UserSettingsStyles.headerSection}>
                     <Text style={UserSettingsStyles.headerText}>{strings.user_settings.user_name}</Text>
@@ -172,7 +172,7 @@ const UserSettingsScreen = () => {
                         <Text style={[UserSettingsStyles.customButtonText, UserSettingsStyles.logoutButtonText]}>{strings.user_settings.logout_button}</Text>
                     </TouchableOpacity>
                 </View>
-            </ScrollView>
+            </View>
 
             <Navbar style={{ flex: 1 }} />
         </View>
