@@ -42,3 +42,4 @@ class UserSession {
 const userSessionInstance = new UserSession();
 Object.freeze(userSessionInstance);
 export default userSessionInstance;
+
