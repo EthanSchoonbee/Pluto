@@ -1,36 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Switch, TouchableOpacity, TextInput, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";  // New style file
-import strings from '../strings/en.js';  // Import strings
+import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
+import ShelterSettingsStyles from "../styles/ShelterSettingsStyles"; // New style file
+import strings from '../strings/en.js'; // Import strings
 import Navbar from "../components/Navbar";
 
 const ShelterSettingsScreen = () => {
-    // Initialize state variables
-    const [isPushNotificationsEnabled, setIsPushNotificationsEnabled] = useState(false);
-    const [shelterName, setShelterName] = useState("Sample Shelter");
-    const [location, setLocation] = useState("Sample Location");
-    const [email, setEmail] = useState("shelter@example.com");
-    const [tel, setTel] = useState("+1234567890");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const defaultValues = {
+        shelterName: "Sample Shelter",
+        location: "Sample Location",
+        email: "shelter@example.com",
+        tel: "+1234567890",
+        password: "",
+        confirmPassword: ""
+    };
 
-    // Use navigation hook
+    const [isPushNotificationsEnabled, setIsPushNotificationsEnabled] = useState(false);
+    const [shelterName, setShelterName] = useState(defaultValues.shelterName);
+    const [location, setLocation] = useState(defaultValues.location);
+    const [email, setEmail] = useState(defaultValues.email);
+    const [tel, setTel] = useState(defaultValues.tel);
+    const [password, setPassword] = useState(defaultValues.password);
+    const [confirmPassword, setConfirmPassword] = useState(defaultValues.confirmPassword);
+    const [isEditable, setIsEditable] = useState(false); // Control editable state
+
     const navigation = useNavigation();
 
-    // Toggle push notifications switch
     const togglePushNotifications = () => setIsPushNotificationsEnabled(previousState => !previousState);
 
-    // Handle update action
     const handleUpdate = () => {
         console.log('Update button pressed', { shelterName, location, email, tel, password, confirmPassword });
     };
 
-    // Handle logout and navigate to Login
     const handleLogout = () => {
         console.log('Logout button pressed');
         navigation.navigate('Login');
     };
+
+    const handleDoubleClick = () => {
+        setIsEditable(prev => !prev);
+    };
+
+    // Reset fields to default values when the component is focused
+    useFocusEffect(
+        React.useCallback(() => {
+            setIsPushNotificationsEnabled(false); // Reset push notifications
+            setShelterName(defaultValues.shelterName);
+            setLocation(defaultValues.location);
+            setEmail(defaultValues.email);
+            setTel(defaultValues.tel);
+            setPassword(defaultValues.password);
+            setConfirmPassword(defaultValues.confirmPassword);
+            setIsEditable(false);
+        }, [])
+    );
 
     return (
         <View style={{ flex: 1 }}>
@@ -57,59 +80,83 @@ const ShelterSettingsScreen = () => {
                 <View style={ShelterSettingsStyles.detailsContainer}>
                     <View style={ShelterSettingsStyles.detailsRow}>
                         <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_name}</Text>
-                        <TextInput
-                            style={ShelterSettingsStyles.detailsValue}
-                            value={shelterName}
-                            onChangeText={setShelterName}
-                            placeholder={strings.shelter_settings.shelter_sample_text}
-                        />
+                        <TouchableOpacity onPress={handleDoubleClick}>
+                            <TextInput
+                                style={ShelterSettingsStyles.detailsValue}
+                                value={shelterName}
+                                onChangeText={setShelterName}
+                                placeholder={strings.shelter_settings.shelter_sample_text}
+                                editable={isEditable} // Editable only when double clicked
+                                selectTextOnFocus={isEditable}
+                            />
+                        </TouchableOpacity>
                     </View>
                     <View style={ShelterSettingsStyles.detailsRow}>
                         <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_location}</Text>
-                        <TextInput
-                            style={ShelterSettingsStyles.detailsValue}
-                            value={location}
-                            onChangeText={setLocation}
-                            placeholder={strings.shelter_settings.shelter_sample_text}
-                        />
+                        <TouchableOpacity onPress={handleDoubleClick}>
+                            <TextInput
+                                style={ShelterSettingsStyles.detailsValue}
+                                value={location}
+                                onChangeText={setLocation}
+                                placeholder={strings.shelter_settings.shelter_sample_text}
+                                editable={isEditable} // Editable only when double clicked
+                                selectTextOnFocus={isEditable}
+                            />
+                        </TouchableOpacity>
                     </View>
                     <View style={ShelterSettingsStyles.detailsRow}>
                         <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_email}</Text>
-                        <TextInput
-                            style={ShelterSettingsStyles.detailsValue}
-                            value={email}
-                            onChangeText={setEmail}
-                            placeholder={strings.shelter_settings.shelter_email_placeholder}
-                        />
+                        <TouchableOpacity onPress={handleDoubleClick}>
+                            <TextInput
+                                style={ShelterSettingsStyles.detailsValue}
+                                value={email}
+                                onChangeText={setEmail}
+                                placeholder={strings.shelter_settings.shelter_email_placeholder}
+                                editable={isEditable} // Editable only when double clicked
+                                selectTextOnFocus={isEditable}
+                            />
+                        </TouchableOpacity>
                     </View>
                     <View style={ShelterSettingsStyles.detailsRow}>
                         <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_tel}</Text>
-                        <TextInput
-                            style={ShelterSettingsStyles.detailsValue}
-                            value={tel}
-                            onChangeText={setTel}
-                            placeholder={strings.shelter_settings.shelter_tel_placeholder}
-                        />
+                        <TouchableOpacity onPress={handleDoubleClick}>
+                            <TextInput
+                                style={ShelterSettingsStyles.detailsValue}
+                                value={tel}
+                                onChangeText={setTel}
+                                placeholder={strings.shelter_settings.shelter_tel_placeholder}
+                                editable={isEditable} // Editable only when double clicked
+                                selectTextOnFocus={isEditable}
+                            />
+                        </TouchableOpacity>
                     </View>
                     <View style={ShelterSettingsStyles.detailsRow}>
                         <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_password}</Text>
-                        <TextInput
-                            style={ShelterSettingsStyles.detailsValue}
-                            value={password}
-                            onChangeText={setPassword}
-                            placeholder={strings.shelter_settings.shelter_password_placeholder}
-                            secureTextEntry={true}
-                        />
+                        <TouchableOpacity onPress={handleDoubleClick}>
+                            <TextInput
+                                style={ShelterSettingsStyles.detailsValue}
+                                value={password}
+                                onChangeText={setPassword}
+                                placeholder={strings.shelter_settings.shelter_password_placeholder}
+                                secureTextEntry={true}
+                                editable={isEditable} // Editable only when double clicked
+                                selectTextOnFocus={isEditable}
+                            />
+                        </TouchableOpacity>
                     </View>
                     <View style={ShelterSettingsStyles.detailsRow}>
                         <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_confirm_password}</Text>
-                        <TextInput
-                            style={ShelterSettingsStyles.detailsValue}
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            placeholder={strings.shelter_settings.shelter_confirm_password_placeholder}
-                            secureTextEntry={true}
-                        />
+                        <TouchableOpacity onPress={handleDoubleClick}>
+                            <TextInput
+                                style={ShelterSettingsStyles.detailsValue}
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                placeholder={strings.shelter_settings.shelter_confirm_password_placeholder}
+                                secureTextEntry={true}
+                                editable={isEditable} // Editable only when double clicked
+                                selectTextOnFocus={isEditable}
+                            />
+                        </TouchableOpacity>
                     </View>
                 </View>
 
@@ -131,17 +178,17 @@ const ShelterSettingsScreen = () => {
                 <View style={ShelterSettingsStyles.buttonContainer}>
                     {/* Update Button */}
                     <TouchableOpacity style={ShelterSettingsStyles.customButton} onPress={handleUpdate}>
-                        <Text style={ShelterSettingsStyles.customButtonText}>{strings.shelter_settings.shelter_update_button}</Text>
+                        <Text style={ShelterSettingsStyles.customButtonText}>{strings.shelter_settings.update_button}</Text>
                     </TouchableOpacity>
 
                     {/* Logout Button */}
                     <TouchableOpacity style={[ShelterSettingsStyles.customButton, ShelterSettingsStyles.logoutButton]} onPress={handleLogout}>
-                        <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.shelter_logout_button}</Text>
+                        <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.logout_button}</Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-            {/* Navbar at the bottom */}
-            <Navbar />
+
+            <Navbar style={{ flex: 1 }} />
         </View>
     );
 };

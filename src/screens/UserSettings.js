@@ -1,18 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Switch, TouchableOpacity, TextInput } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import UserSettingsStyles from "../styles/UserSettingsStyles";
 import strings from '../strings/en.js';
 import Navbar from "../components/Navbar";
 
 const UserSettingsScreen = () => {
+    const defaultValues = {
+        name: "Sample Name",
+        surname: "Sample Surname",
+        email: "sample@example.com",
+        password: "",
+        confirmPassword: "",
+        location: "Sample Location",
+    };
+
     const [isPushNotificationsEnabled, setIsPushNotificationsEnabled] = useState(false);
-    const [name, setName] = useState("Sample Name");
-    const [surname, setSurname] = useState("Sample Surname");
-    const [email, setEmail] = useState("sample@example.com");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [location, setLocation] = useState("Sample Location");
+    const [name, setName] = useState(defaultValues.name);
+    const [surname, setSurname] = useState(defaultValues.surname);
+    const [email, setEmail] = useState(defaultValues.email);
+    const [password, setPassword] = useState(defaultValues.password);
+    const [confirmPassword, setConfirmPassword] = useState(defaultValues.confirmPassword);
+    const [location, setLocation] = useState(defaultValues.location);
+    const [isEditable, setIsEditable] = useState(false);
 
     const navigation = useNavigation();
 
@@ -29,10 +39,28 @@ const UserSettingsScreen = () => {
         navigation.navigate('Login');
     };
 
+    const handleDoubleClick = () => {
+        setIsEditable(prev => !prev);
+    };
+
+    // Reset fields to default values when the component is focused
+    useFocusEffect(
+        React.useCallback(() => {
+            setIsPushNotificationsEnabled(false); // Reset push notifications
+            setName(defaultValues.name);
+            setSurname(defaultValues.surname);
+            setEmail(defaultValues.email);
+            setPassword(defaultValues.password);
+            setConfirmPassword(defaultValues.confirmPassword);
+            setLocation(defaultValues.location);
+            setIsEditable(false);
+        }, [])
+    );
+
     return (
         <View style={{ flex: 1 }}>
             <View style={UserSettingsStyles.scrollView}>
-                <ScrollView contentContainerStyle={{}}>
+                <ScrollView contentContainerStyle={{ paddingTop: 30, paddingBottom: 50 }}>
                     {/* User Name and Location */}
                     <View style={UserSettingsStyles.headerSection}>
                         <Text style={UserSettingsStyles.headerText}>{strings.user_settings.user_name}</Text>
@@ -44,59 +72,78 @@ const UserSettingsScreen = () => {
                     <View style={UserSettingsStyles.detailsContainer}>
                         <View style={UserSettingsStyles.detailsRow}>
                             <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.name_label}</Text>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={name}
-                                onChangeText={setName}
-                                placeholder={strings.user_settings.sample_text}
-                            />
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={name}
+                                    onChangeText={setName}
+                                    placeholder={strings.user_settings.sample_text}
+                                    editable={isEditable}
+                                    selectTextOnFocus={isEditable}
+                                />
+                            </TouchableOpacity>
                         </View>
                         <View style={UserSettingsStyles.detailsRow}>
                             <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.surname_label}</Text>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={surname}
-                                onChangeText={setSurname}
-                                placeholder={strings.user_settings.sample_text}
-                            />
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={surname}
+                                    onChangeText={setSurname}
+                                    placeholder={strings.user_settings.sample_text}
+                                    editable={isEditable}
+                                />
+                            </TouchableOpacity>
                         </View>
                         <View style={UserSettingsStyles.detailsRow}>
                             <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.email_label}</Text>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={email}
-                                onChangeText={setEmail}
-                                placeholder="sample@example.com"
-                            />
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    placeholder="sample@example.com"
+                                    editable={isEditable}
+                                />
+                            </TouchableOpacity>
                         </View>
                         <View style={UserSettingsStyles.detailsRow}>
                             <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.password_label}</Text>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={password}
-                                onChangeText={setPassword}
-                                placeholder={strings.user_settings.password_placeholder}
-                                secureTextEntry={true}
-                            />
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    placeholder={strings.user_settings.password_placeholder}
+                                    secureTextEntry={true}
+                                    editable={isEditable}
+                                />
+                            </TouchableOpacity>
                         </View>
                         <View style={UserSettingsStyles.detailsRow}>
                             <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.confirm_password_label}</Text>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={confirmPassword}
-                                onChangeText={setConfirmPassword}
-                                placeholder={strings.user_settings.confirm_password_placeholder}
-                                secureTextEntry={true}
-                            />
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={confirmPassword}
+                                    onChangeText={setConfirmPassword}
+                                    placeholder={strings.user_settings.confirm_password_placeholder}
+                                    secureTextEntry={true}
+                                    editable={isEditable}
+                                />
+                            </TouchableOpacity>
                         </View>
                         <View style={UserSettingsStyles.detailsRow}>
                             <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={location}
-                                onChangeText={setLocation}
-                                placeholder={strings.user_settings.sample_text}
-                            />
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={location}
+                                    onChangeText={setLocation}
+                                    placeholder={strings.user_settings.sample_text}
+                                    editable={isEditable}
+                                />
+                            </TouchableOpacity>
                         </View>
                     </View>
 
@@ -129,7 +176,7 @@ const UserSettingsScreen = () => {
                 </ScrollView>
             </View>
 
-            <Navbar style={{ flex: 1 }}/>
+            <Navbar style={{ flex: 1 }} />
         </View>
     );
 };
