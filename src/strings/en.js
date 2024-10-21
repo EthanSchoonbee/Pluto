@@ -74,7 +74,20 @@ export default {
         logout_button: "Logout",
         sample_text: "Sample Text",
         password_placeholder: "********",
-        confirm_password_placeholder: "********"
+        confirm_password_placeholder: "********",
+
+        name_required: 'Name is required',
+        surname_required: "Surname is required",
+        email_required: "Email is required",
+        password_required: "Password is required",
+        confirm_required: "Confirmed password is required",
+        location_required: "Location is required",
+        validation_error: "Validation Error",
+
+        valid_email: "Enter a valid email address",
+        name_number: "Your name cannot contain a digit.",
+        surname_number: "Your surname cannot contain a digit.",
+        location_number: "Your location cannot contain a digit.",
     },
 
     // Shelter Settings page

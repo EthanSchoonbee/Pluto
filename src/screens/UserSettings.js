@@ -4,14 +4,16 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Imp
 import UserSettingsStyles from "../styles/UserSettingsStyles";
 import strings from '../strings/en.js';
 import Navbar from "../components/Navbar";
+import SettingsInputValidations from "../services/SettingsInputValidations";
+import { Alert } from 'react-native';
 
 const UserSettingsScreen = () => {
     const defaultValues = {
         name: "Sample Name",
         surname: "Sample Surname",
         email: "sample@example.com",
-        password: "",
-        confirmPassword: "",
+        password: "default",
+        confirmPassword: "default",
         location: "Sample Location",
     };
 
@@ -29,8 +31,64 @@ const UserSettingsScreen = () => {
     const togglePushNotifications = () => setIsPushNotificationsEnabled(previousState => !previousState);
 
     const handleUpdate = () => {
-        // Handle update action
-        console.log('Update button pressed', { name, surname, email, password, confirmPassword, location });
+        checkDetailsInputs()
+    };
+
+// Check if details inputs are valid
+    const checkDetailsInputs = () => {
+
+        // Start of checking for null inputs
+        if (SettingsInputValidations.isEmptyOrWhitespace(name)) {
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.name_required);
+            return false;
+        }
+        if (SettingsInputValidations.isEmptyOrWhitespace(surname)) {
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.surname_required);
+            return false;
+        }
+        if (SettingsInputValidations.isEmptyOrWhitespace(email)) {
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.email_required);
+            return false;
+        }
+        if (SettingsInputValidations.isEmptyOrWhitespace(password)) {
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.password_required);
+            return false;
+        }
+        if (SettingsInputValidations.isEmptyOrWhitespace(confirmPassword)) {
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.confirm_required);
+            return false;
+        }
+        if (SettingsInputValidations.isEmptyOrWhitespace(location)) {
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.location_required);
+            return false;
+        }
+        // End of checking for null inputs
+
+        // Check email for @ sign
+        if(!SettingsInputValidations.containsAtSymbol(email)){
+            Alert.alert(strings.user_settings.validation_error,strings.user_settings.valid_email);
+            return false;
+        }
+
+        // Check Name, Surname and Location for digits
+
+        if(SettingsInputValidations.containsNumber(name)){
+            Alert.alert(strings.user_settings.validation_error,strings.user_settings.name_number)
+            return false;
+        }
+
+        if(SettingsInputValidations.containsNumber(surname)){
+            Alert.alert(strings.user_settings.validation_error,strings.user_settings.surname_number)
+            return false;
+        }
+
+        if(SettingsInputValidations.containsNumber(location)){
+            Alert.alert(strings.user_settings.validation_error,strings.user_settings.location_number)
+            return false;
+        }
+
+        // If all inputs are valid
+        return true;
     };
 
     const handleLogout = () => {
