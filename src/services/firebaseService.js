@@ -1,6 +1,6 @@
 import { db, auth } from "./firebaseConfig";
 import userSession from './UserSession';
-import {collection, addDoc, getDoc, doc, updateDoc, getFirestore} from "firebase/firestore";
+import {collection, addDoc, setDoc ,getDoc, doc, updateDoc, getFirestore} from "firebase/firestore";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
 
 class FirebaseService {
@@ -42,18 +42,26 @@ class FirebaseService {
 
             // Fetch user data from Firestore
             const userData = await this.getUserData('users', user.uid);
+            console.log('Fetched user data:', userData);
+
+            if (!userData) {
+                console.log('No user data found in Firestore');
+                return;
+            }
+
+            // Check if userData is correctly fetched
+            console.log('Fetched user data from Firestore:', userData);
 
             // Store the user data and token in UserSession
-            userSession.setUser(userData, token);
-
+            userSession.setUser(userData, token);  // Make sure this is called with correct data
             console.log('User logged in and session initialized:', userData);
+
             return user;
         } catch (error) {
             console.log('Error logging user in:', error);
             throw error;
         }
     }
-
 
     // Logout the current user account
     async logoutUser() {
@@ -70,9 +78,10 @@ class FirebaseService {
     // Add user related data
     async addUserData(collectionName, data) {
         try {
-            const docRef = await addDoc(collection(db, collectionName), data);
-            console.log('Document written with ID:', docRef.id);
-            return docRef.id;
+            // Use setDoc to set the document ID to the user's UID
+            const docRef = await setDoc(doc(db, collectionName, data.uid), data);
+            console.log('Document written with ID:', data.uid);
+            return data.uid;  // Return the user's UID
         } catch (error) {
             console.log('Error adding document:', error);
             throw error;
@@ -82,9 +91,9 @@ class FirebaseService {
     // Get user related data
     async getUserData(collectionName, docId) {
         try {
-            const docRef = doc(db, collectionName, docId);
+            const docRef = doc(db, collectionName, docId);  // Fetch by user UID
             const docSnapshot = await getDoc(docRef);
-            if (docSnapshot.exists) {
+            if (docSnapshot.exists()) {
                 console.log('Document data', docSnapshot.data());
                 return docSnapshot.data();
             } else {
