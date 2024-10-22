@@ -11,14 +11,11 @@ import {
     getAuth
 } from "firebase/auth";
 
-
 class FirebaseService {
     constructor() {
-        this.auth = getAuth(); // Get the Firebase Authentication instance
+        this.auth = getAuth();
     }
 
-    // Authentication Methods:
-    // Register a new user account
     registerUser(fullName, email, password, phoneNo, location, onComplete) {
         console.log("Firebase Authentication Service: Registering User");
         createUserWithEmailAndPassword(this.auth, email, password)
@@ -32,9 +29,9 @@ class FirebaseService {
                     phoneNo,
                     location,
                     role: "customer",
+                    likedAnimals: [],
                 };
 
-                // Save user data to Firestore
                 await this.addUserData('users', userData);
                 console.log("Firebase Authentication Service: Registration Process Successful");
                 onComplete(true, null); // Registration successful
@@ -45,7 +42,6 @@ class FirebaseService {
             });
     }
 
-    // Log in a user
     loginUser(email, password, onComplete) {
         console.log("Firebase Authentication Service: Logging In User");
         signInWithEmailAndPassword(this.auth, email, password)

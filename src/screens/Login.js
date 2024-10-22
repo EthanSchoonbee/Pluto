@@ -17,26 +17,43 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const handleLogin = () => {
-        // Call the loginUser method without async/await, using the callback style
         firebaseService.loginUser(email, password, async (success, errorMessage) => {
             if (success) {
-                const user =  firebaseService.getCurrentUser(); // Get the user object
+                const user = firebaseService.getCurrentUser(); // Get the user object
 
-                // Fetch user data from Firestore using the user's UID
-                const userData = await firebaseService.getUserData('users', user.uid);
+                try {
+                    // First, check the "users" collection
+                    const userData = await firebaseService.getUserData('users', user.uid);
 
-                if (userData) {
-                    console.log('Fetched user data:', userData);
+                    if (userData) {
+                        // If user data exists in "users" collection, proceed with user login
+                        console.log('Fetched user data:', userData);
 
-                    // Get the token
-                    const token = await user.getIdToken();
-                    userSession.setUser(userData, token);
-                    console.log('User session initialized with:', userData);
+                        const token = await user.getIdToken();
+                        userSession.setUser(userData, token);
+                        console.log('User session initialized with:', userData);
 
-                    // Navigate to the home screen
-                    navigation.navigate('UserHome');
-                } else {
-                    console.log('No user data found in Firestore');
+                        // Navigate to UserHome
+                        navigation.navigate('UserHome');
+                    } else {
+                        // If no user data is found, check the "shelters" collection
+                        const shelterData = await firebaseService.getUserData('shelters', user.uid);
+
+                        if (shelterData) {
+                            console.log('Fetched shelter data:', shelterData);
+
+                            const token = await user.getIdToken();
+                            userSession.setUser(shelterData, token);
+                            console.log('Shelter session initialized with:', shelterData);
+
+                            // Navigate to ShelterHome
+                            navigation.navigate('ShelterHome');
+                        } else {
+                            console.log('No user or shelter data found in Firestore');
+                        }
+                    }
+                } catch (error) {
+                    console.log('Error fetching user/shelter data:', error);
                 }
             } else {
                 console.log('Error during login:', errorMessage);
@@ -44,14 +61,13 @@ const LoginScreen = ({ navigation }) => {
         });
     };
 
+
     return (
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            {/* Set the status bar style to dark-content */}
             <StatusBar barStyle="dark-content" />
-            {/* Background Image with absolute positioning */}
             <ImageBackground
                 source={require('../../assets/wave_background.png')}
                 style={styles.backgroundImage}
@@ -147,6 +163,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         color: '#333',
     },
+
     inputContainer: {
         marginBottom: 20,
         width: '80%',
