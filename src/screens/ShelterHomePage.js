@@ -1,35 +1,25 @@
-import React from 'react';
-import {View, Text, Image, SafeAreaView, ScrollView, TouchableOpacity, StatusBar} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, Text, Image, SafeAreaView, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
 import styles from '../styles/ShelterHomePageStyle';
 import {Ionicons} from "@expo/vector-icons";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import colors from "../styles/colors";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect  } from '@react-navigation/native';
 import { Platform } from 'react-native';
+import { db, auth } from '../services/firebaseConfig';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
-// test animals
-const animals = [
-    { id: 1, name: 'Ollie', age: 12, gender: 'M', breed: 'Jack Russell',notificationCount: 2,  images: [
-            require('../../assets/dog-test-2.jpg')
-        ]
-    },
-    { id: 2, name: 'Max', age: 5, gender: 'F', breed: 'Labrador',notificationCount: 0, images: [
-            require('../../assets/dog-test-1.jpg'),
-            require('../../assets/dog-test-3.jpg')
-        ]
-    },
-    { id: 3, name: 'Bella', age: 3, gender: 'M', breed: 'Poodle',notificationCount: 1, images: [
-            require('../../assets/dog-test-1.jpg'),
-            require('../../assets/dog-test-2.jpg'),
-            require('../../assets/dog-test-3.jpg')
-        ]
-    },
-];
-
-const AnimalCard = ({ name, age, breed, gender, images, notificationCount }) => (
+const AnimalCard = ({ name, age, breed, gender, imageUrls, notificationCount }) => (
     <View style={styles.card}>
-        <Image source={images[0]} style={styles.animalImage} resizeMode="cover" />
+        <Image
+            source={{ uri: imageUrls.length > 0 ? imageUrls[0] : '' }}
+            style={styles.animalImage}
+            resizeMode="cover"
+            onError={(e) => {
+                console.log("Error loading image: ", e.nativeEvent.error);
+            }}
+        />
 
         <View style={styles.notificationContainer}>
             {notificationCount > 0 && (
@@ -82,16 +72,78 @@ const customRightComponent = (navigation) => (
 
 const ShelterHomeScreen = () => {
     const navigation = useNavigation();
+    const [animals, setAnimals] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [imagesLoaded, setImagesLoaded] = useState(false);
+
+    const fetchAnimals = async () => {
+        setLoading(true);
+        try {
+            const currentShelterId = auth.currentUser?.uid;
+
+            if (!currentShelterId) {
+                console.error('No user logged in');
+                return;
+            }
+
+            console.log('Current Shelter ID:', currentShelterId);
+
+            const animalsQuery = query(
+                collection(db, 'animals'),
+                where('shelterId', '==', currentShelterId)
+            );
+
+            const querySnapshot = await getDocs(animalsQuery);
+            const animalsList = querySnapshot.docs.map(doc => {
+                const data = doc.data();
+                console.log(doc.data().valueOf().imageUrls);
+                return {
+                    id: doc.id,
+                    name: data.name,
+                    age: data.age,
+                    gender: data.gender,
+                    breed: data.breed,
+                    imageUrls: data.imageUrls || [],
+                    notificationCount: data.notificationCount || 0,
+                };
+            });
+            setAnimals(animalsList);
+            await preloadImages(animalsList);
+        } catch (error) {
+            console.error('Error fetching animals:', error);
+        } finally {
+            setLoading(false); // End loading
+        }
+    }
+
+    const preloadImages = async (animalsList) => {
+        const imageUrls = animalsList.flatMap(animal => animal.imageUrls);
+        await Promise.all(imageUrls.map(url => Image.prefetch(url)));
+        setImagesLoaded(true);
+    };
+
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchAnimals(); // Call the function to fetch data
+        }, [])
+    );
 
     return (
         <SafeAreaView style={[styles.container, {paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight: 0}]} edges={['left', 'right']}>
             <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
             <Header rightComponent={() => customRightComponent(navigation)} />
+            {loading || !imagesLoaded ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={colors.genderMaleBlue} />
+                    <Text>Loading...</Text>
+                </View>
+            ) : (
                 <ScrollView style={styles.scrollView}>
                     {animals.map((animal) => (
                         <AnimalCard key={animal.id} {...animal} />
                     ))}
                 </ScrollView>
+            )}
             <Navbar />
         </SafeAreaView>
     );
