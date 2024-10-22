@@ -6,7 +6,6 @@ import { StatusBar } from 'react-native';
 import firebaseService from "../services/firebaseService";
 import userSession from "../services/UserSession";
 
-
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
