@@ -29,7 +29,6 @@ const RegisterScreen = ({ navigation }) => {
         }
     };
 
-
     return (
         <KeyboardAvoidingView
             style={styles.container}

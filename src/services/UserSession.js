@@ -21,7 +21,8 @@ class UserSession {
                 user.fullName,
                 user.phoneNo,
                 user.location,
-                user.role
+                user.role,
+                user.likedAnimals
             );
         } else {
             this.user = user;
