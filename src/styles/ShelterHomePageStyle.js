@@ -6,6 +6,11 @@ export default StyleSheet.create({
         color: colors.genderMaleBlue,
         fontSize: 18,
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',

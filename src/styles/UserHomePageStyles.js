@@ -10,6 +10,7 @@ const styles = StyleSheet.create({
     },
         swiperContainer: {
             flex: 1,
+            borderRadius: 10
         },
             card: {
                 flex: 1,
