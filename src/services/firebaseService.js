@@ -28,7 +28,7 @@ class FirebaseService {
                     fullName,
                     phoneNo,
                     location,
-                    role: "customer",
+                    role: "user",
                     likedAnimals: [],
                 };
 
