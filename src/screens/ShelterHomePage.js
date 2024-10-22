@@ -7,19 +7,30 @@ import {
     ScrollView,
     TouchableOpacity,
     StatusBar,
-    ActivityIndicator
+    ActivityIndicator,
+    Alert
 } from 'react-native';
 import styles from '../styles/ShelterHomePageStyle';
 import {Ionicons} from "@expo/vector-icons";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
 import colors from "../styles/colors";
-import { useNavigation, useFocusEffect  } from '@react-navigation/native';
+import {
+    useNavigation,
+    useFocusEffect
+} from '@react-navigation/native';
 import { Platform } from 'react-native';
 import { db, auth } from '../services/firebaseConfig';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import {
+    collection,
+    onSnapshot,
+    query,
+    where,
+    doc,
+    updateDoc
+} from 'firebase/firestore';
 
-const AnimalCard = ({ name, age, breed, gender, imageUrls, notificationCount }) => (
+const AnimalCard = ({ name, age, breed, gender, adoptionStatus, imageUrls, notificationCount, id, onAdopt }) => (
     <View style={styles.card}>
         <Image
             source={{ uri: imageUrls.length > 0 ? imageUrls[0] : '' }}
@@ -46,10 +57,17 @@ const AnimalCard = ({ name, age, breed, gender, imageUrls, notificationCount }) 
                 {renderGenderIcon(gender)}
                 <Text style={styles.breed}>{breed}</Text>
             </View>
+
+            <View style={styles.adoptionStatusContainer}>
+                <Text style={styles.adoptionStatus}>
+                    {adoptionStatus ? "Adopted" : "Up for Adoption"}
+                </Text>
+            </View>
+
         </View>
         <View style={styles.buttonContainer}>
-            <ActionButton title="Adopted" />
-            <ActionButton title="View Messages" />
+            <ActionButton title="Adopted" onPress={() => onAdopt(id)} />
+            <ActionButton title="View Likes" />
             <ActionButton title="Delete" style={styles.deleteButton} deleteButtonText />
         </View>
     </View>
@@ -64,8 +82,8 @@ const renderGenderIcon = (gender) => {
     ) : null;
 };
 
-const ActionButton = ({ title, style, deleteButtonText }) => (
-    <TouchableOpacity style={[styles.button, style]}>
+const ActionButton = ({ title, style, deleteButtonText, onPress }) => (
+    <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
         <Text style={[styles.buttonText, deleteButtonText && styles.deleteButtonText]}>{title}</Text>
     </TouchableOpacity>
 );
@@ -78,10 +96,13 @@ const ShelterHomeScreen = () => {
 
     const fetchAnimals = async () => {
         setLoading(true);
+
+        console.log('Loading state before pull:',loading);
         try {
             const currentShelterId = auth.currentUser?.uid;
             if (!currentShelterId) {
                 console.error('No user logged in');
+                setLoading(false);
                 return;
             }
 
@@ -92,34 +113,78 @@ const ShelterHomeScreen = () => {
                 where('shelterId', '==', currentShelterId)
             );
 
-            const querySnapshot = await getDocs(animalsQuery);
-            const animalsList = querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                console.log(doc.data().valueOf().imageUrls);
-                return {
-                    id: doc.id,
-                    name: data.name,
-                    age: data.age,
-                    gender: data.gender,
-                    breed: data.breed,
-                    imageUrls: data.imageUrls || [],
-                    notificationCount: data.notificationCount || 0,
-                };
+            const unsubscribe = onSnapshot(animalsQuery, (querySnapshot) => {
+                const animalsList = querySnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        name: data.name,
+                        age: data.age,
+                        gender: data.gender,
+                        breed: data.breed,
+                        adoptionStatus: data.adoptionStatus,
+                        imageUrls: data.imageUrls || [],
+                        notificationCount: data.notificationCount || 0,
+                    };
+                });
+                setAnimals(animalsList);
+                console.log('Animals fetched:', animalsList);
+                preloadImages(animalsList);
+                setLoading(false); // End loading after data is fetched
+            }, (error) => {
+                console.error('Error fetching animals:', error);
+                setLoading(false); // End loading on error
             });
 
-            setAnimals(animalsList);
-            await preloadImages(animalsList);
+            // Cleanup subscription on unmount
+            return () => unsubscribe();
         } catch (error) {
             console.error('Error fetching animals:', error);
-        } finally {
-            setLoading(false); // End loading
+            setLoading(false); // Ensure loading is false even if there is an error
         }
     };
 
     const preloadImages = async (animalsList) => {
         const imageUrls = animalsList.flatMap(animal => animal.imageUrls);
-        await Promise.all(imageUrls.map(url => Image.prefetch(url)));
-        setImagesLoaded(true);
+        const validImageUrls = imageUrls.filter(url => url); // Filter out any empty URLs
+
+        try {
+            await Promise.all(validImageUrls.map(url => Image.prefetch(url)));
+            setImagesLoaded(true);
+        } catch (error) {
+            console.error('Error prefetching images:', error);
+        }
+    };
+
+    const handleAdopt = (animalId) => {
+        Alert.alert(
+            "Confirm Adoption",
+            "Are you sure this animal has been adopted?",
+            [
+                { text: "No", onPress: () => console.log("Adoption canceled"), style: "cancel" },
+                {
+                    text: "Yes",
+                    onPress: async () => {
+                        setLoading(true);
+                        try {
+                            const animalRef = doc(db, 'animals', animalId);
+                            await updateDoc(animalRef, { adoptionStatus: true });
+                            console.log(`Animal with ID ${animalId} updated to adopted.`);
+
+                            // Refresh the list of animals after updating
+                            await fetchAnimals(); // Call fetchAnimals directly
+
+                            Alert.alert('Success', 'The animal has been marked as adopted.');
+                        } catch (error) {
+                            console.error('Error updating animal adoption status:', error);
+                        } finally {
+                            setLoading(false); // Ensure loading state is reset
+                        }
+                    }
+                }
+            ],
+            { cancelable: false }
+        );
     };
 
     useFocusEffect(
@@ -127,6 +192,10 @@ const ShelterHomeScreen = () => {
             fetchAnimals();
         }, [])
     );
+
+    useEffect(() => {
+        console.log('Loading state: ', loading);
+    }, [loading]); // Log loading state whenever it changes
 
     return (
         <SafeAreaView style={[styles.container, {paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight: 0}]} edges={['left', 'right']}>
@@ -142,7 +211,7 @@ const ShelterHomeScreen = () => {
             ) : (
                 <ScrollView style={styles.scrollView}>
                     {animals.map((animal) => (
-                        <AnimalCard key={animal.id} {...animal} />
+                        <AnimalCard key={animal.id} {...animal} onAdopt={handleAdopt} />
                     ))}
                 </ScrollView>
             )}

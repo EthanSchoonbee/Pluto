@@ -90,6 +90,15 @@ export default StyleSheet.create({
                             fontSize: 18,
                             color: '#ddd',
                         },
+                    adoptionStatusContainer: {
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 5,
+                    },
+                        adoptionStatus: {
+                            fontSize: 18,
+                            color: '#ddd',
+                        },
                 buttonContainer: {
                     flexDirection: 'row',
                     justifyContent: 'space-between',
