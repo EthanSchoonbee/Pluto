@@ -1,5 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {View, Text, Image, SafeAreaView, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
+import {
+    View,
+    Text,
+    Image,
+    SafeAreaView,
+    ScrollView,
+    TouchableOpacity,
+    StatusBar,
+    ActivityIndicator
+} from 'react-native';
 import styles from '../styles/ShelterHomePageStyle';
 import {Ionicons} from "@expo/vector-icons";
 import Header from "../components/Header";
@@ -20,7 +29,6 @@ const AnimalCard = ({ name, age, breed, gender, imageUrls, notificationCount }) 
                 console.log("Error loading image: ", e.nativeEvent.error);
             }}
         />
-
         <View style={styles.notificationContainer}>
             {notificationCount > 0 && (
                 <View style={styles.notificationBadge}>
@@ -28,7 +36,6 @@ const AnimalCard = ({ name, age, breed, gender, imageUrls, notificationCount }) 
                 </View>
             )}
         </View>
-
         <View style={styles.animalDetails}>
             <View style={styles.nameAgeContainer}>
                 <Text style={styles.name}>{name}</Text>
@@ -40,34 +47,27 @@ const AnimalCard = ({ name, age, breed, gender, imageUrls, notificationCount }) 
                 <Text style={styles.breed}>{breed}</Text>
             </View>
         </View>
-
         <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Adopted</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>View Messages</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.button, styles.deleteButton]}>
-                <Text style={[styles.buttonText, styles.deleteButtonText]}>Delete</Text>
-            </TouchableOpacity>
+            <ActionButton title="Adopted" />
+            <ActionButton title="View Messages" />
+            <ActionButton title="Delete" style={styles.deleteButton} deleteButtonText />
         </View>
     </View>
 );
 
 const renderGenderIcon = (gender) => {
-    if (gender === 'M') {
-        return <Ionicons style={styles.gender} name="male" size={18} color={colors.genderMaleBlue} />;
-    } else if (gender === 'F') {
-        return <Ionicons style={styles.gender} name="female" size={18} color={colors.genderFemalePink} />;
-    }
-    return null;
+    const iconName = gender === 'M' ? "male" : gender === 'F' ? "female" : null;
+    const iconColor = gender === 'M' ? colors.genderMaleBlue : colors.genderFemalePink;
+
+    return iconName ? (
+        <Ionicons style={styles.gender} name={iconName} size={18} color={iconColor} />
+    ) : null;
 };
 
-const customRightComponent = (navigation) => (
-    <Text style={styles.addButton} onPress={() => navigation.navigate('Login')}>Add</Text>
+const ActionButton = ({ title, style, deleteButtonText }) => (
+    <TouchableOpacity style={[styles.button, style]}>
+        <Text style={[styles.buttonText, deleteButtonText && styles.deleteButtonText]}>{title}</Text>
+    </TouchableOpacity>
 );
 
 const ShelterHomeScreen = () => {
@@ -80,7 +80,6 @@ const ShelterHomeScreen = () => {
         setLoading(true);
         try {
             const currentShelterId = auth.currentUser?.uid;
-
             if (!currentShelterId) {
                 console.error('No user logged in');
                 return;
@@ -107,6 +106,7 @@ const ShelterHomeScreen = () => {
                     notificationCount: data.notificationCount || 0,
                 };
             });
+
             setAnimals(animalsList);
             await preloadImages(animalsList);
         } catch (error) {
@@ -114,7 +114,7 @@ const ShelterHomeScreen = () => {
         } finally {
             setLoading(false); // End loading
         }
-    }
+    };
 
     const preloadImages = async (animalsList) => {
         const imageUrls = animalsList.flatMap(animal => animal.imageUrls);
@@ -124,14 +124,16 @@ const ShelterHomeScreen = () => {
 
     useFocusEffect(
         React.useCallback(() => {
-            fetchAnimals(); // Call the function to fetch data
+            fetchAnimals();
         }, [])
     );
 
     return (
         <SafeAreaView style={[styles.container, {paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight: 0}]} edges={['left', 'right']}>
             <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-            <Header rightComponent={() => customRightComponent(navigation)} />
+            <Header rightComponent={() => (
+                <Text style={styles.addButton} onPress={() => navigation.navigate('AddAnimal')}>Add</Text>
+            )} />
             {loading || !imagesLoaded ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={colors.genderMaleBlue} />
