@@ -1,74 +1,35 @@
-import React, {useEffect, useState} from 'react';
-import {View, Text, Image, SafeAreaView, ScrollView, TouchableOpacity, StatusBar, ActivityIndicator } from 'react-native';
+import React, {
+    useCallback,
+    useEffect,
+    useState
+} from 'react';
+import {
+    View,
+    Text,
+    Image,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    ActivityIndicator
+} from 'react-native';
 import styles from '../styles/ShelterHomePageStyle';
-import {Ionicons} from "@expo/vector-icons";
 import Header from "../components/Header";
 import Navbar from "../components/Navbar";
-import colors from "../styles/colors";
-import { useNavigation, useFocusEffect  } from '@react-navigation/native';
+import {
+    useNavigation,
+    useFocusEffect
+} from '@react-navigation/native';
 import { Platform } from 'react-native';
 import { db, auth } from '../services/firebaseConfig';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-
-const AnimalCard = ({ name, age, breed, gender, imageUrls, notificationCount }) => (
-    <View style={styles.card}>
-        <Image
-            source={{ uri: imageUrls.length > 0 ? imageUrls[0] : '' }}
-            style={styles.animalImage}
-            resizeMode="cover"
-            onError={(e) => {
-                console.log("Error loading image: ", e.nativeEvent.error);
-            }}
-        />
-
-        <View style={styles.notificationContainer}>
-            {notificationCount > 0 && (
-                <View style={styles.notificationBadge}>
-                    <Text style={styles.notificationText}>{notificationCount}</Text>
-                </View>
-            )}
-        </View>
-
-        <View style={styles.animalDetails}>
-            <View style={styles.nameAgeContainer}>
-                <Text style={styles.name}>{name}</Text>
-                <Text style={styles.age}>, {age} years old</Text>
-            </View>
-
-            <View style={styles.genderBreedContainer}>
-                {renderGenderIcon(gender)}
-                <Text style={styles.breed}>{breed}</Text>
-            </View>
-        </View>
-
-        <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>Adopted</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.button}>
-                <Text style={styles.buttonText}>View Messages</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.button, styles.deleteButton]}>
-                <Text style={[styles.buttonText, styles.deleteButtonText]}>Delete</Text>
-            </TouchableOpacity>
-        </View>
-    </View>
-);
-
-const renderGenderIcon = (gender) => {
-    if (gender === 'M') {
-        return <Ionicons style={styles.gender} name="male" size={18} color={colors.genderMaleBlue} />;
-    } else if (gender === 'F') {
-        return <Ionicons style={styles.gender} name="female" size={18} color={colors.genderFemalePink} />;
-    }
-    return null;
-};
-
-const customRightComponent = (navigation) => (
-    <Text style={styles.addButton} onPress={() => navigation.navigate('Login')}>Add</Text>
-);
+import {
+    collection,
+    onSnapshot,
+    query,
+    where,
+} from 'firebase/firestore';
+import AnimalCard from '../components/AnimalCard';
+import { getLocalImageUrls, deleteLocalImage } from '../utils/imageUtils';
+import {  handleAdopt, handleDelete } from '../services/databaseService';
 
 const ShelterHomeScreen = () => {
     const navigation = useNavigation();
@@ -76,71 +37,100 @@ const ShelterHomeScreen = () => {
     const [loading, setLoading] = useState(true);
     const [imagesLoaded, setImagesLoaded] = useState(false);
 
-    const fetchAnimals = async () => {
+    const fetchAnimals = useCallback(async () => {
         setLoading(true);
         try {
             const currentShelterId = auth.currentUser?.uid;
-
             if (!currentShelterId) {
                 console.error('No user logged in');
+                setLoading(false);
                 return;
             }
-
-            console.log('Current Shelter ID:', currentShelterId);
 
             const animalsQuery = query(
                 collection(db, 'animals'),
                 where('shelterId', '==', currentShelterId)
             );
 
-            const querySnapshot = await getDocs(animalsQuery);
-            const animalsList = querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                console.log(doc.data().valueOf().imageUrls);
-                return {
-                    id: doc.id,
-                    name: data.name,
-                    age: data.age,
-                    gender: data.gender,
-                    breed: data.breed,
-                    imageUrls: data.imageUrls || [],
-                    notificationCount: data.notificationCount || 0,
-                };
+            const unsubscribe = onSnapshot(animalsQuery, async (querySnapshot) => {
+                try {
+                    const animalsList = await Promise.all(querySnapshot.docs.map(async (doc) => {
+                        const data = doc.data();
+                        const localImageUrls = await getLocalImageUrls(data.imageUrls || []);
+                        return {
+                            id: doc.id,
+                            name: data.name,
+                            age: data.age,
+                            gender: data.gender,
+                            breed: data.breed,
+                            adoptionStatus: data.adoptionStatus,
+                            imageUrls: localImageUrls,
+                            notificationCount: data.notificationCount || 0,
+                        };
+                    }));
+                    setAnimals(animalsList);
+                    await  preloadImages(animalsList);
+                } catch (error) {
+                    console.error('Error processing animals data:', error);
+                } finally {
+                    setLoading(false); // Ensure loading state is reset
+                }
+            }, (error) => {
+                console.error('Error fetching animals:', error);
+                setLoading(false); // End loading on error
             });
-            setAnimals(animalsList);
-            await preloadImages(animalsList);
+
+            return () => unsubscribe(); // Cleanup subscription on unmount
         } catch (error) {
             console.error('Error fetching animals:', error);
-        } finally {
-            setLoading(false); // End loading
+            setLoading(false); // Ensure loading is false even if there is an error
         }
-    }
+    }, []);
 
     const preloadImages = async (animalsList) => {
-        const imageUrls = animalsList.flatMap(animal => animal.imageUrls);
-        await Promise.all(imageUrls.map(url => Image.prefetch(url)));
-        setImagesLoaded(true);
+        const imageUrls = animalsList.flatMap(animal => animal.imageUrls).filter(url => url);
+        try {
+            await Promise.all(imageUrls.map(url => Image.prefetch(url)));
+            setImagesLoaded(true);
+        } catch (error) {
+            console.error('Error prefetching images:', error);
+        }
+    };
+
+    const handleViewLikes = (animalId) => {
+        navigation.navigate('ShelterChats', { animalId });
     };
 
     useFocusEffect(
-        React.useCallback(() => {
-            fetchAnimals(); // Call the function to fetch data
-        }, [])
+        useCallback(() => {
+            fetchAnimals();
+        }, [fetchAnimals])
     );
+
+    useEffect(() => {
+        console.log('Loading state: ', loading);
+    }, [loading]); // Log loading state whenever it changes
 
     return (
         <SafeAreaView style={[styles.container, {paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight: 0}]} edges={['left', 'right']}>
             <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-            <Header rightComponent={() => customRightComponent(navigation)} />
+            <Header rightComponent={() => (
+                <Text style={styles.addButton} onPress={() => navigation.navigate('AddAnimal')}>Add</Text>
+            )} />
             {loading || !imagesLoaded ? (
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={colors.genderMaleBlue} />
+                    <ActivityIndicator size="large" color={'#d9cb94'} />
                     <Text>Loading...</Text>
                 </View>
             ) : (
                 <ScrollView style={styles.scrollView}>
                     {animals.map((animal) => (
-                        <AnimalCard key={animal.id} {...animal} />
+                        <AnimalCard
+                            key={animal.id} {...animal}
+                            onAdopt={handleAdopt}
+                            onDelete={handleDelete}
+                            onViewLikes={handleViewLikes}
+                        />
                     ))}
                 </ScrollView>
             )}
