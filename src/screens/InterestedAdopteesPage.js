@@ -6,7 +6,7 @@ import { getRandomAdoptionMessage } from "../utils/adoptionMessages.js";
 //Safe area wrapper to avoid the notch and bottom bar
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
 //styling for the shelter chats screen
-import styles from "../styles/ShelterChatsStyle";
+import styles from "../styles/InterestedAdopteesPageStyle";
 
 //Entire shelter chats component
 const ShelterChats = ({ route }) => {
