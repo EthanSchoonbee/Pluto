@@ -81,6 +81,7 @@ const ShelterSettingsStyles = StyleSheet.create({
         paddingTop: 5,
         backgroundColor: colors.userSettingsWhite,
         justifyContent: "flex-end",
+        paddingBottom: 80,
     },
     customButton: {
         marginBottom: 15,
