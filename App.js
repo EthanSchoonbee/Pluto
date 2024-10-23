@@ -10,8 +10,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./src/screens/Login";
 import Register from "./src/screens/Register";
-import PetPage from "./src/screens/PetPage";
-import ShelterChats from "./src/screens/ShelterChats";
+import LikedAnimalsPage from "./src/screens/LikedAnimalsPage";
+import InterestedAdoptersPage from "./src/screens/InterestedAdoptersPage";
 import UserDetailForm from "./src/screens/UserDetailsForm";
 import UserHomeScreen from "./src/screens/UserHomePage";
 import Filter from './src/screens/Filter';
@@ -63,8 +63,8 @@ const App = () => {
                         <Stack.Screen name="UserHome" component={UserHomeScreen} />
                         <Stack.Screen name="Filter" component={Filter}/>
                         <Stack.Screen name="AddAnimal" component={AddAnimal}/>
-                        <Stack.Screen name="PetPage" component={PetPage} options={{ title: 'Pets' }} />
-                        <Stack.Screen name="ShelterChats" component={ShelterChats} options={{ title: 'Chat' }} />
+                        <Stack.Screen name="LikedAnimalsPage" component={LikedAnimalsPage} options={{ title: 'Pets' }} />
+                        <Stack.Screen name="InterestedAdoptersPage" component={InterestedAdoptersPage} options={{ title: 'Chat' }} />
                         <Stack.Screen name="UserDetailForm" component={UserDetailForm} options={{ title: 'Chat Detail' }} />
                         <Stack.Screen name="UserSettings" component={UserSettings} />
                         <Stack.Screen name="ShelterSettings" component={ShelterSettings}/>

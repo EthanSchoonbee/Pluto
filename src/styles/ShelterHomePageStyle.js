@@ -6,6 +6,12 @@ export default StyleSheet.create({
         color: colors.genderMaleBlue,
         fontSize: 18,
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.06)'
+    },
     container: {
         flex: 1,
         backgroundColor: '#fff',
@@ -82,6 +88,15 @@ export default StyleSheet.create({
                             marginRight: 7,
                         },
                         breed: {
+                            fontSize: 18,
+                            color: '#ddd',
+                        },
+                    adoptionStatusContainer: {
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        marginTop: 5,
+                    },
+                        adoptionStatus: {
                             fontSize: 18,
                             color: '#ddd',
                         },

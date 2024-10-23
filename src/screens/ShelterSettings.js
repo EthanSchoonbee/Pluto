@@ -12,9 +12,10 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
 import strings from '../strings/en.js';
-import Navbar from "../components/Navbar";
+import Navbar from "../components/ShelterNavbar";
 import SettingsInputValidations from "../services/SettingsInputValidations";
 import colors from "../styles/colors";
+import NavbarWrapper from "../components/NavbarWrapper";
 
 const defaultProfileImage = require('../../assets/handsome_squidward.jpg');
 
@@ -109,7 +110,7 @@ const ShelterSettingsScreen = () => {
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <ScrollView style={ShelterSettingsStyles.container} contentContainerStyle={{flexGrow:1}}>
+            <View style={ShelterSettingsStyles.container}>
                 {/* Centered Image */}
                 <View style={ShelterSettingsStyles.centerImageContainer}>
                     <Image
@@ -236,6 +237,7 @@ const ShelterSettingsScreen = () => {
             <View style={{height: 80}}>
                 <Navbar/>
             </View>
+            <NavbarWrapper />
         </SafeAreaView>
     );
 };

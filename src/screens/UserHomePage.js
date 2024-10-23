@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, Text, Image, SafeAreaView, Animated, ScrollView, StatusBar} from 'react-native';
+import {View, Text, Image, SafeAreaView, Animated, StatusBar} from 'react-native';
 import Swiper from 'react-native-deck-swiper';
 import { Ionicons } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -8,8 +8,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import colors  from "../styles/colors";
 import styles from '../styles/UserHomePageStyles';
 import Header from '../components/Header';
-import Navbar from '../components/Navbar';
 import { Platform } from 'react-native';
+import NavbarWrapper from "../components/NavbarWrapper";
 
 // test animals
 const animals = [
@@ -325,7 +325,7 @@ const UserHomeScreen = () => {
                         cardVerticalMargin={ 0 }>
                     </Swiper>
                 </View>
-            <Navbar />
+            <NavbarWrapper />
             <View style={styles.buttonsContainer}>
                 <TouchableOpacity
                     style={ [styles.button,

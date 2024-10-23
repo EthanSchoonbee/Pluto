@@ -10,9 +10,10 @@ import {
     Platform,
 } from "react-native";
 import PetPageHeader from "../components/PetPageHeader";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/ShelterNavbar";
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
-import styles from "../styles/PetPageStyles";
+import styles from "../styles/LikedAnimalsPageStyle";
+import NavbarWrapper from "../components/NavbarWrapper";
 
 //Creating an object of dummy pets for testing that will have a id, name, image and type. Type is either dog or cat
 const dummyPets = [
@@ -68,7 +69,7 @@ const dummyPets = [
 ];
 
 //The entire pet list component frontend elements
-const PetList = ({ navigation }) => {
+const LikedAnimalsPage = ({ navigation }) => {
     //The current active tab will be set to dogs
     const [activeTab, setActiveTab] = useState("Dogs");
 
@@ -80,7 +81,7 @@ const PetList = ({ navigation }) => {
             style={styles.petItem}
             //when its pressed will navigate to the shelter chats screen
             onPress={() =>
-                navigation.navigate("ShelterChats", {
+                navigation.navigate("InterestedAdoptersPage", {
                     //its passing the pet name and pet image to the shelter chats screen
                     petName: item.name,
                     petImage: item.image,
@@ -157,9 +158,9 @@ const PetList = ({ navigation }) => {
                     scrollEnabled={false}
                 />
             </ScrollView>
-            <Navbar />
+            <NavbarWrapper />
         </SafeAreaWrapper>
     );
 };
 
-export default PetList;
+export default LikedAnimalsPage;

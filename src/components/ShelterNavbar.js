@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/NavbarStyles';
 import { useNavigation } from '@react-navigation/native';
 
-const Navbar = () => {
+const ShelterNavbar = () => {
     const navigation = useNavigation();
 
     return (
@@ -13,22 +13,10 @@ const Navbar = () => {
                 name="home"
                 size={30}
                 color="black"
-                onPress={() => navigation.navigate('UserHome')}
+                onPress={() => navigation.navigate('ShelterHome')}
             />
             <Ionicons
-                name="paw"
-                size={30}
-                color="black"
-                onPress={() => navigation.navigate('AddAnimal')}
-            />
-            <Ionicons
-                name="heart"
-                size={30}
-                color="black"
-                onPress={() => navigation.navigate('Register')}
-            />
-            <Ionicons
-                name="person"
+                name="settings"
                 size={30}
                 color="black"
                 onPress={() => navigation.navigate('ShelterSettings')}
@@ -37,4 +25,4 @@ const Navbar = () => {
     );
 };
 
-export default Navbar;
+export default ShelterNavbar;

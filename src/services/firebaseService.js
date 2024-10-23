@@ -10,6 +10,7 @@ import {
     signOut,
     getAuth
 } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 class FirebaseService {
     constructor() {
@@ -28,11 +29,14 @@ class FirebaseService {
                     fullName,
                     phoneNo,
                     location,
-                    role: "customer",
+                    role: "user",
                     likedAnimals: [],
                 };
 
                 await this.addUserData('users', userData);
+
+                await AsyncStorage.setItem('userData', JSON.stringify(userData));
+
                 console.log("Firebase Authentication Service: Registration Process Successful");
                 onComplete(true, null); // Registration successful
             })
@@ -45,7 +49,18 @@ class FirebaseService {
     loginUser(email, password, onComplete) {
         console.log("Firebase Authentication Service: Logging In User");
         signInWithEmailAndPassword(this.auth, email, password)
-            .then(() => {
+            .then(async (userCredentials) => {
+                const userId = userCredentials.user.uid;
+
+                // Fetch user data from Firestore
+                const userData = await this.getUserData('users', userId) ||
+                    await this.getUserData('shelters', userId);
+
+                if (userData) {
+                    // Cache the user data using AsyncStorage
+                    await AsyncStorage.setItem('userData', JSON.stringify(userData));
+                }
+
                 console.log("Firebase Authentication Service: Login Process Successful");
                 onComplete(true, null); // Login successful
             })
