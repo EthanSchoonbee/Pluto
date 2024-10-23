@@ -8,7 +8,8 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
-    getAuth
+    getAuth,
+    updatePassword
 } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -117,6 +118,42 @@ class FirebaseService {
             throw error;
         }
     }
+
+    async updateUserSettings(collectionName, data) {
+        try {
+            const currentUser = this.getCurrentUser(); // Get the current logged-in user
+            if (currentUser) {
+                const docRef = doc(db, collectionName, currentUser.uid); // Reference to the user's document
+                await setDoc(docRef, data, { merge: true }); // Update the document with the new data, merging with existing fields
+                console.log('User settings updated successfully for:', currentUser.uid);
+            } else {
+                throw new Error("No user logged in.");
+            }
+        } catch (error) {
+            console.error('Error updating user settings:', error);
+            throw error;
+        }
+    }
+
+
+    // Method to change the password
+    async changePassword(newPassword) {
+        try {
+            const currentUser = this.getCurrentUser();
+            if (currentUser) {
+                await updatePassword(currentUser, newPassword);
+                console.log('Password updated successfully.');
+
+            } else {
+                throw new Error("No user logged in.");
+            }
+        } catch (error) {
+            console.error('Error updating password:', error.message);
+
+        }
+    }
+
+
 }
 
 export default new FirebaseService();
