@@ -1,16 +1,38 @@
 import * as FileSystem from 'expo-file-system';
 
-export const getLocalImageUrls = async (imageUrls) => {
-    return await Promise.all(imageUrls.map(async (url) => {
-        const fileName = url.split('/').pop();
+const DEFAULT_IMAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/pluto-2b00c.appspot.com/o/default_animal_image.png?alt=media&token=94dbc329-5848-4dfc-8a93-fe806a48b4bd';
+
+export const getLocalImageUrl = async (imageUrls) => {
+    try {
+        // Get the first image URL or use the default image URL if the list is empty
+        const imageUrl = imageUrls[0] || DEFAULT_IMAGE_URL;
+        const fileName = imageUrl.split('/').pop();
         const fileUri = FileSystem.documentDirectory + fileName;
 
+        console.log('Image Firestore Url:', imageUrl);
+
         const fileInfo = await FileSystem.getInfoAsync(fileUri);
+
+        // Check if the file already exists locally, if not, download it
         if (!fileInfo.exists) {
-            await downloadImage(url, fileUri);
+            await downloadImage(imageUrl, fileUri);
         }
+
+        console.log('Image Uri:', fileUri);
         return fileUri;
-    }));
+    } catch (error) {
+        console.error('Error handling image URL:', error);
+
+        // Return the default image URI as a fallback if any error occurs
+        const defaultFileName = DEFAULT_IMAGE_URL.split('/').pop();
+        const defaultFileUri = FileSystem.documentDirectory + defaultFileName;
+
+        const defaultFileInfo = await FileSystem.getInfoAsync(defaultFileUri);
+        if (!defaultFileInfo.exists) {
+            await downloadImage(DEFAULT_IMAGE_URL, defaultFileUri);
+        }
+        return defaultFileUri;
+    }
 };
 
 export const downloadImage = async (url, fileUri) => {

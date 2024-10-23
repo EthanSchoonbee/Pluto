@@ -10,9 +10,10 @@ import {
     Platform,
 } from "react-native";
 import PetPageHeader from "../components/PetPageHeader";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/ShelterNavbar";
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
 import styles from "../styles/LikedAnimalsPageStyle";
+import NavbarWrapper from "../components/NavbarWrapper";
 
 //Creating an object of dummy pets for testing that will have a id, name, image and type. Type is either dog or cat
 const dummyPets = [
@@ -157,7 +158,7 @@ const PetList = ({ navigation }) => {
                     scrollEnabled={false}
                 />
             </ScrollView>
-            <Navbar />
+            <NavbarWrapper />
         </SafeAreaWrapper>
     );
 };

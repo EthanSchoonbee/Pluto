@@ -3,9 +3,10 @@ import { View, Text, ScrollView, Switch, TouchableOpacity, TextInput } from 'rea
 import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import UserSettingsStyles from "../styles/UserSettingsStyles";
 import strings from '../strings/en.js';
-import Navbar from "../components/Navbar";
+import Navbar from "../components/ShelterNavbar";
 import SettingsInputValidations from "../services/SettingsInputValidations";
 import { Alert } from 'react-native';
+import NavbarWrapper from "../components/NavbarWrapper";
 
 const UserSettingsScreen = () => {
     const defaultValues = {
@@ -236,7 +237,7 @@ const UserSettingsScreen = () => {
                 </View>
             </View>
 
-            <Navbar style={{ flex: 1 }} />
+            <NavbarWrapper style={{ flex: 1 }} />
         </View>
     );
 };
