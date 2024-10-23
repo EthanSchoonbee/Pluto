@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, ScrollView, Switch, TouchableOpacity, TextInput, Image, Alert} from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
-import ShelterSettingsStyles from "../styles/ShelterSettingsStyles"; // New style file
-import strings from '../strings/en.js'; // Import strings
+import {
+    View,
+    Text,
+    Switch,
+    TouchableOpacity,
+    TextInput,
+    Image,
+    Alert,
+    SafeAreaView, ScrollView,
+} from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
+import strings from '../strings/en.js';
 import Navbar from "../components/Navbar";
 import SettingsInputValidations from "../services/SettingsInputValidations";
+import colors from "../styles/colors";
 
-const defaultProfileImage = require('../../assets/handsome_squidward.jpg')
+const defaultProfileImage = require('../../assets/handsome_squidward.jpg');
 
 const ShelterSettingsScreen = () => {
     const defaultValues = {
@@ -25,73 +35,55 @@ const ShelterSettingsScreen = () => {
     const [tel, setTel] = useState(defaultValues.tel);
     const [password, setPassword] = useState(defaultValues.password);
     const [confirmPassword, setConfirmPassword] = useState(defaultValues.confirmPassword);
-    const [isEditable, setIsEditable] = useState(false); // Control editable state
+    const [isEditable, setIsEditable] = useState(false);
 
     const navigation = useNavigation();
 
     const togglePushNotifications = () => setIsPushNotificationsEnabled(previousState => !previousState);
 
     const handleUpdate = () => {
-        checkDetailsInputs()
+        checkDetailsInputs();
     };
 
-
-    // Check if details inputs are valid
     const checkDetailsInputs = () => {
-
-        // Start of checking for null inputs
         if (SettingsInputValidations.isEmptyOrWhitespace(shelterName)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.name_required);
             return false;
         }
-
-        if(SettingsInputValidations.isEmptyOrWhitespace(location)){
+        if (SettingsInputValidations.isEmptyOrWhitespace(location)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.location_required);
             return false;
         }
-
-        if(SettingsInputValidations.isEmptyOrWhitespace(email)){
+        if (SettingsInputValidations.isEmptyOrWhitespace(email)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.email_required);
             return false;
         }
-
-        if(SettingsInputValidations.isEmptyOrWhitespace(tel)){
+        if (SettingsInputValidations.isEmptyOrWhitespace(tel)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.phone_required);
             return false;
         }
-
-        if(SettingsInputValidations.isEmptyOrWhitespace(password)){
+        if (SettingsInputValidations.isEmptyOrWhitespace(password)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.password_required);
             return false;
         }
-
-        if(SettingsInputValidations.isEmptyOrWhitespace(confirmPassword)){
+        if (SettingsInputValidations.isEmptyOrWhitespace(confirmPassword)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.confirm_required);
             return false;
         }
-        // End of checking for null inputs
-
-        // Check Email for @ sign
-        if(!SettingsInputValidations.containsAtSymbol(email)){
-            Alert.alert(strings.shelter_settings.validation_error,strings.shelter_settings.valid_email);
+        if (!SettingsInputValidations.containsAtSymbol(email)) {
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.valid_email);
             return false;
         }
-
-        // Check phone number to just be numbers
-        if(!SettingsInputValidations.isValidNumberInput(tel)){
-            Alert.alert(strings.shelter_settings.validation_error,strings.shelter_settings.valid_number);
+        if (!SettingsInputValidations.isValidNumberInput(tel)) {
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.valid_number);
             return false;
         }
-
-        // Check if passowrd and confirm password match
-        if(!SettingsInputValidations.areStringsEqual(password,confirmPassword)){
-            Alert.alert(strings.shelter_settings.validation_error,strings.shelter_settings.password_match);
+        if (!SettingsInputValidations.areStringsEqual(password, confirmPassword)) {
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.password_match);
             return false;
         }
-        // If all inputs are valid
         return true;
     };
-
 
     const handleLogout = () => {
         console.log('Logout button pressed');
@@ -102,10 +94,9 @@ const ShelterSettingsScreen = () => {
         setIsEditable(prev => !prev);
     };
 
-    // Reset fields to default values when the component is focused
     useFocusEffect(
         React.useCallback(() => {
-            setIsPushNotificationsEnabled(false); // Reset push notifications
+            setIsPushNotificationsEnabled(false);
             setShelterName(defaultValues.shelterName);
             setLocation(defaultValues.location);
             setEmail(defaultValues.email);
@@ -117,17 +108,15 @@ const ShelterSettingsScreen = () => {
     );
 
     return (
-        <View style={{ flex: 1 }}>
-            <ScrollView style={ShelterSettingsStyles.container} contentContainerStyle={{ paddingBottom: 100 }}>
-
+        <SafeAreaView style={{ flex: 1 }}>
+            <View style={ShelterSettingsStyles.container}>
                 {/* Centered Image */}
                 <View style={ShelterSettingsStyles.centerImageContainer}>
                     <Image
-                        source={defaultProfileImage} // Replace with your actual image URI
+                        source={defaultProfileImage}
                         style={ShelterSettingsStyles.centerImage}
                     />
                 </View>
-
 
                 {/* Shelter Details Section */}
                 <Text style={ShelterSettingsStyles.detailsTitle}>{strings.shelter_settings.shelter_details_title}</Text>
@@ -140,7 +129,7 @@ const ShelterSettingsScreen = () => {
                                 value={shelterName}
                                 onChangeText={setShelterName}
                                 placeholder={strings.shelter_settings.shelter_sample_text}
-                                editable={isEditable} // Editable only when double clicked
+                                editable={isEditable}
                                 selectTextOnFocus={isEditable}
                             />
                         </TouchableOpacity>
@@ -153,7 +142,7 @@ const ShelterSettingsScreen = () => {
                                 value={location}
                                 onChangeText={setLocation}
                                 placeholder={strings.shelter_settings.shelter_sample_text}
-                                editable={isEditable} // Editable only when double clicked
+                                editable={isEditable}
                                 selectTextOnFocus={isEditable}
                             />
                         </TouchableOpacity>
@@ -166,7 +155,7 @@ const ShelterSettingsScreen = () => {
                                 value={email}
                                 onChangeText={setEmail}
                                 placeholder={strings.shelter_settings.shelter_email_placeholder}
-                                editable={isEditable} // Editable only when double clicked
+                                editable={isEditable}
                                 selectTextOnFocus={isEditable}
                             />
                         </TouchableOpacity>
@@ -179,7 +168,7 @@ const ShelterSettingsScreen = () => {
                                 value={tel}
                                 onChangeText={setTel}
                                 placeholder={strings.shelter_settings.shelter_tel_placeholder}
-                                editable={isEditable} // Editable only when double clicked
+                                editable={isEditable}
                                 selectTextOnFocus={isEditable}
                             />
                         </TouchableOpacity>
@@ -193,7 +182,7 @@ const ShelterSettingsScreen = () => {
                                 onChangeText={setPassword}
                                 placeholder={strings.shelter_settings.shelter_password_placeholder}
                                 secureTextEntry={true}
-                                editable={isEditable} // Editable only when double clicked
+                                editable={isEditable}
                                 selectTextOnFocus={isEditable}
                             />
                         </TouchableOpacity>
@@ -207,7 +196,7 @@ const ShelterSettingsScreen = () => {
                                 onChangeText={setConfirmPassword}
                                 placeholder={strings.shelter_settings.shelter_confirm_password_placeholder}
                                 secureTextEntry={true}
-                                editable={isEditable} // Editable only when double clicked
+                                editable={isEditable}
                                 selectTextOnFocus={isEditable}
                             />
                         </TouchableOpacity>
@@ -228,6 +217,8 @@ const ShelterSettingsScreen = () => {
                     </View>
                 </View>
 
+
+
                 {/* Buttons Section */}
                 <View style={ShelterSettingsStyles.buttonContainer}>
                     {/* Update Button */}
@@ -240,10 +231,10 @@ const ShelterSettingsScreen = () => {
                         <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.shelter_logout_button}</Text>
                     </TouchableOpacity>
                 </View>
-            </ScrollView>
-
-            <Navbar style={{ flex: 1 }} />
-        </View>
+            </View>
+            {/* Navbar */}
+            <Navbar />
+        </SafeAreaView>
     );
 };
 

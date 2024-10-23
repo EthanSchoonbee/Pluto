@@ -83,6 +83,11 @@ const UserSettingsStyles = StyleSheet.create({
     buttonContainer: {
         paddingHorizontal: 20,
         marginTop: 30,
+        backgroundColor: colors.userSettingsWhite,
+        flexGrow: 1,
+        justifyContent: "flex-end",
+        paddingBottom: 66,
+
     },
     customButton: {
         marginBottom: 15,

@@ -3,10 +3,11 @@ import colors from './colors'; // Assuming you have a colors file
 
 const ShelterSettingsStyles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow: 1,
         backgroundColor: colors.userSettingsWhite, // White background
         paddingHorizontal: 20,
         paddingTop: 30,
+        paddingBottom: 5,
     },
     // Header Section for the main title
     headerSection: {
@@ -21,16 +22,16 @@ const ShelterSettingsStyles = StyleSheet.create({
     },
     // Details container section with 6 fields
     detailsContainer: {
-        padding: 20,
+        padding: 15,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
-        marginTop: 10,
-        marginBottom: 5, // Separate details from the privacy section
+        marginTop: 5,
     },
     detailsTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
+        paddingVertical: 5,
         paddingLeft: 5,
 
     },
@@ -56,13 +57,14 @@ const ShelterSettingsStyles = StyleSheet.create({
         padding: 10,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
-        marginTop: 20, // Adds spacing above the privacy section
+        marginTop: 10, // Adds spacing above the privacy section
     },
     privacyTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
         paddingLeft: 5,
+        marginTop: 10,
     },
     notificationRow: {
         flexDirection: 'row',
@@ -76,7 +78,13 @@ const ShelterSettingsStyles = StyleSheet.create({
     // Custom Button Styles
     buttonContainer: {
         paddingHorizontal: 20,
-        marginTop: 30,
+        alignItems: "center",
+        justifyContent: "flex-end",
+        backgroundColor: colors.userSettingsWhite,
+        paddingTop: 10,
+        paddingBottom: 65,
+        flexGrow: 1,
+
     },
     customButton: {
         marginBottom: 15,
@@ -104,7 +112,6 @@ const ShelterSettingsStyles = StyleSheet.create({
     },
     // New Style for Center Image
     centerImageContainer: {
-        flex: 1, // Take up full available space
         justifyContent: 'center', // Vertically center the content
         alignItems: 'center', // Horizontally center the content
 
