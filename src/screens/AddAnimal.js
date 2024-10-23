@@ -1,20 +1,18 @@
 import { useState } from "react";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 import Slider from '@react-native-community/slider';
 import React from "react";
-import { View, Text, TextInput, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Dimensions, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Alert } from 'react-native';
 import strings from "../strings/en";
 import styles from '../styles/AddAnimalPageStyles';
 import { Picker } from "@react-native-picker/picker"; // Import the stylesheet
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/Ionicons'; // or any other icon set you prefer
-import {useAuth} from "../hooks/useAuth"
-import userSession from '../services/UserSession';
-import { useEffect } from "react";
+import { db, auth } from '../services/firebaseConfig';
 import {Animal} from "../models/AnimalModel";
-import firebaseService from "../services/firebaseService";
-import { db, auth } from "../services/firebaseConfig";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
 
 const AddAnimal = ({ navigation }) => {
     const [isDog, setIsDog] = useState(true);
@@ -34,6 +32,9 @@ const AddAnimal = ({ navigation }) => {
     const catBreeds = ['Siamese', 'Persian', 'Maine Coon', 'Bengal'];
     const availableFurColors = ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
     const relevantBreeds = isDog ? dogBreeds : catBreeds;
+    const user = auth.currentUser;
+    const storage = getStorage();
+
 
     const handleImageUpload = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -50,12 +51,32 @@ const AddAnimal = ({ navigation }) => {
         });
 
         if (!result.canceled) {
-            if (result.assets && result.assets.length + images.length <= 7) {
-                const selectedUris = result.assets.map((asset) => asset.uri);
-                setImages([...images, ...selectedUris]);
-            } else {
-                Alert.alert('Upload Limit', 'You can only upload a maximum of 7 images.');
+            const uploadedImageUrls = [];
+
+            for (const image of result.assets) {
+                const blob = await fetch(image.uri).then(r => r.blob()); // Convert the image to a blob
+                const imageRef = ref(storage, `animals/${user.uid}/${Date.now()}_${image.fileName}`); // Create a storage reference
+
+                // Upload the image to Firebase Storage
+                const uploadTask = uploadBytesResumable(imageRef, blob);
+
+                // Handle upload progress and complete the task
+                await new Promise((resolve, reject) => {
+                    uploadTask.on(
+                        'state_changed',
+                        null,
+                        (error) => reject(error),
+                        async () => {
+                            // Once uploaded, get the download URL
+                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                            uploadedImageUrls.push(downloadURL); // Add the download URL to the array
+                            resolve();
+                        }
+                    );
+                });
             }
+
+            setImages([...images, ...uploadedImageUrls]); // Add the uploaded image URLs to the state
         }
     };
 
@@ -69,15 +90,14 @@ const AddAnimal = ({ navigation }) => {
             return;
         }
 
-        const user = auth.currentUser;
         if (!user) {
-            console.log("You must be signed in.");
+            alert("You must be signed in to add an animal.");
             return;
         }
 
         try {
-            // Populate the Animal object
-            const newAnimal = { ...Animal }; // Create a new instance based on the class structure
+            // Create a new Animal object
+            const newAnimal = { ...Animal };
             newAnimal.name = name;
             newAnimal.species = isDog ? "dog" : "cat";
             newAnimal.breed = selectedBreed;
@@ -86,9 +106,8 @@ const AddAnimal = ({ navigation }) => {
             newAnimal.size = sizes[size];
             newAnimal.furColor = furColors.join(", ");
             newAnimal.description = biography;
-            newAnimal.shelterId = user.uid // Assume user represents a shelter
-            newAnimal.location = ""; // Add location logic here if needed
-            newAnimal.imageUrl = images[0]; // Assuming first image as a sample, you can adjust this as needed
+            newAnimal.shelterId = user.uid;
+            newAnimal.imageUrls = images; // Store the array of image URLs
             newAnimal.likedByUsers = [];
             newAnimal.createdAt = new Date();
             newAnimal.updatedAt = new Date();
@@ -96,7 +115,6 @@ const AddAnimal = ({ navigation }) => {
             // Add the animal data to Firestore under the "animals" collection
             await addDoc(collection(db, "animals"), newAnimal);
 
-            // Success feedback or redirection after submission
             alert("Animal data has been saved successfully!");
             navigation.navigate("UserHome");
         } catch (error) {
@@ -104,7 +122,6 @@ const AddAnimal = ({ navigation }) => {
             alert("Failed to save the animal data. Please try again.");
         }
     };
-
 
     const toggleAnimalType = (type) => {
         setIsDog(type === 'dogs');
