@@ -9,6 +9,7 @@ import { Alert } from 'react-native';
 import NavbarWrapper from "../components/NavbarWrapper";
 import { db, auth } from '../services/firebaseConfig';
 import firebaseService from "../services/firebaseService";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UserSettingsScreen = () => {
     const defaultValues = {
@@ -28,6 +29,7 @@ const UserSettingsScreen = () => {
     const [location, setLocation] = useState(defaultValues.location);
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);  // Add loading state
+    const [userData,setUserData] = useState(null);
 
     const navigation = useNavigation();
 
@@ -35,6 +37,7 @@ const UserSettingsScreen = () => {
 
     const handleUpdate = () => {
         checkDetailsInputs()
+        pushToDatabase()
     };
 
     // Check if details inputs are valid
@@ -88,6 +91,10 @@ const UserSettingsScreen = () => {
         return true;
     };
 
+    const pushToDatabase = () =>{
+
+    }
+
     const handleLogout = () => {
         // Handle logout action and navigate to the Login screen
         console.log('Logout button pressed');
@@ -99,32 +106,31 @@ const UserSettingsScreen = () => {
     };
 
 
+    // Function to fetch userData from AsyncStorage
+    const fetchUserData = async () => {
+        try {
+            const data = await AsyncStorage.getItem('userData');
+            if (data !== null) {
+                const parsedData = JSON.parse(data);
+                setUserData(parsedData);
+                setName(parsedData.fullName || defaultValues.name);
+                setEmail(parsedData.email || defaultValues.email);
+                setLocation(parsedData.location || defaultValues.location);
+                setIsPushNotificationsEnabled(parsedData.notifications || false); // Assume there's a notifications field
+                console.log('User data has been fetched');
+            }
+        } catch (error) {
+            console.log('Error retrieving user data:', error);
+        } finally {
+            setLoading(false);  // Stop loading once data is fetched
+        }
+    };
+
     useFocusEffect(
         React.useCallback(() => {
-            const fetchUserData = async () => {
-                try {
-                    const currentUser = firebaseService.getCurrentUser();
-                    if (currentUser) {
-                        const userData = await firebaseService.getUserData('users', currentUser.uid);
-                        if (userData) {
-                            setIsPushNotificationsEnabled(userData.notifications)
-                            setName(userData.fullName || '');
-                            setEmail(userData.email || '');
-                            setLocation(userData.location || '');
-                            setPassword('');  // Clear password fields for security
-                            setConfirmPassword('');
-                        }
-                    }
-                } catch (error) {
-                    console.log('Error fetching user data:', error);
-                } finally {
-                    setLoading(false);  // Stop loading once data is fetched
-                }
-            };
-
             fetchUserData();
-
             return () => {
+                // Reset the state when component loses focus
                 setIsPushNotificationsEnabled(false);
                 setName('');
                 setEmail('');
@@ -135,6 +141,7 @@ const UserSettingsScreen = () => {
             };
         }, [])
     );
+
 
     if (loading) {
         // Display a loading spinner or text while data is being fetched
