@@ -1,26 +1,22 @@
 import * as FileSystem from 'expo-file-system';
 
 const DEFAULT_IMAGE_URL = 'https://firebasestorage.googleapis.com/v0/b/pluto-2b00c.appspot.com/o/default_animal_image.png?alt=media&token=94dbc329-5848-4dfc-8a93-fe806a48b4bd';
+const IMAGE_DIRECTORY = `${FileSystem.documentDirectory}images/`;
 
 export const getLocalImageUrl = async (imageUrls) => {
     try {
         // Get the first image URL or use the default image URL if the list is empty
         const imageUrl = imageUrls[0] || DEFAULT_IMAGE_URL;
-        const fileName = decodeURIComponent(imageUrl.split('/').pop().split('?')[0]); // Simplify filename extraction
-        const directory = `${FileSystem.documentDirectory}images/`;
-        const fileUri = `${directory}${fileName}`; // Store all images directly in the images directory
+        const fileName = getFileNameFromUrl(imageUrl);
+        const fileUri = `${IMAGE_DIRECTORY}${fileName}`;
 
         console.log('Image Firestore URL:', imageUrl);
-        console.log('Directory to be created:', directory);
         console.log('File URI for image:', fileUri);
 
         // Ensure the directory exists before proceeding with the download
-        await ensureDirectoryExists(directory);
+        await ensureDirectoryExists(IMAGE_DIRECTORY);
 
-        const fileInfo = await FileSystem.getInfoAsync(fileUri);
-
-        // Check if the file already exists locally, if not, download it
-        if (!fileInfo.exists) {
+        if (!(await FileSystem.getInfoAsync(fileUri)).exists) {
             console.log('Image does not exist locally. Downloading to:', fileUri);
             await downloadImage(imageUrl, fileUri);
         } else {
@@ -32,9 +28,13 @@ export const getLocalImageUrl = async (imageUrls) => {
         console.error('Error handling image URL:', error);
 
         // Handle fallback to default image in case of error
-        return await handleDefaultImage();
+        return await getLocalImageUrl();
 
     }
+};
+
+const getFileNameFromUrl = (url) => {
+    return decodeURIComponent(url.split('/').pop().split('?')[0]);
 };
 
 const ensureDirectoryExists = async (directory) => {
@@ -72,12 +72,11 @@ export const deleteLocalImage = async (fileName) => {
     }
 };
 
-const handleDefaultImage = async () => {
-    const defaultFileName = decodeURIComponent(DEFAULT_IMAGE_URL.split('/').pop().split('?')[0]);
-    const defaultDirectory = `${FileSystem.documentDirectory}images/`;
-    const defaultFileUri = `${defaultDirectory}${defaultFileName}`;
+const getDefaultImageUrl = async () => {
+    const defaultFileName = getFileNameFromUrl(DEFAULT_IMAGE_URL);
+    const defaultFileUri = `${IMAGE_DIRECTORY}${defaultFileName}`;
 
-    await ensureDirectoryExists(defaultDirectory);
+    await ensureDirectoryExists(IMAGE_DIRECTORY);
 
     const defaultFileInfo = await FileSystem.getInfoAsync(defaultFileUri);
     if (!defaultFileInfo.exists) {
