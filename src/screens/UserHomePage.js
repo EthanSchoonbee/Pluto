@@ -21,6 +21,8 @@ import NavbarWrapper from "../components/NavbarWrapper";
 import {collection, getDocs, limit, query} from "firebase/firestore";
 import {db} from "../services/firebaseConfig";
 import {getDownloadURL, getStorage, ref} from "firebase/storage";
+import * as FileSystem from 'expo-file-system';
+
 
 // test animals
 /*
@@ -77,21 +79,29 @@ const UserHomeScreen = () => {
     const fetchAnimals = async () => {
         try {
             setLoading(true);
-            // Query Firestore for up to 10 animals
             const q = query(collection(db, 'animals'), limit(10));
             const querySnapshot = await getDocs(q);
 
             const fetchedAnimals = [];
             for (const doc of querySnapshot.docs) {
                 const animalData = doc.data();
+
+                console.log('Animal Data: ', animalData);
+
                 animalData.id = doc.id;
+                animalData.images = await preloadImages(animalData.imageUrls || []); // Ensure `imageUrls` is defined
 
-                // Preload the animal images
-                animalData.images = await preloadImages(animalData.imageUrls);
+                // Ensure the 'images' field is an array, even if empty
+                animalData.images = animalData.images || [];
 
-                fetchedAnimals.push(animalData);
+                // Only push animals with valid images
+                if (animalData.imageUrls.length > 0) {
+                    fetchedAnimals.push(animalData);
+                } else {
+                    console.warn(`No images found for animal: ${animalData.id}`);
+                }
             }
-            console.log(fetchedAnimals);
+            console.log('Captured animals: ', fetchedAnimals);
             setAnimals(fetchedAnimals);
         } catch (error) {
             console.error('Error fetching animals:', error);
@@ -104,14 +114,19 @@ const UserHomeScreen = () => {
         const storage = getStorage();
         const preloadedImages = [];
 
+        console.log('Image URLs to Preload:', imageUrls);
+
         for (const imageUrl of imageUrls) {
             try {
                 const storageRef = ref(storage, imageUrl);
                 const downloadUrl = await getDownloadURL(storageRef);
 
                 // Download the image to the device's local file system
-                const localUri = `${FileSystem.documentDirectory}${imageUrl.split('/').pop()}`;
+                const fileName = imageUrl.split('/').pop();
+                const localUri = `${FileSystem.documentDirectory}${fileName}`;
                 await FileSystem.downloadAsync(downloadUrl, localUri);
+
+                console.log('Image downloaded successfully: ', localUri);
 
                 preloadedImages.push({ uri: localUri });
             } catch (error) {
@@ -307,7 +322,7 @@ const UserHomeScreen = () => {
             />
             <Image
                 key={`${cardIndex}-${imageIndexes[cardIndex]}`}
-                source={animals[cardIndex].images[imageIndexes[cardIndex]]}
+                source={{ uri: animals[cardIndex].images[imageIndexes[cardIndex]] }}
                 style={styles.image}
             />
             <TouchableOpacity
@@ -387,11 +402,11 @@ const UserHomeScreen = () => {
                         onSwipedRight={ onSwipedRight }
                         onSwipedAborted={ SwipedAborted }
                         onSwipedAll={ () => console.log('All cards swiped') }
-                        stackSize={ 3 }
+                        stackSize={ 15 }
                         disableBottomSwipe
                         disableTopSwipe
                         backgroundColor={ colors.white }
-                        infinite={ true }
+                        infinite={ false }
                         cardVerticalMargin={ 0 }>
                     </Swiper>
                 </View>
