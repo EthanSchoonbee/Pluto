@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground, StatusBar } from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    Image,
+    KeyboardAvoidingView,
+    ScrollView,
+    Platform,
+    ImageBackground,
+    StatusBar,
+    ActivityIndicator
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import strings from "../strings/en";
 import firebaseService from "../services/firebaseService";
@@ -10,6 +22,7 @@ const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
+    const [loading, setLoading] = useState(false);  // Add loading state
 
     const togglePasswordVisibility = () => {
         setSecureTextEntry(!secureTextEntry);
@@ -22,7 +35,10 @@ const LoginScreen = ({ navigation }) => {
             return;
         }
 
+        setLoading(true);
+
         firebaseService.loginUser(email, password, async (success, errorMessage) => {
+            setLoading(false);
             if (success) {
                 const user = firebaseService.getCurrentUser();
 
@@ -109,6 +125,13 @@ const LoginScreen = ({ navigation }) => {
                 <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
                     <Text style={styles.loginText}>{strings.login_button}</Text>
                 </TouchableOpacity>
+
+                {loading && (  // Display loading indicator when loading state is true
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color="#FFD700" />
+                        <Text>Logging in...</Text>
+                    </View>
+                )}
 
                 <Text style={styles.signupText}>
                     {strings.dont_have_account}{'\n'}
