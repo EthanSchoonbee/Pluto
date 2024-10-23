@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground, StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import strings from "../strings/en"
-import { StatusBar } from 'react-native';
+import strings from "../strings/en";
 import firebaseService from "../services/firebaseService";
 import userSession from "../services/UserSession";
+import styles from '../styles/LoginScreenStyles'; // Import the new styles file
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -16,48 +16,33 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const handleLogin = () => {
-        // Check if email or password is empty
         if (!email || !password) {
             console.log('Please enter login details');
-            // Show a user-friendly message, maybe using an alert or a UI component
             alert('Please enter login details');
-            return; // Exit the function if validation fails
+            return;
         }
 
         firebaseService.loginUser(email, password, async (success, errorMessage) => {
             if (success) {
-                const user = firebaseService.getCurrentUser(); // Get the user object
+                const user = firebaseService.getCurrentUser();
 
                 try {
-                    // First, check the "users" collection
                     const userData = await firebaseService.getUserData('users', user.uid);
 
                     if (userData) {
-                        // If user data exists in "users" collection, proceed with user login
                         console.log('Fetched user data:', userData);
-
                         const token = await user.getIdToken();
                         userSession.setUser(userData, token);
-                        console.log('User session initialized with:', userData);
-
-                        // Navigate to UserHome
                         navigation.navigate('UserHome');
                     } else {
-                        // If no user data is found, check the "shelters" collection
                         const shelterData = await firebaseService.getUserData('shelters', user.uid);
-
                         if (shelterData) {
                             console.log('Fetched shelter data:', shelterData);
-
                             const token = await user.getIdToken();
                             userSession.setUser(shelterData, token);
-                            console.log('Shelter session initialized with:', shelterData);
-
-                            // Navigate to ShelterHome
                             navigation.navigate('ShelterHome');
                         } else {
                             console.log('No user or shelter data found in Firestore');
-                            // Show a user-friendly message if no matching data is found
                             alert('Invalid login details');
                         }
                     }
@@ -66,14 +51,11 @@ const LoginScreen = ({ navigation }) => {
                     alert('An error occurred while fetching user data.');
                 }
             } else {
-                // If login fails, display the error message
                 console.log('Error during login:', errorMessage);
-                alert('Invalid login details'); // Show invalid login message
+                alert('Invalid login details');
             }
         });
     };
-
-
 
     return (
         <KeyboardAvoidingView
@@ -87,7 +69,6 @@ const LoginScreen = ({ navigation }) => {
                 resizeMode="cover"
             />
 
-            {/* ScrollView for the login content */}
             <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
                 <View style={styles.logoContainer}>
                     <Image
@@ -98,7 +79,6 @@ const LoginScreen = ({ navigation }) => {
                 </View>
 
                 <View style={styles.inputContainer}>
-                    {/* Email Input with Icon */}
                     <View style={styles.inputWrapper}>
                         <Icon name="email" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
@@ -111,7 +91,6 @@ const LoginScreen = ({ navigation }) => {
                         />
                     </View>
 
-                    {/* Password Input with Icon */}
                     <View style={styles.inputWrapper}>
                         <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
@@ -139,93 +118,5 @@ const LoginScreen = ({ navigation }) => {
         </KeyboardAvoidingView>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    backgroundImage: {
-        position: 'absolute',
-        top: -100,  // Push the wave up while keeping the full image
-        left: 0,
-        right: 0,
-        height: 550,  // Keep height at 380 or less, as required by your design
-        zIndex: -1,
-        resizeMode: 'cover',  // Ensure the background fills the space without cutting off
-    },
-    scrollContainer: {
-        alignItems: 'center',
-        padding: 20,
-        paddingBottom: 60,
-        zIndex: 1,  // Ensure content stays above the background
-    },
-    logoContainer: {
-        alignItems: 'center',
-        marginBottom: 120,
-        marginTop: 70,
-        zIndex: 1,
-    },
-    logo: {
-        width: 217.7,
-        height: 145.16,
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 40,
-        fontWeight: '600',
-        color: '#333',
-    },
-
-    inputContainer: {
-        marginBottom: 20,
-        width: '80%',
-        zIndex: 1,
-    },
-    inputWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-        paddingHorizontal: 10,
-    },
-    icon: {
-        marginRight: 10,
-    },
-    inputUnderline: {
-        flex: 1,
-        height: 40,
-        fontSize: 16,
-        color: '#333',
-        paddingVertical: 10,
-    },
-    loginButton: {
-        height: 50,
-        backgroundColor: '#EDE3BB',
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-        width: '80%',
-        zIndex: 1,
-    },
-    loginText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 30,
-    },
-    signupText: {
-        textAlign: 'center',
-        color: '#333',
-        fontSize: 15,
-        zIndex: 1,
-    },
-    signupLink: {
-        color: '#EDE3BB',
-        fontWeight: 'bold',
-    },
-});
-
 
 export default LoginScreen;
