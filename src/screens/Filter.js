@@ -1,19 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+    View,
+    Text,
+    SafeAreaView,
+    Button,
+    ScrollView,
+    Modal,
+    TouchableOpacity,
+    Dimensions,
+    ActivityIndicator
+} from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import strings from '../strings/en.js'; // Import the strings file
 import styles from "../styles/FilterStyles";
+import { db, auth } from '../services/firebaseConfig';
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 
 
 
-const Filter = ({navigation})  =>  {
+const Filter = ({navigation}) => {
+    const userId = auth.currentUser.uid;
+    const [loading, setLoading] = useState(true);  // Add loading state
     const [isDog, setIsDog] = useState(true);
     const [selectedBreed, setSelectedBreed] = useState(strings.anyBreed); // Use strings.anyBreed
-    const [maxDistance, setMaxDistance] = useState(32);
-    const [ageRange, setAgeRange] = useState([3, 13]);
+    const [maxDistance, setMaxDistance] = useState(0);
+    const [ageRange, setAgeRange] = useState([0, 0]);
     const [activityLevel, setActivityLevel] = useState(0);
     const [size, setSize] = useState(1);
     const [isPickerVisible, setIsPickerVisible] = useState(false);
@@ -25,6 +39,55 @@ const Filter = ({navigation})  =>  {
     const dogBreeds = ['Labrador', 'Poodle', 'Bulldog', 'German Shepherd'];
     const catBreeds = ['Siamese', 'Persian', 'Maine Coon', 'Bengal'];
     const availableFurColors = ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
+
+    const filters = {
+        animalType: isDog ? 'dog' : 'cat',
+        breed: selectedBreed,
+        maxDistance,
+        ageRange,
+        activityLevel,
+        size,
+        furColors
+    };
+
+    useEffect(() => {
+        const loadFiltersFromFirestore = async () => {
+            try {
+                const userFiltersDocRef = doc(db, 'users', userId);
+                const docSnap = await getDoc(userFiltersDocRef);
+
+                if (docSnap.exists()) {
+                    const filters = docSnap.data().preferences;
+
+                    // Set the state values with the data from Firestore
+                    setIsDog(filters.animalType === 'dog');
+                    setSelectedBreed(filters.breed);
+                    setMaxDistance(filters.maxDistance);
+                    setAgeRange(filters.ageRange);
+                    setActivityLevel(filters.activityLevel);
+                    setSize(filters.size);
+                    setFurColors(filters.furColors);
+                }
+            } catch (error) {
+                console.error("Error loading filters:", error);
+            } finally {
+                setLoading(false);  // Stop loading once the data is fetched
+            }
+        };
+
+        // Call the async function
+        loadFiltersFromFirestore();
+    }, [userId]);
+
+    if (loading) {
+        // Display a loading indicator while data is being fetched
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#FFD700" />
+                <Text>Loading filters...</Text>
+            </View>
+        );
+    }
 
     const toggleAnimalType = (type) => {
         setIsDog(type === 'dogs');
@@ -43,6 +106,21 @@ const Filter = ({navigation})  =>  {
             setFurColors(furColors.filter(furColor => furColor !== color));
         } else {
             setFurColors([...furColors, color]);
+        }
+    }
+
+    const saveFiltersToFirestore = async () => {
+        if (!userId) return;
+        try {
+            // Directly link the user document to a preferences document
+            const userFiltersDocRef = doc(db, 'users', userId);  // Directly reference the user's document
+
+            // Set the filters directly in the user's document
+            await setDoc(userFiltersDocRef, { preferences: filters }, { merge: true });  // Merge to avoid overwriting other fields
+
+            console.log('Filters saved successfully!');
+        } catch (error) {
+            console.error("Error saving filters:", error);
         }
     };
 
@@ -203,9 +281,15 @@ const Filter = ({navigation})  =>  {
                     />
                 </View>
 
-                {/* Done Button */}
+                {/* Apply Filters Button */}
                 <View style={styles.buttonWrapper}>
-                    <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('UserHome')} >
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => {
+                            saveFiltersToFirestore(); // Save filters when user applies
+                            navigation.navigate('UserHome'); // Navigate back to home
+                        }}
+                    >
                         <Text style={styles.buttonText}>{strings.applyFilterButton}</Text>
                     </TouchableOpacity>
                 </View>
@@ -213,4 +297,5 @@ const Filter = ({navigation})  =>  {
         </SafeAreaView>
     );
 }
+
 export default Filter;
