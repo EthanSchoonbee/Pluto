@@ -1,17 +1,29 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {View, Text, Image, SafeAreaView, Animated, StatusBar} from 'react-native';
+import {
+    ActivityIndicator,
+    Animated,
+    Image,
+    Platform,
+    SafeAreaView,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import Swiper from 'react-native-deck-swiper';
-import { Ionicons } from '@expo/vector-icons';
+import {Ionicons} from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
-import { TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import colors  from "../styles/colors";
+import {LinearGradient} from 'expo-linear-gradient';
+import colors from "../styles/colors";
 import styles from '../styles/UserHomePageStyles';
 import Header from '../components/Header';
-import { Platform } from 'react-native';
 import NavbarWrapper from "../components/NavbarWrapper";
+import {collection, getDocs, limit, query} from "firebase/firestore";
+import {db} from "../services/firebaseConfig";
+import {getDownloadURL, getStorage, ref} from "firebase/storage";
 
 // test animals
+/*
 const animals = [
     { id: 1, name: 'Ollie', age: 12, gender: 'M', breed: 'Jack Russell', images: [
                                                                                 require('../../assets/dog-test-2.jpg')
@@ -29,12 +41,15 @@ const animals = [
                                                                         ]
     },
 ];
+ */
 
 const floatingImageDislike = require('../../assets/dislike.png');
 const floatingImageLike = require('../../assets/like.png');
 
 const UserHomeScreen = () => {
     const swiperRef = useRef(null); // reference for the swiper object
+    const [animals, setAnimals] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [cardIndex, setCardIndex] = useState(0); //  the card index
     const [imageIndexes, setImageIndexes] = useState(animals.map(() => 0));
     const [forceRerender, setForceRerender] = useState(1);
@@ -50,10 +65,62 @@ const UserHomeScreen = () => {
     const likeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
     const dislikeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
 
+    useEffect(() => {
+        fetchAnimals();
+    }, []);
+
     // reset current card floating image opacities on load
     useEffect(() => {
         resetOpacity(cardIndex);
     }, [imageIndexes[cardIndex],cardIndex]);
+
+    const fetchAnimals = async () => {
+        try {
+            setLoading(true);
+            // Query Firestore for up to 10 animals
+            const q = query(collection(db, 'animals'), limit(10));
+            const querySnapshot = await getDocs(q);
+
+            const fetchedAnimals = [];
+            for (const doc of querySnapshot.docs) {
+                const animalData = doc.data();
+                animalData.id = doc.id;
+
+                // Preload the animal images
+                animalData.images = await preloadImages(animalData.imageUrls);
+
+                fetchedAnimals.push(animalData);
+            }
+            console.log(fetchedAnimals);
+            setAnimals(fetchedAnimals);
+        } catch (error) {
+            console.error('Error fetching animals:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const preloadImages = async (imageUrls) => {
+        const storage = getStorage();
+        const preloadedImages = [];
+
+        for (const imageUrl of imageUrls) {
+            try {
+                const storageRef = ref(storage, imageUrl);
+                const downloadUrl = await getDownloadURL(storageRef);
+
+                // Download the image to the device's local file system
+                const localUri = `${FileSystem.documentDirectory}${imageUrl.split('/').pop()}`;
+                await FileSystem.downloadAsync(downloadUrl, localUri);
+
+                preloadedImages.push({ uri: localUri });
+            } catch (error) {
+                console.error('Error downloading image:', error);
+            }
+        }
+
+        return preloadedImages;
+    };
 
     const animateSwipe = (direction) => {
         if (direction === 'left') {
@@ -305,6 +372,9 @@ const UserHomeScreen = () => {
         <SafeAreaView style={[styles.container, {paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight: 0}]} edges={['left', 'right']}>
             <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
             <Header />
+            {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
                 <View style={styles.swiperContainer}>
                     <Swiper
                         key={forceRerender}
@@ -325,7 +395,8 @@ const UserHomeScreen = () => {
                         cardVerticalMargin={ 0 }>
                     </Swiper>
                 </View>
-            <NavbarWrapper />
+            )}
+            <NavbarWrapper noShadow={true} />
             <View style={styles.buttonsContainer}>
                 <TouchableOpacity
                     style={ [styles.button,
