@@ -216,7 +216,7 @@ const UserSettingsScreen = () => {
                         <Text style={UserSettingsStyles.notificationText}>{strings.user_settings.push_notifications}</Text>
                         <Switch
                             trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={isPushNotificationsEnabled ? "#f5dd4b" : "#f4f3f4"}
+                            thumbColor={isPushNotificationsEnabled ? '#00C853' : "#f4f3f4"}
                             onValueChange={togglePushNotifications}
                             value={isPushNotificationsEnabled}
                         />

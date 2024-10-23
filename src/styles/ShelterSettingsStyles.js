@@ -76,10 +76,10 @@ const ShelterSettingsStyles = StyleSheet.create({
     },
     // Custom Button Styles
     buttonContainer: {
+        flex:1,
         paddingHorizontal: 20,
         paddingTop: 5,
         backgroundColor: colors.userSettingsWhite,
-        flexGrow: 1,
         justifyContent: "flex-end",
     },
     customButton: {

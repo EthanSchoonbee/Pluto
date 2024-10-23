@@ -31,7 +31,7 @@ const UserNavbar = () => {
                 name="person"
                 size={30}
                 color="black"
-                onPress={() => navigation.navigate('ShelterSettings')}
+                onPress={() => navigation.navigate('UserSettings')}
             />
         </View>
     );
