@@ -19,7 +19,7 @@ const UserNavbar = () => {
                 name="heart"
                 size={30}
                 color="black"
-                onPress={() => navigation.navigate('PetPage')}
+                onPress={() => navigation.navigate('LikedAnimalsPage')}
             />
             <Ionicons
                 name="chatbubbles"

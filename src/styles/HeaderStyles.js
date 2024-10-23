@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 25,
         backgroundColor: '#ffffff',
         paddingVertical: 15,
-        marginBottom: 0,
+        marginBottom: 4,
         zIndex: 1,
 
         // Shadow for iOS
