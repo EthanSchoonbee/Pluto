@@ -7,9 +7,13 @@ export const getLocalImageUrl = async (imageUrls) => {
         // Get the first image URL or use the default image URL if the list is empty
         const imageUrl = imageUrls[0] || DEFAULT_IMAGE_URL;
         const fileName = imageUrl.split('/').pop();
-        const fileUri = FileSystem.documentDirectory + fileName;
+        const directory = `${FileSystem.documentDirectory}animals/`;
+        const fileUri = `${directory}${fileName}`;
 
         console.log('Image Firestore Url:', imageUrl);
+
+        // Ensure the directory exists before proceeding with the download
+        await ensureDirectoryExists(directory);
 
         const fileInfo = await FileSystem.getInfoAsync(fileUri);
 
@@ -25,13 +29,25 @@ export const getLocalImageUrl = async (imageUrls) => {
 
         // Return the default image URI as a fallback if any error occurs
         const defaultFileName = DEFAULT_IMAGE_URL.split('/').pop();
-        const defaultFileUri = FileSystem.documentDirectory + defaultFileName;
+        const defaultDirectory = `${FileSystem.documentDirectory}animals/`;
+        const defaultFileUri = `${defaultDirectory}${defaultFileName}`;
+
+        // Ensure the directory exists before proceeding with the download of the default image
+        await ensureDirectoryExists(defaultDirectory);
 
         const defaultFileInfo = await FileSystem.getInfoAsync(defaultFileUri);
         if (!defaultFileInfo.exists) {
             await downloadImage(DEFAULT_IMAGE_URL, defaultFileUri);
         }
         return defaultFileUri;
+    }
+};
+
+const ensureDirectoryExists = async (directory) => {
+    const dirInfo = await FileSystem.getInfoAsync(directory);
+    if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+        console.log('Directory created:', directory);
     }
 };
 
@@ -45,7 +61,7 @@ export const downloadImage = async (url, fileUri) => {
 };
 
 export const deleteLocalImage = async (fileName) => {
-    const fileUri = FileSystem.documentDirectory + fileName;
+    const fileUri = `${FileSystem.documentDirectory}animals/${fileName}`;
     try {
         await FileSystem.deleteAsync(fileUri);
         console.log('Image deleted successfully:', fileUri);
