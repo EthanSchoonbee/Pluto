@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View, Text, ScrollView, Switch, TouchableOpacity, TextInput, SafeAreaView} from 'react-native';
+import {View, Text, ScrollView, Switch, TouchableOpacity, TextInput, SafeAreaView, ActivityIndicator} from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import UserSettingsStyles from "../styles/UserSettingsStyles";
 import strings from '../strings/en.js';
@@ -7,6 +7,8 @@ import Navbar from "../components/ShelterNavbar";
 import SettingsInputValidations from "../services/SettingsInputValidations";
 import { Alert } from 'react-native';
 import NavbarWrapper from "../components/NavbarWrapper";
+import { db, auth } from '../services/firebaseConfig';
+import firebaseService from "../services/firebaseService";
 
 const UserSettingsScreen = () => {
     const defaultValues = {
@@ -20,12 +22,12 @@ const UserSettingsScreen = () => {
 
     const [isPushNotificationsEnabled, setIsPushNotificationsEnabled] = useState(false);
     const [name, setName] = useState(defaultValues.name);
-    const [surname, setSurname] = useState(defaultValues.surname);
     const [email, setEmail] = useState(defaultValues.email);
     const [password, setPassword] = useState(defaultValues.password);
     const [confirmPassword, setConfirmPassword] = useState(defaultValues.confirmPassword);
     const [location, setLocation] = useState(defaultValues.location);
     const [isEditable, setIsEditable] = useState(false);
+    const [loading, setLoading] = useState(true);  // Add loading state
 
     const navigation = useNavigation();
 
@@ -41,10 +43,6 @@ const UserSettingsScreen = () => {
         // Start of checking for null inputs
         if (SettingsInputValidations.isEmptyOrWhitespace(name)) {
             Alert.alert(strings.user_settings.validation_error, strings.user_settings.name_required);
-            return false;
-        }
-        if (SettingsInputValidations.isEmptyOrWhitespace(surname)) {
-            Alert.alert(strings.user_settings.validation_error, strings.user_settings.surname_required);
             return false;
         }
         if (SettingsInputValidations.isEmptyOrWhitespace(email)) {
@@ -106,27 +104,60 @@ const UserSettingsScreen = () => {
         setIsEditable(prev => !prev);
     };
 
-    // Reset fields to default values when the component is focused
+
     useFocusEffect(
         React.useCallback(() => {
-            setIsPushNotificationsEnabled(false); // Reset push notifications
-            setName(defaultValues.name);
-            setSurname(defaultValues.surname);
-            setEmail(defaultValues.email);
-            setPassword(defaultValues.password);
-            setConfirmPassword(defaultValues.confirmPassword);
-            setLocation(defaultValues.location);
-            setIsEditable(false);
+            const fetchUserData = async () => {
+                try {
+                    const currentUser = firebaseService.getCurrentUser();
+                    if (currentUser) {
+                        const userData = await firebaseService.getUserData('users', currentUser.uid);
+                        if (userData) {
+                            setName(userData.fullName || '');
+                            setEmail(userData.email || '');
+                            setLocation(userData.location || '');
+                            setPassword('');  // Clear password fields for security
+                            setConfirmPassword('');
+                        }
+                    }
+                } catch (error) {
+                    console.log('Error fetching user data:', error);
+                } finally {
+                    setLoading(false);  // Stop loading once data is fetched
+                }
+            };
+
+            fetchUserData();
+
+            return () => {
+                setIsPushNotificationsEnabled(false);
+                setName('');
+                setEmail('');
+                setPassword('');
+                setConfirmPassword('');
+                setLocation('');
+                setIsEditable(false);
+            };
         }, [])
     );
+
+    if (loading) {
+        // Display a loading spinner or text while data is being fetched
+        return (
+            <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#00C853" />
+                <Text>Loading user settings...</Text>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <ScrollView style={UserSettingsStyles.scrollView} contentContainerStyle={{flexGrow:1}}>
-                {/* User Name and Location */}
+                {/* Username and Location */}
                 <View style={UserSettingsStyles.headerSection}>
-                    <Text style={UserSettingsStyles.headerText}>{strings.user_settings.user_name}</Text>
-                    <Text style={UserSettingsStyles.headerText}>{strings.user_settings.location}</Text>
+                    <Text style={UserSettingsStyles.headerText}>{name}</Text>
+                    <Text style={UserSettingsStyles.headerText}>{location}</Text>
                 </View>
 
                 {/* Your Details Section */}
@@ -142,18 +173,6 @@ const UserSettingsScreen = () => {
                                 placeholder={strings.user_settings.sample_text}
                                 editable={isEditable}
                                 selectTextOnFocus={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.surname_label}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={surname}
-                                onChangeText={setSurname}
-                                placeholder={strings.user_settings.sample_text}
-                                editable={isEditable}
                             />
                         </TouchableOpacity>
                     </View>

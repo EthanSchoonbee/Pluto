@@ -233,12 +233,7 @@ const ShelterSettingsScreen = () => {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-
-            {/* Navbar */}
-            <View style={{height: 80}}>
-                <NavbarWrapper/>
-            </View>
-
+            <NavbarWrapper />
         </SafeAreaView>
     );
 };
