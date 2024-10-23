@@ -5,8 +5,9 @@ import ShelterNavbar from './ShelterNavbar';
 import { auth, db } from '../services/firebaseConfig'; // Adjust the import path as needed
 import { doc, getDoc } from 'firebase/firestore';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import styles from '../styles/NavbarStyles';
 
-const NavbarWrapper = () => {
+const NavbarWrapper = ({ noShadow }) => {
     const [role, setRole] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -62,7 +63,11 @@ const NavbarWrapper = () => {
         return <ActivityIndicator size="large" color="black" />;
     }
 
-    return role === 'shelter' ? <ShelterNavbar /> : <UserNavbar />;
+    return (
+        <View style={[styles.navbar, noShadow ? styles.noShadow : styles.shadow]}>
+            {role === 'shelter' ? <ShelterNavbar /> : <UserNavbar />}
+        </View>
+    );
 };
 
 export default NavbarWrapper;

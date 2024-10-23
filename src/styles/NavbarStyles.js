@@ -13,15 +13,20 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         zIndex: 1,
-
-        // Shadow for iOS
+    },
+    shadow: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-
-        // Shadow for Android
-        elevation: 5,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 4,
+        elevation: 5, // For Android
+    },
+    noShadow: {
+        shadowColor: 'transparent',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0,
+        shadowRadius: 0,
+        elevation: 0, // For Android
     },
 });
 

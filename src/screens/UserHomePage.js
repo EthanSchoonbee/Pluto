@@ -325,7 +325,7 @@ const UserHomeScreen = () => {
                         cardVerticalMargin={ 0 }>
                     </Swiper>
                 </View>
-            <NavbarWrapper />
+            <NavbarWrapper noShadow={true} />
             <View style={styles.buttonsContainer}>
                 <TouchableOpacity
                     style={ [styles.button,
