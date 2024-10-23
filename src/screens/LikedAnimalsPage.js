@@ -68,7 +68,7 @@ const dummyPets = [
 ];
 
 //The entire pet list component frontend elements
-const PetList = ({ navigation }) => {
+const LikedAnimalsPage = ({ navigation }) => {
     //The current active tab will be set to dogs
     const [activeTab, setActiveTab] = useState("Dogs");
 
@@ -80,7 +80,7 @@ const PetList = ({ navigation }) => {
             style={styles.petItem}
             //when its pressed will navigate to the shelter chats screen
             onPress={() =>
-                navigation.navigate("ShelterChats", {
+                navigation.navigate("InterestedAdoptersPage", {
                     //its passing the pet name and pet image to the shelter chats screen
                     petName: item.name,
                     petImage: item.image,
@@ -162,4 +162,4 @@ const PetList = ({ navigation }) => {
     );
 };
 
-export default PetList;
+export default LikedAnimalsPage;
