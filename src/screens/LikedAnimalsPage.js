@@ -12,7 +12,7 @@ import {
 import PetPageHeader from "../components/PetPageHeader";
 import Navbar from "../components/Navbar";
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
-import styles from "../styles/PetPageStyles";
+import styles from "../styles/LikedAnimalsPageStyle";
 
 //Creating an object of dummy pets for testing that will have a id, name, image and type. Type is either dog or cat
 const dummyPets = [
