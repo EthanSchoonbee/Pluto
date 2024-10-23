@@ -19,20 +19,21 @@ export const getLocalImageUrl = async (imageUrls) => {
 
         // Check if the file already exists locally, if not, download it
         if (!fileInfo.exists) {
+            console.log('Downloading image to:', fileUri);
             await downloadImage(imageUrl, fileUri);
+        } else {
+            console.log('Image already exists at:', fileUri);
         }
 
-        console.log('Image Uri:', fileUri);
         return fileUri;
     } catch (error) {
         console.error('Error handling image URL:', error);
 
-        // Return the default image URI as a fallback if any error occurs
+        // Handle fallback to default image in case of error
         const defaultFileName = DEFAULT_IMAGE_URL.split('/').pop();
         const defaultDirectory = `${FileSystem.documentDirectory}animals/`;
         const defaultFileUri = `${defaultDirectory}${defaultFileName}`;
 
-        // Ensure the directory exists before proceeding with the download of the default image
         await ensureDirectoryExists(defaultDirectory);
 
         const defaultFileInfo = await FileSystem.getInfoAsync(defaultFileUri);
@@ -44,10 +45,16 @@ export const getLocalImageUrl = async (imageUrls) => {
 };
 
 const ensureDirectoryExists = async (directory) => {
-    const dirInfo = await FileSystem.getInfoAsync(directory);
-    if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
-        console.log('Directory created:', directory);
+    try {
+        const dirInfo = await FileSystem.getInfoAsync(directory);
+        if (!dirInfo.exists) {
+            await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+            console.log('Directory created:', directory);
+        } else {
+            console.log('Directory already exists:', directory);
+        }
+    } catch (error) {
+        console.error('Error ensuring directory exists:', error);
     }
 };
 
