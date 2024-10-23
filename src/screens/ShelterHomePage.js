@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import styles from '../styles/ShelterHomePageStyle';
 import Header from "../components/Header";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/ShelterNavbar";
 import {
     useNavigation,
     useFocusEffect
@@ -28,8 +28,9 @@ import {
     where,
 } from 'firebase/firestore';
 import AnimalCard from '../components/AnimalCard';
-import { getLocalImageUrls, deleteLocalImage } from '../utils/imageUtils';
+import { getLocalImageUrl, deleteLocalImage } from '../utils/imageUtils';
 import {  handleAdopt, handleDelete } from '../services/databaseService';
+import NavbarWrapper from "../components/NavbarWrapper";
 
 const ShelterHomeScreen = () => {
     const navigation = useNavigation();
@@ -56,7 +57,7 @@ const ShelterHomeScreen = () => {
                 try {
                     const animalsList = await Promise.all(querySnapshot.docs.map(async (doc) => {
                         const data = doc.data();
-                        const localImageUrls = await getLocalImageUrls(data.imageUrls || []);
+                        const localImageUrl = await getLocalImageUrl(data.imageUrls || []);
                         return {
                             id: doc.id,
                             name: data.name,
@@ -64,12 +65,12 @@ const ShelterHomeScreen = () => {
                             gender: data.gender,
                             breed: data.breed,
                             adoptionStatus: data.adoptionStatus,
-                            imageUrls: localImageUrls,
+                            imageUrl: localImageUrl, // Store only the first image URL
                             notificationCount: data.notificationCount || 0,
                         };
                     }));
                     setAnimals(animalsList);
-                    await  preloadImages(animalsList);
+                    await preloadImages(animalsList);
                 } catch (error) {
                     console.error('Error processing animals data:', error);
                 } finally {
@@ -86,6 +87,7 @@ const ShelterHomeScreen = () => {
             setLoading(false); // Ensure loading is false even if there is an error
         }
     }, []);
+
 
     const preloadImages = async (animalsList) => {
         const imageUrls = animalsList.flatMap(animal => animal.imageUrls).filter(url => url);
@@ -134,7 +136,7 @@ const ShelterHomeScreen = () => {
                     ))}
                 </ScrollView>
             )}
-            <Navbar />
+            <NavbarWrapper />
         </SafeAreaView>
     );
 };

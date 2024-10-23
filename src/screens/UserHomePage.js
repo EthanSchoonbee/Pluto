@@ -8,8 +8,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import colors  from "../styles/colors";
 import styles from '../styles/UserHomePageStyles';
 import Header from '../components/Header';
-import Navbar from '../components/Navbar';
 import { Platform } from 'react-native';
+import NavbarWrapper from "../components/NavbarWrapper";
 
 // test animals
 const animals = [
@@ -325,7 +325,7 @@ const UserHomeScreen = () => {
                         cardVerticalMargin={ 0 }>
                     </Swiper>
                 </View>
-            <Navbar />
+            <NavbarWrapper />
             <View style={styles.buttonsContainer}>
                 <TouchableOpacity
                     style={ [styles.button,

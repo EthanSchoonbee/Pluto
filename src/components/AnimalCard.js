@@ -12,12 +12,11 @@ import colors from "../styles/colors";
 
 const AnimalCard = ({
                         name, age, breed, gender, adoptionStatus,
-                        imageUrls, notificationCount,
-                        id, onAdopt, onDelete, onViewLikes
+                        imageUrl, notificationCount, id, onAdopt, onDelete, onViewLikes
                     }) => (
     <View style={styles.card}>
         <Image
-            source={{ uri: imageUrls.length > 0 ? imageUrls[0] : '' }}
+            source={{ uri: imageUrl }}
             style={styles.animalImage}
             resizeMode="cover"
             onError={(e) => {
@@ -36,12 +35,10 @@ const AnimalCard = ({
                 <Text style={styles.name}>{name}</Text>
                 <Text style={styles.age}>, {age} years old</Text>
             </View>
-
             <View style={styles.genderBreedContainer}>
                 {renderGenderIcon(gender)}
                 <Text style={styles.breed}>{breed}</Text>
             </View>
-
             <View style={styles.adoptionStatusContainer}>
                 <Text style={styles.adoptionStatus}>
                     {adoptionStatus ? "Adopted" : "Up for Adoption"}
@@ -63,7 +60,7 @@ const AnimalCard = ({
             <ActionButton
                 title="Delete"
                 style={styles.deleteButton}
-                onPress={() => onDelete(id, imageUrls)} // Pass the id and imageUrls to the onDelete function
+                onPress={() => onDelete(id)} // Adjusted to pass only id
             />
         </View>
     </View>
