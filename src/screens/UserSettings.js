@@ -10,6 +10,7 @@ import NavbarWrapper from "../components/NavbarWrapper";
 import { db, auth } from '../services/firebaseConfig';
 import firebaseService from "../services/firebaseService";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import defaultProfileImage from "../../assets/handsome_squidward.jpg";
 
 const UserSettingsScreen = () => {
     const defaultValues = {
@@ -17,7 +18,7 @@ const UserSettingsScreen = () => {
         surname: "Sample Surname",
         email: "sample@example.com",
         password: "default",
-        confirmPassword: "default",
+        newPassword: "default",
         location: "Sample Location",
     };
 
@@ -25,7 +26,7 @@ const UserSettingsScreen = () => {
     const [name, setName] = useState(defaultValues.name);
     const [email, setEmail] = useState(defaultValues.email);
     const [password, setPassword] = useState(defaultValues.password);
-    const [confirmPassword, setConfirmPassword] = useState(defaultValues.confirmPassword);
+    const [newPassword, setNewPassword] = useState(defaultValues.newPassword);
     const [location, setLocation] = useState(defaultValues.location);
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);  // Add loading state
@@ -33,10 +34,13 @@ const UserSettingsScreen = () => {
 
     const navigation = useNavigation();
 
-    const togglePushNotifications = () => setIsPushNotificationsEnabled(previousState => !previousState);
+    const togglePushNotifications = () => {
+        setIsPushNotificationsEnabled(previousState => !previousState);
+        setIsEditable(true);
+    };
 
     const handleUpdate = () => {
-        pushToDatabase()
+        updateUserSettings()
     };
 
     // Check if details inputs are valid
@@ -51,14 +55,7 @@ const UserSettingsScreen = () => {
             Alert.alert(strings.user_settings.validation_error, strings.user_settings.email_required);
             return false;
         }
-        if (SettingsInputValidations.isEmptyOrWhitespace(password)) {
-            Alert.alert(strings.user_settings.validation_error, strings.user_settings.password_required);
-            return false;
-        }
-        if (SettingsInputValidations.isEmptyOrWhitespace(confirmPassword)) {
-            Alert.alert(strings.user_settings.validation_error, strings.user_settings.confirm_required);
-            return false;
-        }
+
         if (SettingsInputValidations.isEmptyOrWhitespace(location)) {
             Alert.alert(strings.user_settings.validation_error, strings.user_settings.location_required);
             return false;
@@ -71,30 +68,58 @@ const UserSettingsScreen = () => {
             return false;
         }
 
-        if(SettingsInputValidations.containsNumber(surname)){
-            Alert.alert(strings.user_settings.validation_error,strings.user_settings.surname_number)
-            return false;
-        }
 
         if(SettingsInputValidations.containsNumber(location)){
             Alert.alert(strings.user_settings.validation_error,strings.user_settings.location_number)
             return false;
         }
-
-        if(!SettingsInputValidations.areStringsEqual(password, confirmPassword)){
-            Alert.alert(strings.user_settings.validation_error,strings.user_settings.password_match)
-            return false;
-        }
+        
 
         // If all inputs are valid
         return true;
     };
 
-    const pushToDatabase = () =>{
-        if(!checkDetailsInputs() || !isEditable){
-            console.log('I CANT UPDATE')
+    const updateUserSettings = () => {
+        // Check if inputs were edited
+        if (!isEditable) {
+            Alert.alert('Info', "No changes were made.");
+            return;
         }
-    }
+
+        // Call the input validation function
+        if (!checkDetailsInputs()) {
+            return;
+        }
+
+        // Save all inputs in an object
+        const updatedUserDetails = {
+            name,
+            location,
+            email,
+            notifications: isPushNotificationsEnabled,
+        };
+
+        // Confirm update with the user
+        Alert.alert(
+            "Attention",
+            'Are you sure you want to update your details?',
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Confirm",
+                    onPress: () => {
+                        firebaseService.updateUserSettings("users",updatedUserDetails)
+                        if(!SettingsInputValidations.isEmptyOrWhitespace(newPassword)){
+                            firebaseService.changePassword(newPassword)
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     const handleLogout = () => {
         // Handle logout action and navigate to the Login screen
@@ -136,7 +161,7 @@ const UserSettingsScreen = () => {
                 setName('');
                 setEmail('');
                 setPassword('');
-                setConfirmPassword('');
+                setNewPassword('');
                 setLocation('');
                 setIsEditable(false);
             };
@@ -193,7 +218,7 @@ const UserSettingsScreen = () => {
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
                         <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.password_label}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
+                        <TouchableOpacity>
                             <TextInput
                                 style={UserSettingsStyles.detailsValue}
                                 value={password}
@@ -209,8 +234,8 @@ const UserSettingsScreen = () => {
                         <TouchableOpacity onPress={handleDoubleClick}>
                             <TextInput
                                 style={UserSettingsStyles.detailsValue}
-                                value={confirmPassword}
-                                onChangeText={setConfirmPassword}
+                                value={newPassword}
+                                onChangeText={setNewPassword}
                                 placeholder={strings.user_settings.confirm_password_placeholder}
                                 secureTextEntry={true}
                                 editable={isEditable}
