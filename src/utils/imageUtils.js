@@ -5,6 +5,8 @@ const IMAGE_DIRECTORY = `${FileSystem.documentDirectory}images/`;
 
 export const getLocalImageUrl = async (imageUrls) => {
     try {
+        await deleteImageDirectory();
+
         // Get the first image URL or use the default image URL if the list is empty
         const imageUrl = imageUrls[0] || DEFAULT_IMAGE_URL;
         const fileName = getFileNameFromUrl(imageUrl);
@@ -13,8 +15,7 @@ export const getLocalImageUrl = async (imageUrls) => {
         console.log('Image Firestore URL:', imageUrl);
         console.log('File URI for image:', fileUri);
 
-        // Ensure the directory exists before proceeding with the download
-        await ensureDirectoryExists(IMAGE_DIRECTORY);
+        await ensureDirectoryExists(fileUri.slice(0, fileUri.lastIndexOf('/')));
 
         if (!(await FileSystem.getInfoAsync(fileUri)).exists) {
             console.log('Image does not exist locally. Downloading to:', fileUri);
@@ -41,7 +42,7 @@ const ensureDirectoryExists = async (directory) => {
     try {
         const dirInfo = await FileSystem.getInfoAsync(directory);
         if (!dirInfo.exists) {
-            console.log('Directory does not exist. Creating:', directory);
+            console.log('Creating directory:', directory);
             await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
             console.log('Directory created:', directory);
         } else {
@@ -84,3 +85,12 @@ const getDefaultImageUrl = async () => {
     }
     return defaultFileUri;
 };
+
+async function deleteImageDirectory() {
+    try {
+        await FileSystem.deleteAsync(IMAGE_DIRECTORY, { recursive: true });
+        console.log('Image directory deleted successfully');
+    } catch (error) {
+        console.error('Error deleting image directory:', error);
+    }
+}
