@@ -110,7 +110,7 @@ const ShelterSettingsScreen = () => {
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <View style={ShelterSettingsStyles.container}>
+            <ScrollView style={ShelterSettingsStyles.container} contentContainerStyle={{flexGrow:1}}>
                 {/* Centered Image */}
                 <View style={ShelterSettingsStyles.centerImageContainer}>
                     <Image
@@ -211,7 +211,7 @@ const ShelterSettingsScreen = () => {
                         <Text style={ShelterSettingsStyles.notificationText}>{strings.shelter_settings.shelter_push_notifications}</Text>
                         <Switch
                             trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={isPushNotificationsEnabled ? "#f5dd4b" : "#f4f3f4"}
+                            thumbColor={isPushNotificationsEnabled ? '#00C853' : "#f4f3f4"}
                             onValueChange={togglePushNotifications}
                             value={isPushNotificationsEnabled}
                         />
@@ -232,9 +232,13 @@ const ShelterSettingsScreen = () => {
                         <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.shelter_logout_button}</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </ScrollView>
+
             {/* Navbar */}
-            <NavbarWrapper />
+            <View style={{height: 80}}>
+                <NavbarWrapper/>
+            </View>
+
         </SafeAreaView>
     );
 };
