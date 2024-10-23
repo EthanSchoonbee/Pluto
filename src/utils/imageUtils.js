@@ -58,14 +58,24 @@ const ensureDirectoryExists = async (directory) => {
     }
 };
 
-export const downloadImage = async (url, fileUri) => {
+async function downloadImage(imageUrl, localPath) {
+    // Extract the directory from the local path
+    const directory = localPath.substring(0, localPath.lastIndexOf('/'));
+
+    // Check if the directory exists, if not, create it
+    const dirInfo = await FileSystem.getInfoAsync(directory);
+    if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+    }
+
+    // Now proceed with the download
     try {
-        const response = await FileSystem.downloadAsync(url, fileUri);
-        console.log('Image downloaded successfully:', response.uri);
+        await FileSystem.downloadAsync(imageUrl, localPath);
+        console.log('Image downloaded to:', localPath);
     } catch (error) {
         console.error('Error downloading image:', error);
     }
-};
+}
 
 export const deleteLocalImage = async (fileName) => {
     const fileUri = `${FileSystem.documentDirectory}animals/${fileName}`;
