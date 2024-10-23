@@ -69,12 +69,6 @@ const UserSettingsScreen = () => {
             return false;
         }
 
-        // Check Name, Surname and Location for digits
-        if(SettingsInputValidations.containsNumber(name)){
-            Alert.alert(strings.user_settings.validation_error,strings.user_settings.name_number)
-            return false;
-        }
-
         if(SettingsInputValidations.containsNumber(surname)){
             Alert.alert(strings.user_settings.validation_error,strings.user_settings.surname_number)
             return false;
@@ -113,6 +107,7 @@ const UserSettingsScreen = () => {
                     if (currentUser) {
                         const userData = await firebaseService.getUserData('users', currentUser.uid);
                         if (userData) {
+                            setIsPushNotificationsEnabled(userData.notifications)
                             setName(userData.fullName || '');
                             setEmail(userData.email || '');
                             setLocation(userData.location || '');

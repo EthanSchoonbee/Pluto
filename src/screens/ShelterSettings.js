@@ -7,7 +7,7 @@ import {
     TextInput,
     Image,
     Alert,
-    SafeAreaView, ScrollView,
+    SafeAreaView, ScrollView, ActivityIndicator
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
@@ -16,6 +16,7 @@ import Navbar from "../components/ShelterNavbar";
 import SettingsInputValidations from "../services/SettingsInputValidations";
 import colors from "../styles/colors";
 import NavbarWrapper from "../components/NavbarWrapper";
+import firebaseService from "../services/firebaseService";
 
 const defaultProfileImage = require('../../assets/handsome_squidward.jpg');
 
@@ -37,6 +38,8 @@ const ShelterSettingsScreen = () => {
     const [password, setPassword] = useState(defaultValues.password);
     const [confirmPassword, setConfirmPassword] = useState(defaultValues.confirmPassword);
     const [isEditable, setIsEditable] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [profileImage, setProfileImage] = useState(null);
 
     const navigation = useNavigation();
 
@@ -95,18 +98,57 @@ const ShelterSettingsScreen = () => {
         setIsEditable(prev => !prev);
     };
 
+
     useFocusEffect(
         React.useCallback(() => {
-            setIsPushNotificationsEnabled(false);
-            setShelterName(defaultValues.shelterName);
-            setLocation(defaultValues.location);
-            setEmail(defaultValues.email);
-            setTel(defaultValues.tel);
-            setPassword(defaultValues.password);
-            setConfirmPassword(defaultValues.confirmPassword);
-            setIsEditable(false);
+            const fetchUserData = async () => {
+                try {
+                    const currentUser = firebaseService.getCurrentUser();
+                    if (currentUser) {
+                        const userData = await firebaseService.getUserData('shelters', currentUser.uid);
+                        if (userData) {
+                            setIsPushNotificationsEnabled(userData.notifications);
+                            setShelterName(userData.shelterName);
+                            setLocation(userData.location);
+                            setEmail(userData.email);
+                            setTel(userData.phoneNumber);
+                            setProfileImage(userData.profileImage || null)
+                            setPassword('');  // Clear password fields for security
+                            setConfirmPassword('');
+                            setIsEditable(false);
+                        }
+                    }
+                } catch (error) {
+                    console.log('Error fetching user data:', error);
+                } finally {
+                    setLoading(false);  // Stop loading once data is fetched
+                }
+            };
+
+            fetchUserData();
+
+            return () => {
+                setIsPushNotificationsEnabled(false);
+                setShelterName('');
+                setEmail('');
+                setPassword('');
+                setConfirmPassword('');
+                setLocation('');
+                setProfileImage(null)
+                setIsEditable(false);
+            };
         }, [])
     );
+
+    if (loading) {
+        // Display a loading spinner or text while data is being fetched
+        return (
+            <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color="#00C853" />
+                <Text>Loading shelter settings...</Text>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -114,7 +156,7 @@ const ShelterSettingsScreen = () => {
                 {/* Centered Image */}
                 <View style={ShelterSettingsStyles.centerImageContainer}>
                     <Image
-                        source={defaultProfileImage}
+                        source={profileImage ? { uri: profileImage } : defaultProfileImage}
                         style={ShelterSettingsStyles.centerImage}
                     />
                 </View>
