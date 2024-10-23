@@ -16,6 +16,14 @@ const LoginScreen = ({ navigation }) => {
     };
 
     const handleLogin = () => {
+        // Check if email or password is empty
+        if (!email || !password) {
+            console.log('Please enter login details');
+            // Show a user-friendly message, maybe using an alert or a UI component
+            alert('Please enter login details');
+            return; // Exit the function if validation fails
+        }
+
         firebaseService.loginUser(email, password, async (success, errorMessage) => {
             if (success) {
                 const user = firebaseService.getCurrentUser(); // Get the user object
@@ -49,16 +57,22 @@ const LoginScreen = ({ navigation }) => {
                             navigation.navigate('ShelterHome');
                         } else {
                             console.log('No user or shelter data found in Firestore');
+                            // Show a user-friendly message if no matching data is found
+                            alert('Invalid login details');
                         }
                     }
                 } catch (error) {
                     console.log('Error fetching user/shelter data:', error);
+                    alert('An error occurred while fetching user data.');
                 }
             } else {
+                // If login fails, display the error message
                 console.log('Error during login:', errorMessage);
+                alert('Invalid login details'); // Show invalid login message
             }
         });
     };
+
 
 
     return (

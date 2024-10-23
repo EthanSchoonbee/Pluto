@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import strings from "../strings/en"
 import { StatusBar } from 'react-native';
 import firebaseService from '../services/firebaseService';
+import ValidationClass from '../services/SettingsInputValidations'; // Assuming the path is correct
 
 const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');
@@ -18,6 +19,28 @@ const RegisterScreen = ({ navigation }) => {
     };
 
     const handleRegister = async () => {
+        // Check if any of the required inputs are empty or invalid
+        if (ValidationClass.isEmptyOrWhitespace(fullName) ||
+            ValidationClass.isEmptyOrWhitespace(email) ||
+            ValidationClass.isEmptyOrWhitespace(password) ||
+            ValidationClass.isEmptyOrWhitespace(phoneNo) ||
+            ValidationClass.isEmptyOrWhitespace(location)) {
+            alert('Please fill in all required fields');
+            return;
+        }
+
+        // Validate the email to ensure it contains the '@' symbol
+        if (!ValidationClass.containsAtSymbol(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+
+        // Validate the phone number to ensure it's a valid number input
+        if (!ValidationClass.isValidNumberInput(phoneNo)) {
+            alert('Please enter a valid phone number');
+            return;
+        }
+
         try {
             // Register the user and save to Firestore
             const user = await firebaseService.registerUser(fullName, email, password, phoneNo, location);
@@ -25,9 +48,10 @@ const RegisterScreen = ({ navigation }) => {
             navigation.navigate('UserHome'); // Navigate to UserHome upon success
         } catch (error) {
             console.log('Error during registration:', error);
-            // Optionally: show error message to user
+            alert('Registration failed, please try again');
         }
     };
+
 
     return (
         <KeyboardAvoidingView
