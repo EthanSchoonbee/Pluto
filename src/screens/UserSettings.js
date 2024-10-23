@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Switch, TouchableOpacity, TextInput } from 'react-native';
+import {View, Text, ScrollView, Switch, TouchableOpacity, TextInput, SafeAreaView} from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import UserSettingsStyles from "../styles/UserSettingsStyles";
 import strings from '../strings/en.js';
@@ -120,8 +120,8 @@ const UserSettingsScreen = () => {
     );
 
     return (
-        <View style={{ flex: 1 }}>
-            <View style={UserSettingsStyles.container} contentContainerStyle={{ paddingBottom: 100 }}>
+        <SafeAreaView style={{ flex: 1 }}>
+            <ScrollView style={UserSettingsStyles.scrollView} contentContainerStyle={{flexGrow:1}}>
                 {/* User Name and Location */}
                 <View style={UserSettingsStyles.headerSection}>
                     <Text style={UserSettingsStyles.headerText}>{strings.user_settings.user_name}</Text>
@@ -234,10 +234,12 @@ const UserSettingsScreen = () => {
                         <Text style={[UserSettingsStyles.customButtonText, UserSettingsStyles.logoutButtonText]}>{strings.user_settings.logout_button}</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </ScrollView>
 
-            <Navbar style={{ flex: 1 }} />
-        </View>
+            <View style={{height: 80}}>
+                <Navbar/>
+            </View>
+        </SafeAreaView>
     );
 };
 

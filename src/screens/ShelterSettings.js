@@ -109,7 +109,7 @@ const ShelterSettingsScreen = () => {
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <View style={ShelterSettingsStyles.container}>
+            <ScrollView style={ShelterSettingsStyles.container} contentContainerStyle={{flexGrow:1}}>
                 {/* Centered Image */}
                 <View style={ShelterSettingsStyles.centerImageContainer}>
                     <Image
@@ -231,9 +231,11 @@ const ShelterSettingsScreen = () => {
                         <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.shelter_logout_button}</Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </ScrollView>
             {/* Navbar */}
-            <Navbar />
+            <View style={{height: 80}}>
+                <Navbar/>
+            </View>
         </SafeAreaView>
     );
 };

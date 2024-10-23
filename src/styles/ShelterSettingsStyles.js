@@ -3,11 +3,10 @@ import colors from './colors'; // Assuming you have a colors file
 
 const ShelterSettingsStyles = StyleSheet.create({
     container: {
-        flexGrow: 1,
-        backgroundColor: colors.userSettingsWhite, // White background
-        paddingHorizontal: 20,
-        paddingTop: 30,
-        paddingBottom: 5,
+        backgroundColor: colors.userSettingsWhite, // Match background color
+        paddingRight: 12,
+        paddingLeft: 12,
+        paddingTop: 20,
     },
     // Header Section for the main title
     headerSection: {
@@ -22,13 +21,13 @@ const ShelterSettingsStyles = StyleSheet.create({
     },
     // Details container section with 6 fields
     detailsContainer: {
-        padding: 15,
+        padding: 10,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 5,
     },
     detailsTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
         paddingVertical: 5,
@@ -38,29 +37,29 @@ const ShelterSettingsStyles = StyleSheet.create({
     detailsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 10,
+        marginBottom: 5,
         borderBottomWidth: 1,
         borderBottomColor: colors.userSettingsLightGrayBorder, // Light gray border
         paddingBottom: 5,
     },
     detailsLabel: {
-        fontSize: 16,
+        fontSize: 14,
         color: colors.userSettingsMediumGrayText, // Medium gray text
         fontWeight: '500',
     },
     detailsValue: {
-        fontSize: 16,
+        fontSize: 14,
         color: colors.userSettingsDarkGrayText, // Dark gray text
     },
     // Privacy Section Styles
     privacyContainer: {
-        padding: 10,
+        padding: 2,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 10, // Adds spacing above the privacy section
     },
     privacyTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
         paddingLeft: 5,
@@ -72,19 +71,16 @@ const ShelterSettingsStyles = StyleSheet.create({
         alignItems: 'center',
     },
     notificationText: {
-        fontSize: 16,
+        fontSize: 14,
         color: colors.userSettingsMediumGrayText, // Medium gray text
     },
     // Custom Button Styles
     buttonContainer: {
         paddingHorizontal: 20,
-        alignItems: "center",
-        justifyContent: "flex-end",
+        paddingTop: 5,
         backgroundColor: colors.userSettingsWhite,
-        paddingTop: 10,
-        paddingBottom: 65,
         flexGrow: 1,
-
+        justifyContent: "flex-end",
     },
     customButton: {
         marginBottom: 15,
@@ -114,6 +110,7 @@ const ShelterSettingsStyles = StyleSheet.create({
     centerImageContainer: {
         justifyContent: 'center', // Vertically center the content
         alignItems: 'center', // Horizontally center the content
+        paddingTop:10,
 
     },
     centerImage: {

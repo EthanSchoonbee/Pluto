@@ -4,17 +4,16 @@ import colors from "./colors";
 const UserSettingsStyles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.userSettingsWhite,   // White background
+        backgroundColor: colors.genderMaleBlue,   // White background
         paddingHorizontal: 20,
-        paddingTop: 30,
-        color: colors.white,
+        paddingTop: 15,
+
     },
     scrollView: {
         backgroundColor: colors.userSettingsWhite, // Match background color
         paddingRight: 12,
         paddingLeft: 12,
-        paddingBottom: 50,
-        paddingTop: 40,
+        paddingTop: 20,
     },
     headerSection: {
         marginBottom: 15,
@@ -22,20 +21,20 @@ const UserSettingsStyles = StyleSheet.create({
         paddingTop: 10,
     },
         headerText: {
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: 'bold',
             color: colors.userSettingsDarkGrayText, // Dark gray text
             marginBottom: 10,
         },
     detailsContainer: {
-        padding: 20,
+        padding: 15,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 10,
         marginBottom: 5,  // Added marginBottom to separate details from next section
     },
     detailsTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
         paddingLeft: 4,
@@ -49,26 +48,27 @@ const UserSettingsStyles = StyleSheet.create({
         paddingBottom: 5,
     },
     detailsLabel: {
-        fontSize: 16,
+        fontSize: 14,
         color: colors.userSettingsMediumGrayText, // Medium gray text
         fontWeight: '500',
     },
     detailsValue: {
-        fontSize: 16,
+        fontSize: 14,
         color: colors.userSettingsDarkGrayText, // Dark gray text
     },
     // Privacy Section Styles
     privacyContainer: {
-        padding: 20,
+        padding: 5,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 5,
     },
     privacyTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
         paddingLeft: 4,
+        paddingTop: 5,
     },
     notificationRow: {
         flexDirection: 'row',
@@ -76,18 +76,16 @@ const UserSettingsStyles = StyleSheet.create({
         alignItems: 'center',
     },
     notificationText: {
-        fontSize: 16,
+        fontSize: 14,
         color: colors.userSettingsMediumGrayText, // Medium gray text
     },
     // Custom Button Styles
     buttonContainer: {
         paddingHorizontal: 20,
-        marginTop: 30,
+        paddingTop: 5,
         backgroundColor: colors.userSettingsWhite,
         flexGrow: 1,
         justifyContent: "flex-end",
-        paddingBottom: 66,
-
     },
     customButton: {
         marginBottom: 15,
