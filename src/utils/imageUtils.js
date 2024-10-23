@@ -6,11 +6,13 @@ export const getLocalImageUrl = async (imageUrls) => {
     try {
         // Get the first image URL or use the default image URL if the list is empty
         const imageUrl = imageUrls[0] || DEFAULT_IMAGE_URL;
-        const fileName = imageUrl.split('/').pop();
-        const directory = `${FileSystem.documentDirectory}animals/`;
-        const fileUri = `${directory}${fileName}`;
+        const fileName = decodeURIComponent(imageUrl.split('/').pop().split('?')[0]); // Simplify filename extraction
+        const directory = `${FileSystem.documentDirectory}images/`;
+        const fileUri = `${directory}${fileName}`; // Store all images directly in the images directory
 
-        console.log('Image Firestore Url:', imageUrl);
+        console.log('Image Firestore URL:', imageUrl);
+        console.log('Directory to be created:', directory);
+        console.log('File URI for image:', fileUri);
 
         // Ensure the directory exists before proceeding with the download
         await ensureDirectoryExists(directory);
@@ -19,7 +21,7 @@ export const getLocalImageUrl = async (imageUrls) => {
 
         // Check if the file already exists locally, if not, download it
         if (!fileInfo.exists) {
-            console.log('Downloading image to:', fileUri);
+            console.log('Image does not exist locally. Downloading to:', fileUri);
             await downloadImage(imageUrl, fileUri);
         } else {
             console.log('Image already exists at:', fileUri);
@@ -30,17 +32,8 @@ export const getLocalImageUrl = async (imageUrls) => {
         console.error('Error handling image URL:', error);
 
         // Handle fallback to default image in case of error
-        const defaultFileName = DEFAULT_IMAGE_URL.split('/').pop();
-        const defaultDirectory = `${FileSystem.documentDirectory}animals/`;
-        const defaultFileUri = `${defaultDirectory}${defaultFileName}`;
+        return await handleDefaultImage();
 
-        await ensureDirectoryExists(defaultDirectory);
-
-        const defaultFileInfo = await FileSystem.getInfoAsync(defaultFileUri);
-        if (!defaultFileInfo.exists) {
-            await downloadImage(DEFAULT_IMAGE_URL, defaultFileUri);
-        }
-        return defaultFileUri;
     }
 };
 
@@ -48,6 +41,7 @@ const ensureDirectoryExists = async (directory) => {
     try {
         const dirInfo = await FileSystem.getInfoAsync(directory);
         if (!dirInfo.exists) {
+            console.log('Directory does not exist. Creating:', directory);
             await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
             console.log('Directory created:', directory);
         } else {
@@ -59,17 +53,8 @@ const ensureDirectoryExists = async (directory) => {
 };
 
 async function downloadImage(imageUrl, localPath) {
-    // Extract the directory from the local path
-    const directory = localPath.substring(0, localPath.lastIndexOf('/'));
-
-    // Check if the directory exists, if not, create it
-    const dirInfo = await FileSystem.getInfoAsync(directory);
-    if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
-    }
-
-    // Now proceed with the download
     try {
+        console.log('Starting download from:', imageUrl);
         await FileSystem.downloadAsync(imageUrl, localPath);
         console.log('Image downloaded to:', localPath);
     } catch (error) {
@@ -78,11 +63,25 @@ async function downloadImage(imageUrl, localPath) {
 }
 
 export const deleteLocalImage = async (fileName) => {
-    const fileUri = `${FileSystem.documentDirectory}animals/${fileName}`;
+    const fileUri = `${FileSystem.documentDirectory}images/${fileName}`;
     try {
         await FileSystem.deleteAsync(fileUri);
         console.log('Image deleted successfully:', fileUri);
     } catch (error) {
         console.error('Error deleting image:', error);
     }
+};
+
+const handleDefaultImage = async () => {
+    const defaultFileName = decodeURIComponent(DEFAULT_IMAGE_URL.split('/').pop().split('?')[0]);
+    const defaultDirectory = `${FileSystem.documentDirectory}images/`;
+    const defaultFileUri = `${defaultDirectory}${defaultFileName}`;
+
+    await ensureDirectoryExists(defaultDirectory);
+
+    const defaultFileInfo = await FileSystem.getInfoAsync(defaultFileUri);
+    if (!defaultFileInfo.exists) {
+        await downloadImage(DEFAULT_IMAGE_URL, defaultFileUri);
+    }
+    return defaultFileUri;
 };
