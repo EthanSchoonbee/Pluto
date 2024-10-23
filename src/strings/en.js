@@ -98,7 +98,7 @@ export default {
         shelter_email: "Email:",
         shelter_tel: "Telephone:",
         shelter_password: "Password:",
-        shelter_confirm_password: "Confirm Password:",
+        shelter_renew_password: "Renew Passowrd:",
         shelter_details_title: "Shelter Details:",
         shelter_update_button: "Update",
         shelter_logout_button: "Logout",

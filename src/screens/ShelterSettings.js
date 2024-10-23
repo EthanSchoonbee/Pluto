@@ -9,7 +9,9 @@ import {
     Alert,
     SafeAreaView,
     ScrollView,
-    ActivityIndicator
+    ActivityIndicator,
+    Modal,
+    Button
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
@@ -29,8 +31,8 @@ const ShelterSettingsScreen = () => {
         location: "Sample Location",
         email: "shelter@example.com",
         tel: "+1234567890",
-        password: "aaaaaaa",
-        confirmPassword: "aaaaaaa"
+        password: "",
+        newPassword: ""
     };
 
     const [isPushNotificationsEnabled, setIsPushNotificationsEnabled] = useState(false);
@@ -39,7 +41,7 @@ const ShelterSettingsScreen = () => {
     const [email, setEmail] = useState(defaultValues.email);
     const [tel, setTel] = useState(defaultValues.tel);
     const [password, setPassword] = useState(defaultValues.password);
-    const [confirmPassword, setConfirmPassword] = useState(defaultValues.confirmPassword);
+    const [newPassword, setNewPassword] = useState(defaultValues.newPassword);
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);
     const [profileImage, setProfileImage] = useState(null);
@@ -49,7 +51,7 @@ const ShelterSettingsScreen = () => {
     const togglePushNotifications = () => setIsPushNotificationsEnabled(previousState => !previousState);
 
     const handleUpdate = () => {
-        checkDetailsInputs();
+        updateUserSettings();
     };
 
     const checkDetailsInputs = () => {
@@ -69,14 +71,6 @@ const ShelterSettingsScreen = () => {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.phone_required);
             return false;
         }
-        if (SettingsInputValidations.isEmptyOrWhitespace(password)) {
-            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.password_required);
-            return false;
-        }
-        if (SettingsInputValidations.isEmptyOrWhitespace(confirmPassword)) {
-            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.confirm_required);
-            return false;
-        }
         if (!SettingsInputValidations.containsAtSymbol(email)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.valid_email);
             return false;
@@ -85,12 +79,53 @@ const ShelterSettingsScreen = () => {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.valid_number);
             return false;
         }
-        if (!SettingsInputValidations.areStringsEqual(password, confirmPassword)) {
-            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.password_match);
-            return false;
-        }
         return true;
     };
+
+    const updateUserSettings = () => {
+        // Check if inputs were edited
+        if (!isEditable) {
+            Alert.alert('Info', "No changes were made.");
+            return;
+        }
+
+        // Call the input validation function
+        if (!checkDetailsInputs()) {
+            return;
+        }
+
+        // Save all inputs in an object
+        const updatedUserDetails = {
+            shelterName,
+            location,
+            email,
+            tel,
+            notifications: isPushNotificationsEnabled,
+            profileImage: profileImage || defaultProfileImage,
+        };
+
+        // Confirm update with the user
+        Alert.alert(
+            "Attention",
+            'Are you sure you want to update your details?',
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                },
+                {
+                    text: "Confirm",
+                    onPress: () => {
+                        firebaseService.updateUserSettings("shelters",updatedUserDetails)
+                        if(!SettingsInputValidations.isEmptyOrWhitespace(newPassword)){
+                            firebaseService.changePassword(newPassword)
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
 
     const handleLogout = () => {
         console.log('Logout button pressed');
@@ -115,7 +150,7 @@ const ShelterSettingsScreen = () => {
                     setTel(userData.phoneNumber);
                     setProfileImage(userData.profileImage || null);
                     setPassword('');  // Clear password fields for security
-                    setConfirmPassword('');
+                    setNewPassword('');
                     setIsEditable(false);
                 }
             }
@@ -134,7 +169,7 @@ const ShelterSettingsScreen = () => {
                 setShelterName('');
                 setEmail('');
                 setPassword('');
-                setConfirmPassword('');
+                setNewPassword('');
                 setLocation('');
                 setProfileImage(null);
                 setIsEditable(false);
@@ -219,7 +254,7 @@ const ShelterSettingsScreen = () => {
                     </View>
                     <View style={ShelterSettingsStyles.detailsRow}>
                         <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_password}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
+                        <TouchableOpacity >
                             <TextInput
                                 style={ShelterSettingsStyles.detailsValue}
                                 value={password}
@@ -232,12 +267,12 @@ const ShelterSettingsScreen = () => {
                         </TouchableOpacity>
                     </View>
                     <View style={ShelterSettingsStyles.detailsRow}>
-                        <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_confirm_password}</Text>
+                        <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_renew_password}</Text>
                         <TouchableOpacity onPress={handleDoubleClick}>
                             <TextInput
                                 style={ShelterSettingsStyles.detailsValue}
-                                value={confirmPassword}
-                                onChangeText={setConfirmPassword}
+                                value={setNewPassword}
+                                onChangeText={setNewPassword}
                                 placeholder={strings.shelter_settings.shelter_confirm_password_placeholder}
                                 secureTextEntry={true}
                                 editable={isEditable}

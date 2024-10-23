@@ -36,7 +36,6 @@ const UserSettingsScreen = () => {
     const togglePushNotifications = () => setIsPushNotificationsEnabled(previousState => !previousState);
 
     const handleUpdate = () => {
-        checkDetailsInputs()
         pushToDatabase()
     };
 
@@ -92,7 +91,9 @@ const UserSettingsScreen = () => {
     };
 
     const pushToDatabase = () =>{
-
+        if(!checkDetailsInputs() || !isEditable){
+            console.log('I CANT UPDATE')
+        }
     }
 
     const handleLogout = () => {
