@@ -9,7 +9,7 @@ import SafeAreaWrapper from "../components/SafeAreaWrapper";
 import styles from "../styles/InterestedAdopteesPageStyle";
 
 //Entire shelter chats component
-const ShelterChats = ({ route }) => {
+const InterestedAdoptersPage = ({ route }) => {
     //getting the pet name and pet image from the pet page screen
     const { petName, petImage } = route.params;
     //allows for navigation between screens
@@ -135,4 +135,4 @@ const ShelterChats = ({ route }) => {
     );
 };
 
-export default ShelterChats;
+export default InterestedAdoptersPage;
