@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, ScrollView, Platform, ImageBackground, StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import strings from "../strings/en"
-import { StatusBar } from 'react-native';
+import strings from "../strings/en";
 import firebaseService from '../services/firebaseService';
-import ValidationClass from '../services/SettingsInputValidations'; // Assuming the path is correct
+import ValidationClass from '../services/SettingsInputValidations';
+import styles from '../styles/RegisterScreenStyles'; // Import styles here
 
 const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');
@@ -19,7 +19,6 @@ const RegisterScreen = ({ navigation }) => {
     };
 
     const handleRegister = async () => {
-        // Check if any of the required inputs are empty or invalid
         if (ValidationClass.isEmptyOrWhitespace(fullName) ||
             ValidationClass.isEmptyOrWhitespace(email) ||
             ValidationClass.isEmptyOrWhitespace(password) ||
@@ -29,45 +28,38 @@ const RegisterScreen = ({ navigation }) => {
             return;
         }
 
-        // Validate the email to ensure it contains the '@' symbol
         if (!ValidationClass.containsAtSymbol(email)) {
             alert('Please enter a valid email address');
             return;
         }
 
-        // Validate the phone number to ensure it's a valid number input
         if (!ValidationClass.isValidNumberInput(phoneNo)) {
             alert('Please enter a valid phone number');
             return;
         }
 
         try {
-            // Register the user and save to Firestore
             const user = await firebaseService.registerUser(fullName, email, password, phoneNo, location);
             console.log('User registered:', user);
-            navigation.navigate('UserHome'); // Navigate to UserHome upon success
+            navigation.navigate('UserHome');
         } catch (error) {
             console.log('Error during registration:', error);
             alert('Registration failed, please try again');
         }
     };
 
-
     return (
         <KeyboardAvoidingView
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            {/* Set the status bar style to dark-content */}
             <StatusBar barStyle="dark-content" />
-            {/* Background Image with absolute positioning */}
             <ImageBackground
                 source={require('../../assets/wave_background.png')}
                 style={styles.backgroundImage}
                 resizeMode="cover"
             />
 
-            {/* ScrollView for the registration content */}
             <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
                 <View style={styles.logoContainer}>
                     <Image
@@ -78,7 +70,6 @@ const RegisterScreen = ({ navigation }) => {
                 </View>
 
                 <View style={styles.inputContainer}>
-                    {/* Full Name Input */}
                     <View style={styles.inputWrapper}>
                         <Icon name="person" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
@@ -89,7 +80,6 @@ const RegisterScreen = ({ navigation }) => {
                         />
                     </View>
 
-                    {/* Email Input */}
                     <View style={styles.inputWrapper}>
                         <Icon name="email" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
@@ -102,30 +92,27 @@ const RegisterScreen = ({ navigation }) => {
                         />
                     </View>
 
-                    {/* Phone Number Input */}
                     <View style={styles.inputWrapper}>
                         <Icon name="phone" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder={strings.phone_placeholder} // Add a new string in your strings file for this placeholder
+                            placeholder={strings.phone_placeholder}
                             value={phoneNo}
                             onChangeText={setPhoneNo}
                             keyboardType="phone-pad"
                         />
                     </View>
 
-                    {/* Location Input */}
                     <View style={styles.inputWrapper}>
                         <Icon name="home" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
                             style={styles.inputUnderline}
-                            placeholder={strings.location_placeholder} // Add this placeholder string in your strings file
+                            placeholder={strings.location_placeholder}
                             value={location}
                             onChangeText={setLocation}
                         />
                     </View>
 
-                    {/* Password Input */}
                     <View style={styles.inputWrapper}>
                         <Icon name="lock" size={20} color="#aaa" style={styles.icon} />
                         <TextInput
@@ -139,7 +126,6 @@ const RegisterScreen = ({ navigation }) => {
                             <Icon name={secureTextEntry ? 'visibility' : 'visibility-off'} size={20} color="#aaa" />
                         </TouchableOpacity>
                     </View>
-
                 </View>
 
                 <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
@@ -154,86 +140,5 @@ const RegisterScreen = ({ navigation }) => {
         </KeyboardAvoidingView>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#FFFFFF',
-    },
-    backgroundImage: {
-        position: 'absolute',
-        top: -100,  // Adjust based on design
-        left: 0,
-        right: 0,
-        height: 550,  // Same height as in LoginScreen
-        zIndex: -1,
-        resizeMode: 'cover',  // Ensure it covers the screen without cutting off
-    },
-    scrollContainer: {
-        alignItems: 'center',
-        padding: 20,
-        paddingBottom: 60,
-    },
-    logoContainer: {
-        alignItems: 'center',
-        marginBottom: 90,
-        marginTop: 70,
-    },
-    logo: {
-        width: 217.7,
-        height: 145.16,
-        marginBottom: 20,
-    },
-    title: {
-        fontSize: 40,
-        fontWeight: '600',
-        color: '#333',
-    },
-    inputContainer: {
-        marginBottom: 20,
-        width: '80%',
-    },
-    inputWrapper: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 15,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
-        paddingHorizontal: 10,
-    },
-    icon: {
-        marginRight: 10,
-    },
-    inputUnderline: {
-        flex: 1,
-        height: 40,
-        fontSize: 16,
-        color: '#333',
-        paddingVertical: 10,
-    },
-    registerButton: {
-        height: 50,
-        backgroundColor: '#EDE3BB',
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-        width: '80%',
-    },
-    registerText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 30,
-    },
-    loginText: {
-        textAlign: 'center',
-        color: '#333',
-        fontSize: 15,
-    },
-    loginLink: {
-        color: '#EDE3BB',
-        fontWeight: 'bold',
-    },
-});
 
 export default RegisterScreen;
