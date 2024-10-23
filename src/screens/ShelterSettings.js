@@ -48,7 +48,10 @@ const ShelterSettingsScreen = () => {
 
     const navigation = useNavigation();
 
-    const togglePushNotifications = () => setIsPushNotificationsEnabled(previousState => !previousState);
+    const togglePushNotifications = () => {
+        setIsPushNotificationsEnabled(previousState => !previousState);
+        setIsEditable(true);
+    };
 
     const handleUpdate = () => {
         updateUserSettings();
