@@ -7,7 +7,9 @@ import {
     TextInput,
     Image,
     Alert,
-    SafeAreaView, ScrollView, ActivityIndicator
+    SafeAreaView,
+    ScrollView,
+    ActivityIndicator
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
@@ -16,6 +18,7 @@ import Navbar from "../components/ShelterNavbar";
 import SettingsInputValidations from "../services/SettingsInputValidations";
 import colors from "../styles/colors";
 import NavbarWrapper from "../components/NavbarWrapper";
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 import firebaseService from "../services/firebaseService";
 
 const defaultProfileImage = require('../../assets/handsome_squidward.jpg');
@@ -98,35 +101,34 @@ const ShelterSettingsScreen = () => {
         setIsEditable(prev => !prev);
     };
 
+    // Function to fetch user data from AsyncStorage
+    const fetchUserDataFromAsyncStorage = async () => {
+        try {
+            const data = await AsyncStorage.getItem('userData');
+            if (data !== null) {
+                const userData = JSON.parse(data); // Parse the data into an object
+                if (userData) {
+                    setIsPushNotificationsEnabled(userData.notifications);
+                    setShelterName(userData.shelterName);
+                    setLocation(userData.location);
+                    setEmail(userData.email);
+                    setTel(userData.phoneNumber);
+                    setProfileImage(userData.profileImage || null);
+                    setPassword('');  // Clear password fields for security
+                    setConfirmPassword('');
+                    setIsEditable(false);
+                }
+            }
+        } catch (error) {
+            console.log('Error retrieving shelter data:', error);
+        } finally {
+            setLoading(false);  // Stop loading once data is fetched
+        }
+    };
 
     useFocusEffect(
         React.useCallback(() => {
-            const fetchUserData = async () => {
-                try {
-                    const currentUser = firebaseService.getCurrentUser();
-                    if (currentUser) {
-                        const userData = await firebaseService.getUserData('shelters', currentUser.uid);
-                        if (userData) {
-                            setIsPushNotificationsEnabled(userData.notifications);
-                            setShelterName(userData.shelterName);
-                            setLocation(userData.location);
-                            setEmail(userData.email);
-                            setTel(userData.phoneNumber);
-                            setProfileImage(userData.profileImage || null)
-                            setPassword('');  // Clear password fields for security
-                            setConfirmPassword('');
-                            setIsEditable(false);
-                        }
-                    }
-                } catch (error) {
-                    console.log('Error fetching user data:', error);
-                } finally {
-                    setLoading(false);  // Stop loading once data is fetched
-                }
-            };
-
-            fetchUserData();
-
+            fetchUserDataFromAsyncStorage();
             return () => {
                 setIsPushNotificationsEnabled(false);
                 setShelterName('');
@@ -134,7 +136,7 @@ const ShelterSettingsScreen = () => {
                 setPassword('');
                 setConfirmPassword('');
                 setLocation('');
-                setProfileImage(null)
+                setProfileImage(null);
                 setIsEditable(false);
             };
         }, [])
@@ -149,7 +151,6 @@ const ShelterSettingsScreen = () => {
             </SafeAreaView>
         );
     }
-
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <ScrollView style={ShelterSettingsStyles.container} contentContainerStyle={{flexGrow:1}}>
