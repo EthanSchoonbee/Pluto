@@ -60,6 +60,27 @@ export default {
     selectBreed: "Select Breed:",
     selectFur: "Select Fur Color:",
     selectGender: "Select Gender:",
+    dogBreeds: [
+        'Labrador Retriever', 'French Bulldog', 'German Shepherd', 'Golden Retriever',
+        'Bulldog', 'Poodle', 'Beagle', 'Rottweiler', 'Yorkshire Terrier', 'Boxer',
+        'Dachshund', 'Siberian Husky', 'Great Dane', 'Chihuahua', 'Shih Tzu',
+        'Doberman Pinscher', 'Australian Shepherd', 'Pembroke Welsh Corgi',
+        'Cavalier King Charles Spaniel', 'Shetland Sheepdog'
+    ],
+    catBreeds : [
+        'Siamese', 'Persian', 'Maine Coon', 'Ragdoll', 'Bengal',
+        'British Shorthair', 'Sphynx', 'Scottish Fold', 'Abyssinian',
+        'Russian Blue', 'Birman', 'American Shorthair', 'Oriental',
+        'Devon Rex', 'Himalayan', 'Burmese', 'Chartreux', 'Tonkinese',
+        'Turkish Angora', 'Norwegian Forest Cat'
+    ],
+    activityLevels: ['Couch Cushion', 'Lap Cat', 'Playful Pup', 'Adventure Hound'],
+    sizes: ['Small', 'Medium', 'Large'],
+    availableFurColors: ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'],
+    shortImageLength: "Please add at least 3 images.",
+    noCurrentUser: "You must be signed in to add an animal.",
+    animalUploadFailed: "Failed to save the animal data. Please try again.",
+    animalUploadSuccessful: "Successfully uploaded.",
 
     // User Settings page
     user_settings: {
