@@ -2,6 +2,6 @@ export const Shelter = {
     shelterName: "",
     shelterImage: "",
     email: "",
-    location: "",
+    province: "",
     phoneNumber: "",
 };

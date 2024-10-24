@@ -9,7 +9,7 @@ export const Animal = {
     furColor: "",
     description: "",
     shelterId: "", // ID of the shelter that uploaded this animal
-    location: "", // Used for filtering by user's location
+    province: "", // Used for filtering by user's location
     imageUrls: "", // URL to the animal's photo
     likedByUsers: [], // Array of user IDs who liked this animal
     createdAt: null,
