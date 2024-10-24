@@ -24,7 +24,9 @@ import defaultProfileImage from "../../assets/handsome_squidward.jpg";
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-
+import { getAuth } from "firebase/auth";
+import {onAuthStateChanged} from "firebase/auth";
+import { signOut } from 'firebase/auth';
 
 
 const UserSettingsScreen = () => {
@@ -193,11 +195,16 @@ const UserSettingsScreen = () => {
         );
     };
 
-    const handleLogout = () => {
-        // Handle logout action and navigate to the Login screen
-        console.log('Logout button pressed');
-        navigation.navigate('Login');
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            console.log('User signed out');
+            navigation.navigate('Login');
+        } catch (error) {
+            console.error('Error signing out: ', error);
+        }
     };
+
 
     const handleDoubleClick = () => {
         setIsEditable(prev => !prev);
