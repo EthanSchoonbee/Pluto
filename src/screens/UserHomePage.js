@@ -1,10 +1,14 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {
+    useEffect,
+    useRef,
+    useState
+} from 'react';
 import {
     ActivityIndicator,
-    Animated,
+    Animated, Button,
     Image,
     Platform,
-    SafeAreaView,
+    SafeAreaView, ScrollView,
     StatusBar,
     Text,
     TouchableOpacity,
@@ -18,41 +22,36 @@ import colors from "../styles/colors";
 import styles from '../styles/UserHomePageStyles';
 import Header from '../components/Header';
 import NavbarWrapper from "../components/NavbarWrapper";
-import {collection, getDocs, limit, query} from "firebase/firestore";
-import {db} from "../services/firebaseConfig";
+import {
+    collection,
+    doc,
+    getDocs,
+    limit,
+    query,
+    updateDoc,
+    arrayUnion, getDoc, where
+} from "firebase/firestore";
+import {auth, db} from "../services/firebaseConfig";
 import {getDownloadURL, getStorage, ref} from "firebase/storage";
 import * as FileSystem from 'expo-file-system';
 import {defaultProps as animal} from "react-native-web/src/modules/forwardedProps";
-
-
-// test animals
-/*
-const animals = [
-    { id: 1, name: 'Ollie', age: 12, gender: 'M', breed: 'Jack Russell', images: [
-                                                                                require('../../assets/dog-test-2.jpg')
-                                                                                ]
-    },
-    { id: 2, name: 'Max', age: 5, gender: 'F', breed: 'Labrador', images: [
-                                                                            require('../../assets/dog-test-1.jpg'),
-                                                                            require('../../assets/dog-test-3.jpg')
-                                                                        ]
-    },
-    { id: 3, name: 'Bella', age: 3, gender: 'M', breed: 'Poodle', images: [
-                                                                            require('../../assets/dog-test-1.jpg'),
-                                                                            require('../../assets/dog-test-2.jpg'),
-                                                                            require('../../assets/dog-test-3.jpg')
-                                                                        ]
-    },
-];
- */
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const floatingImageDislike = require('../../assets/dislike.png');
 const floatingImageLike = require('../../assets/like.png');
+
+const activityLevelMapping = {
+    0: 'Couch Cushion',
+    1: 'Lap Cat',
+    2: 'Playful Pup',
+    3: 'Adventure Hound',
+};
 
 const UserHomeScreen = () => {
     const swiperRef = useRef(null); // reference for the swiper object
     const [animals, setAnimals] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [cardIndex, setCardIndex] = useState(0); //  the card index
     const [imageIndexes, setImageIndexes] = useState(animals.map(() => 0));
     const [forceRerender, setForceRerender] = useState(1);
@@ -70,6 +69,10 @@ const UserHomeScreen = () => {
 
     useEffect(() => {
         fetchAnimals();
+        setYesButtonColor(colors.white);
+        setYesButtonIconColor(colors.inactiveYesButton);
+        setNoButtonColor(colors.white);
+        setNoButtonIconColor(colors.inactiveNoButton);
     }, []);
 
     useEffect(() => {
@@ -91,6 +94,7 @@ const UserHomeScreen = () => {
     const fetchAnimals = async () => {
         try {
             setLoading(true);
+            setError(null);
             const q = query(collection(db, 'animals'), limit(10));
             const querySnapshot = await getDocs(q);
 
@@ -101,14 +105,18 @@ const UserHomeScreen = () => {
                 animalData.imageUrls = animalData.imageUrls || [];
                 animalData.images = await preloadImages(animalData.imageUrls);
 
-                console.log(`Captured animal: ${animalData.name} (ID: ${animalData.id})`);
+                //console.log(Captured animal: ${animalData.name} (ID: ${animalData.id}));
 
                 // Only add animals with successfully preloaded images
                 if (animalData.images.length > 0) {
                     fetchedAnimals.push(animalData);
                 } else {
-                    console.warn(`No images found for animal: ${animalData.id}`);
+                    console.warn('No images found for animal: ${animalData.id}');
                 }
+            }
+
+            if (fetchedAnimals.length === 0) {
+                setError('No animals found. Please try again later.');
             }
 
             console.log('Captured animals: ', fetchedAnimals);
@@ -118,10 +126,12 @@ const UserHomeScreen = () => {
             console.log('Image index: ',imageIndexes);
         } catch (error) {
             console.error('Error fetching animals:', error);
+            setError('Failed to load animals. Please check your network connection.');
         } finally {
             setLoading(false);
         }
     };
+
 
     const preloadImages = async (imageUrls) => {
         const storage = getStorage();
@@ -248,37 +258,110 @@ const UserHomeScreen = () => {
     const onSwipedLeft = () => {
         resetOpacity(cardIndex);
 
-        setCardIndex((prevIndex) => (prevIndex + 1) % animals.length);
+        console.log('Card index:', cardIndex);
 
+        // Move to the next card
+        const newIndex = (cardIndex + 1) % animals.length;
+        setCardIndex(newIndex); // Update card index
+
+        // Reset the image index for the new card
         setImageIndexes((prevIndexes) => {
             const newIndexes = [...prevIndexes];
-            newIndexes[cardIndex] = 0;
+            newIndexes[newIndex] = 0; // Reset image index for the new card
             return newIndexes;
         });
 
+        // Reset button colors
+        setYesButtonColor(colors.white);
+        setYesButtonIconColor(colors.inactiveYesButton);
         setNoButtonColor(colors.white);
         setNoButtonIconColor(colors.inactiveNoButton);
 
-        console.log('Swiped left on card index:', cardIndex);
-        console.log('Starting image index:', imageIndexes[cardIndex]);
+
+        console.log('Swiped left on card index:', newIndex);
     };
 
-    const onSwipedRight = () => {
+    const onSwipedRight = async () => {
         resetOpacity(cardIndex);
+        console.log('Card index:', cardIndex);
 
-        setCardIndex((prevIndex) => (prevIndex + 1) % animals.length);
+        // Store the current index to reference the correct animal for the like action
+        const currentCardIndex = cardIndex;
+        const animalId = animals[currentCardIndex]?.id;
+        const userId = auth.currentUser.uid;
 
+        // Update the card index first to move to the next card
+        const newIndex = (cardIndex + 1) % animals.length;
+        setCardIndex(newIndex);
+
+        // Reset the image index for the new card
         setImageIndexes((prevIndexes) => {
             const newIndexes = [...prevIndexes];
-            newIndexes[cardIndex] = 0;
+            newIndexes[newIndex] = 0; // Reset image index for the new card
             return newIndexes;
         });
 
+        // Reset button colors
         setYesButtonColor(colors.white);
         setYesButtonIconColor(colors.inactiveYesButton);
+        setNoButtonColor(colors.white);
+        setNoButtonIconColor(colors.inactiveNoButton);
 
-        console.log('Swiped right on card index:', cardIndex);
-        console.log('Starting image index:', imageIndexes[cardIndex]);
+        console.log('New card index:', newIndex);
+
+        // Now, handle Firestore updates in the background using currentCardIndex
+        const animalRef = doc(db, 'animals', animalId);
+        const userRef = doc(db, 'users', userId);
+
+        try {
+            // Fetch the current animal data
+            const animalDoc = await getDoc(animalRef);
+            const animalData = animalDoc.data();
+
+            // Fetch the current user data
+            const userDoc = await getDoc(userRef);
+            const userData = userDoc.data();
+
+            const userHasLikedAnimal = animalData.likedByUsers && animalData.likedByUsers.includes(userId);
+            const animalHasLikedUser = userData.likedAnimals && userData.likedAnimals.includes(animalId);
+
+            // If both have liked each other, skip the update
+            if (userHasLikedAnimal && animalHasLikedUser) {
+                console.log(`User ${userId} and animal ${animalId} have already liked each other. Skipping update.`);
+                return;
+            }
+
+            // If the user has liked the animal but the animal hasn't liked the user, update the animal's document
+            if (userHasLikedAnimal && !animalHasLikedUser) {
+                console.log(`Updating animal ${animalId} to include user ${userId}.`);
+                await updateDoc(animalRef, {
+                    likedByUsers: arrayUnion(userId)
+                });
+            }
+
+            // If the animal has liked the user but the user hasn't liked the animal, update the user's document
+            if (!userHasLikedAnimal && animalHasLikedUser) {
+                console.log(`Updating user ${userId} to include animal ${animalId}.`);
+                await updateDoc(userRef, {
+                    likedAnimals: arrayUnion(animalId)
+                });
+            }
+
+            // If neither has liked each other, update both documents
+            if (!userHasLikedAnimal && !animalHasLikedUser) {
+                console.log(`User ${userId} is liking animal ${animalId} for the first time.`);
+                await updateDoc(animalRef, {
+                    likedByUsers: arrayUnion(userId)
+                });
+                await updateDoc(userRef, {
+                    likedAnimals: arrayUnion(animalId)
+                });
+            }
+
+            console.log(`User ${userId} interacted with animal ${animalId}.`);
+        } catch (error) {
+            console.error('Error updating Firestore:', error);
+        }
     };
 
     const resetOpacity = (currentIndex) => {
@@ -365,6 +448,12 @@ const UserHomeScreen = () => {
                     onPress={onImageNext}
                 />
 
+                <View style={styles.imageIndexIndicator}>
+                    <Text style={styles.imageIndexText}>
+                        {imageIndexes[index] + 1}/{animal.images.length}
+                    </Text>
+                </View>
+
                 <LinearGradient
                     colors={['rgba(255, 255, 255, 0)',
                         'rgba(255, 255, 255, 0.5)',
@@ -406,12 +495,47 @@ const UserHomeScreen = () => {
         <View style={styles.overlayContainer}>
             <View style={styles.overlayContent}>
                 <Text style={styles.overlayName}>{animal.name}</Text>
-                <Text style={styles.overlayDetails}>Age: {animal.age} years</Text>
-                <Text style={styles.overlayDetails}>Breed: {animal.breed}</Text>
-                <Text style={styles.overlayDetails}>Age: {animal.age} years</Text>
-                <Text style={styles.overlayDetails}>Breed: {animal.breed}</Text>
-                <Text style={styles.overlayDetails}>Age: {animal.age} years</Text>
-                <Text style={styles.overlayDetails}>Breed: {animal.breed}</Text>
+                <ScrollView
+                    contentContainerStyle={{ alignItems: 'center' }}
+                    style={styles.scrollView}
+                >
+                    <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldTitle}>Species</Text>
+                        <Text style={styles.overlayDetails}>{animal.species}</Text>
+                    </View>
+                    <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldTitle}>Breed</Text>
+                        <Text style={styles.overlayDetails}>{animal.breed}</Text>
+                    </View>
+                    <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldTitle}>Age</Text>
+                        <Text style={styles.overlayDetails}>{animal.age} years</Text>
+                    </View>
+                    <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldTitle}>Gender</Text>
+                        <View style={styles.genderOverlayContainer}>
+                            {renderGenderIcon(animal.gender)}
+                        </View>
+                    </View>
+                    <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldTitle}>Activity Level</Text>
+                        <Text style={styles.overlayDetails}>
+                            {activityLevelMapping[animal.activityLevel] || 'Unknown'}
+                        </Text>
+                    </View>
+                    <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldTitle}>Fur Color</Text>
+                        <Text style={styles.overlayDetails}>{animal.furColor}</Text>
+                    </View>
+                    <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldTitle}>Location</Text>
+                        <Text style={styles.overlayDetails}>{animal.location}</Text>
+                    </View>
+                    <View style={styles.fieldContainer}>
+                        <Text style={styles.fieldTitle}>Description</Text>
+                        <Text style={styles.overlayDetailsDescription}>{animal.description}</Text>
+                    </View>
+                </ScrollView>
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                     <Text style={styles.closeButtonText}>Close</Text>
                 </TouchableOpacity>
@@ -424,7 +548,17 @@ const UserHomeScreen = () => {
             <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
             <Header />
             {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={'#d9cb94'} />
+                    <Text>Loading some pets...</Text>
+                </View>
+            ) :error ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ color: colors.errorText, fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
+                        {error}
+                    </Text>
+                    <Button title="Retry" onPress={fetchAnimals} color={colors.primary} />
+                </View>
             ) : (
                 <View style={styles.swiperContainer}>
                     <Swiper
@@ -482,7 +616,6 @@ const UserHomeScreen = () => {
                 </View>
             )}
 
-            {/* Render the overlay if it should be shown */}
             {showOverlay && (
                 <AnimalInfoOverlay
                     animal={selectedAnimal}
