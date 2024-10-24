@@ -1,7 +1,8 @@
 class UserModel {
 
-    constructor(uid, email, fullName, phoneNo, location, role, likedAnimals = [], animalType, breed, gender, province, ageRange, activityLevel, size, furColors = []) {
+    constructor(uid, profileImage, email, fullName, phoneNo, location, role, likedAnimals = [], animalType, breed, gender, province, ageRange, activityLevel, size, furColors = []) {
         this.uid = uid;
+        this.profileImage = profileImage;
         this.email = email;
         this.fullName = fullName;
         this.phoneNo = phoneNo;

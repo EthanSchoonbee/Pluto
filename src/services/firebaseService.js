@@ -31,6 +31,7 @@ class FirebaseService {
                 const userData = {
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
+                    profileImage: "https://firebasestorage.googleapis.com/v0/b/pluto-2b00c.appspot.com/o/default_profile_image.jpg?alt=media&token=76543e99-1803-403a-9d11-eabfe5db5584",
                     fullName,
                     phoneNo,
                     location,
