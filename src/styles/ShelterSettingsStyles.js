@@ -21,7 +21,7 @@ const ShelterSettingsStyles = StyleSheet.create({
     },
     // Details container section with 6 fields
     detailsContainer: {
-        padding: 10,
+        padding: 20,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 5,
@@ -40,7 +40,7 @@ const ShelterSettingsStyles = StyleSheet.create({
         marginBottom: 5,
         borderBottomWidth: 1,
         borderBottomColor: colors.userSettingsLightGrayBorder, // Light gray border
-        paddingBottom: 5,
+        paddingBottom: 7,
     },
     detailsLabel: {
         fontSize: 14,
@@ -53,7 +53,7 @@ const ShelterSettingsStyles = StyleSheet.create({
     },
     // Privacy Section Styles
     privacyContainer: {
-        padding: 2,
+        padding: 10,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 10, // Adds spacing above the privacy section
