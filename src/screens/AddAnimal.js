@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import {useEffect, useState} from "react";
+import {collection, addDoc, doc, getDoc} from "firebase/firestore";
 import Slider from '@react-native-community/slider';
 import React from "react";
 import { View, Text, TextInput, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Alert } from 'react-native';
@@ -19,6 +19,9 @@ const AddAnimal = ({ navigation }) => {
     const [selectedBreed, setSelectedBreed] = useState(strings.anyBreed); // Use strings.anyBreed
     const [images, setImages] = useState([]);
     const [name, setName] = useState("");
+    const [selectedGender, setSelectedGender] = useState([]);
+    const [shelterLocation, setShelterLocation] = useState(""); // State for shelter location
+    const [isGenderPickerVisible, setIsGenderPickerVisible] = useState(false);
     const [age, setAge] = useState("");
     const [biography, setBiography] = useState("");
     const [activityLevel, setActivityLevel] = useState(0);
@@ -35,6 +38,23 @@ const AddAnimal = ({ navigation }) => {
     const user = auth.currentUser;
     const storage = getStorage();
 
+    // Fetch the shelter's location when the component mounts
+    useEffect(() => {
+        const fetchShelterLocation = async () => {
+            if (user) {
+                const shelterDocRef = doc(db, "shelters", user.uid); // Adjust this to your shelters collection
+                const shelterDoc = await getDoc(shelterDocRef);
+
+                if (shelterDoc.exists()) {
+                    const shelterData = shelterDoc.data();
+                    setShelterLocation(shelterData.location); // Assuming location is stored in the shelter document
+                } else {
+                    console.log("No such document!");
+                }
+            }
+        };
+        fetchShelterLocation();
+    }, [user]);
 
     const handleImageUpload = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -102,6 +122,8 @@ const AddAnimal = ({ navigation }) => {
             newAnimal.species = isDog ? "dog" : "cat";
             newAnimal.breed = selectedBreed;
             newAnimal.age = age;
+            newAnimal.gender = selectedGender;
+            newAnimal.location = shelterLocation;
             newAnimal.activityLevel = activityLevel;
             newAnimal.size = sizes[size];
             newAnimal.furColor = furColors.join(", ");
@@ -273,6 +295,42 @@ const AddAnimal = ({ navigation }) => {
                         </View>
                     </Modal>
                 </View>
+
+
+                {/* Gender Picker */}
+                <View style={styles.pickerContainer}>
+                    <TouchableOpacity onPress={() => setIsGenderPickerVisible(true)} style={styles.pickerButton}>
+                        <Text style={styles.pickerText}>
+                            {selectedGender === "M" ? "Male" : selectedGender === "F" ? "Female" : strings.selectGender}
+                        </Text>
+                        <Icon name="chevron-down" size={20} color="#000" style={styles.arrowIcon} />
+                    </TouchableOpacity>
+                    <Modal
+                        visible={isGenderPickerVisible}
+                        transparent={true}
+                        animationType="slide"
+                        onRequestClose={() => setIsGenderPickerVisible(false)}
+                    >
+                        <View style={styles.modalContainer}>
+                            <View style={styles.modalContent}>
+                                <Picker
+                                    selectedValue={selectedGender}
+                                    onValueChange={(itemValue) => {
+                                        setSelectedGender(itemValue); // Set value to M or F
+                                        setIsGenderPickerVisible(false);
+                                    }}
+                                >
+                                    {/* Removed "Select Gender" option */}
+                                    <Picker.Item label="Male" value="M" />
+                                    <Picker.Item label="Female" value="F" />
+                                </Picker>
+                                <Button title={strings.closeButton} onPress={() => setIsGenderPickerVisible(false)} />
+                            </View>
+                        </View>
+                    </Modal>
+                </View>
+
+
 
 
                 {/* Activity Level Slider */}

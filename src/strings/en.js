@@ -59,6 +59,7 @@ export default {
     selectSpecies: "Select Species:",
     selectBreed: "Select Breed:",
     selectFur: "Select Fur Color:",
+    selectGender: "Select Gender:",
 
     // User Settings page
     user_settings: {

@@ -214,6 +214,13 @@ const styles = StyleSheet.create({
         fontSize: 24,
         color: '#aaa',
     },
+    genderOption: {
+        padding: 15,
+        borderBottomWidth: 1,
+        borderColor: '#ccc',
+        backgroundColor: '#fff', // or any other color for your options
+    },
+
 });
 
 export default styles;
