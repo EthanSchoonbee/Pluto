@@ -119,7 +119,7 @@ const AddAnimal = ({ navigation }) => {
             // Create a new Animal object
             const newAnimal = { ...Animal };
             newAnimal.name = name;
-            newAnimal.species = isDog ? "dog" : "cat";
+            newAnimal.species = isDog ? "Dog" : "Cat";
             newAnimal.breed = selectedBreed;
             newAnimal.age = age;
             newAnimal.gender = selectedGender;
@@ -138,7 +138,7 @@ const AddAnimal = ({ navigation }) => {
             await addDoc(collection(db, "animals"), newAnimal);
 
             alert("Animal data has been saved successfully!");
-            navigation.navigate("UserHome");
+            navigation.navigate("ShelterHome");
         } catch (error) {
             console.error("Error adding animal data: ", error);
             alert("Failed to save the animal data. Please try again.");
