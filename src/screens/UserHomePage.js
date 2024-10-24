@@ -22,6 +22,7 @@ import {collection, getDocs, limit, query} from "firebase/firestore";
 import {db} from "../services/firebaseConfig";
 import {getDownloadURL, getStorage, ref} from "firebase/storage";
 import * as FileSystem from 'expo-file-system';
+import {defaultProps as animal} from "react-native-web/src/modules/forwardedProps";
 
 
 // test animals
@@ -64,12 +65,23 @@ const UserHomeScreen = () => {
     const [yesButtonIconColor, setYesButtonIconColor] = useState(colors.inactiveYesButton);
 
     // calculate and keep track of floating image opacity
-    const likeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
-    const dislikeOpacity = useRef(animals.map(() => new Animated.Value(0))).current;
+    const [likeOpacity, setLikeOpacity] = useState([]);
+    const [dislikeOpacity, setDislikeOpacity] = useState([]);
 
     useEffect(() => {
         fetchAnimals();
     }, []);
+
+    useEffect(() => {
+        if (animals.length > 0) {
+            setLikeOpacity(animals.map(() => new Animated.Value(0))); // Initialize like opacity values
+            setDislikeOpacity(animals.map(() => new Animated.Value(0))); // Initialize dislike opacity values
+        }
+    }, [animals]);
+
+    useEffect(() => {
+        setForceRerender((prev) => prev + 1);
+    }, [animals]);
 
     // reset current card floating image opacities on load
     useEffect(() => {
@@ -85,24 +97,25 @@ const UserHomeScreen = () => {
             const fetchedAnimals = [];
             for (const doc of querySnapshot.docs) {
                 const animalData = doc.data();
-
-                console.log('Animal Data: ', animalData);
-
                 animalData.id = doc.id;
-                animalData.images = await preloadImages(animalData.imageUrls || []); // Ensure `imageUrls` is defined
+                animalData.imageUrls = animalData.imageUrls || [];
+                animalData.images = await preloadImages(animalData.imageUrls);
 
-                // Ensure the 'images' field is an array, even if empty
-                animalData.images = animalData.images || [];
+                console.log(`Captured animal: ${animalData.name} (ID: ${animalData.id})`);
 
-                // Only push animals with valid images
-                if (animalData.imageUrls.length > 0) {
+                // Only add animals with successfully preloaded images
+                if (animalData.images.length > 0) {
                     fetchedAnimals.push(animalData);
                 } else {
                     console.warn(`No images found for animal: ${animalData.id}`);
                 }
             }
+
             console.log('Captured animals: ', fetchedAnimals);
             setAnimals(fetchedAnimals);
+            setImageIndexes(fetchedAnimals.map(() => 0)); // Initialize image indexes for each animal
+            console.log('Card index: ',cardIndex);
+            console.log('Image index: ',imageIndexes);
         } catch (error) {
             console.error('Error fetching animals:', error);
         } finally {
@@ -112,29 +125,24 @@ const UserHomeScreen = () => {
 
     const preloadImages = async (imageUrls) => {
         const storage = getStorage();
-        const preloadedImages = [];
-
-        console.log('Image URLs to Preload:', imageUrls);
-
-        for (const imageUrl of imageUrls) {
+        const promises = imageUrls.map(async (imageUrl) => {
             try {
                 const storageRef = ref(storage, imageUrl);
                 const downloadUrl = await getDownloadURL(storageRef);
-
-                // Download the image to the device's local file system
                 const fileName = imageUrl.split('/').pop();
-                const localUri = `${FileSystem.documentDirectory}${fileName}`;
-                await FileSystem.downloadAsync(downloadUrl, localUri);
+                const localUri = `${FileSystem.cacheDirectory}${fileName}`;
 
-                console.log('Image downloaded successfully: ', localUri);
-
-                preloadedImages.push({ uri: localUri });
+                const fileInfo = await FileSystem.getInfoAsync(localUri);
+                if (!fileInfo.exists) {
+                    await FileSystem.downloadAsync(downloadUrl, localUri);
+                }
+                return { uri: localUri };
             } catch (error) {
-                console.error('Error downloading image:', error);
+                console.error('Error downloading or caching image:', error);
+                return null;
             }
-        }
-
-        return preloadedImages;
+        });
+        return (await Promise.all(promises)).filter(Boolean);
     };
 
     const animateSwipe = (direction) => {
@@ -259,7 +267,13 @@ const UserHomeScreen = () => {
     };
 
     const resetOpacity = (currentIndex) => {
-        if (currentIndex >= 0 && currentIndex < animals.length) {
+        if (
+            animals.length > 0 &&
+            currentIndex >= 0 &&
+            currentIndex < animals.length &&
+            likeOpacity[currentIndex] &&
+            dislikeOpacity[currentIndex]
+        ) {
             Animated.parallel([
                 Animated.timing(likeOpacity[currentIndex], {
                     toValue: 0,
@@ -305,55 +319,61 @@ const UserHomeScreen = () => {
         setForceRerender(forceRerender + 1);
     };
 
-    const renderCard = (card, cardIndex) => (
-        <View style={styles.card}>
-            <Animated.Image
-                source={floatingImageLike}
-                style={[styles.floatingImageRight, { opacity: likeOpacity[cardIndex] }]}
-            />
-            <Animated.Image
-                source={floatingImageDislike}
-                style={[styles.floatingImageLeft, { opacity: dislikeOpacity[cardIndex] }]}
-            />
+    const renderCard = (animal, index) => {
+        console.log('Rendering card with ID:', animal.id);
+        return (
+            <View key={animal.id || index} style={styles.card}>
+                <Animated.Image
+                    source={floatingImageLike}
+                    style={[styles.floatingImageRight, { opacity: likeOpacity[index] }]}
+                />
+                <Animated.Image
+                    source={floatingImageDislike}
+                    style={[styles.floatingImageLeft, { opacity: dislikeOpacity[index] }]}
+                />
 
-            <TouchableOpacity
-                style={ styles.leftTouchableArea }
-                onPress={onImagePrevious}
-            />
-            <Image
-                key={`${cardIndex}-${imageIndexes[cardIndex]}`}
-                source={{ uri: animals[cardIndex].images[imageIndexes[cardIndex]] }}
-                style={styles.image}
-            />
-            <TouchableOpacity
-                style={ styles.rightTouchableArea }
-                onPress={onImageNext}
-            />
+                <TouchableOpacity
+                    style={ styles.leftTouchableArea }
+                    onPress={onImagePrevious}
+                />
+                <Image
+                    key={`${animal.id}-${imageIndexes[index]}`} // Unique key for the image
+                    source={
+                        animals[index]?.images?.[imageIndexes[index]]?.uri
+                            ? { uri: animals[index].images[imageIndexes[index]].uri }
+                            : require('../../assets/dog-test-1.jpg')
+                    }
+                    style={styles.image}
+                />
+                <TouchableOpacity
+                    style={ styles.rightTouchableArea }
+                    onPress={onImageNext}
+                />
 
-            <LinearGradient
-                colors={['rgba(255, 255, 255, 0)',
-                    'rgba(255, 255, 255, 0.5)',
-                    'rgba(255, 255, 255, 0.8)',
-                    'rgba(255, 255, 255, 0.9)',
-                    'rgba(255, 255, 255, 0.99)',
-                    'rgba(255, 255, 255, 1)']}
-                style={styles.gradient}
-            />
+                <LinearGradient
+                    colors={['rgba(255, 255, 255, 0)',
+                        'rgba(255, 255, 255, 0.5)',
+                        'rgba(255, 255, 255, 0.8)',
+                        'rgba(255, 255, 255, 0.9)',
+                        'rgba(255, 255, 255, 0.99)',
+                        'rgba(255, 255, 255, 1)']}
+                    style={styles.gradient}
+                />
 
-            <View style={styles.cardInfo}>
-                <View style={styles.leftContainer}>
-                    <View style={styles.nameAgeContainer}>
-                        <Text style={styles.name}>{card.name}</Text>
-                        <Text style={styles.age}>, {card.age} years old</Text>
+                <View style={styles.cardInfo}>
+                    <View style={styles.leftContainer}>
+                        <View style={styles.nameAgeContainer}>
+                            <Text style={styles.name}>{animal.name}</Text>
+                            <Text style={styles.age}>, {animal.age} years old</Text>
+                        </View>
+
+                        <View style={styles.genderBreedContainer}>
+                            {renderGenderIcon(animal.gender)}
+                            <Text style={styles.breed}>{animal.breed}</Text>
+                        </View>
                     </View>
 
-                    <View style={styles.genderBreedContainer}>
-                        {renderGenderIcon(card.gender)}
-                        <Text style={styles.breed}>{card.breed}</Text>
-                    </View>
-                </View>
-
-                <View style={styles.rightContainer}>
+                    <View style={styles.rightContainer}>
                         <TouchableOpacity
                             onPress={() => {
                                 setSelectedAnimal(animals[cardIndex]);
@@ -361,10 +381,11 @@ const UserHomeScreen = () => {
                             }}>
                             <Entypo name="info-with-circle" size={30} color={colors.genderMaleBlue} />
                         </TouchableOpacity>
+                    </View>
                 </View>
             </View>
-        </View>
-    );
+        );
+    };
 
     const AnimalInfoOverlay = ({ animal, onClose }) => (
         <View style={styles.overlayContainer}>
@@ -393,6 +414,7 @@ const UserHomeScreen = () => {
                 <View style={styles.swiperContainer}>
                     <Swiper
                         key={forceRerender}
+                        keyExtractor={(animal) => animal.id} // Ensure that keyExtractor is set up correctly
                         ref={swiperRef}
                         cards={ animals }
                         cardIndex={ cardIndex }
@@ -401,8 +423,8 @@ const UserHomeScreen = () => {
                         onSwipedLeft={ onSwipedLeft }
                         onSwipedRight={ onSwipedRight }
                         onSwipedAborted={ SwipedAborted }
-                        onSwipedAll={ () => console.log('All cards swiped') }
-                        stackSize={ 15 }
+                        onSwipedAll={ fetchAnimals }
+                        stackSize={ 2 }
                         disableBottomSwipe
                         disableTopSwipe
                         backgroundColor={ colors.white }
@@ -412,36 +434,38 @@ const UserHomeScreen = () => {
                 </View>
             )}
             <NavbarWrapper noShadow={true} />
-            <View style={styles.buttonsContainer}>
-                <TouchableOpacity
-                    style={ [styles.button,
-                        { backgroundColor:  noButtonColor }
-                    ]}
-                    onPressIn={ () => setNoButtonColor(colors.activeNoButton) }
-                    onPressOut={ () => setNoButtonColor(colors.white) }
-                    onPress={ () => {
-                        resetOpacity(cardIndex);
-                        animateSwipe('left');
-                        swiperRef.current.swipeLeft();
-                    }}
-                >
-                    <Ionicons name="close" size={50} color={noButtonIconColor} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={ [styles.button,
-                        { backgroundColor: yesButtonColor }
-                    ]}
-                    onPressIn={ () => setYesButtonColor(colors.activeYesButton) }
-                    onPressOut={ () => setYesButtonColor(colors.white) }
-                    onPress={ () => {
-                        resetOpacity(cardIndex);
-                        animateSwipe('right');
-                        swiperRef.current.swipeRight();
-                    }}
-                >
-                    <Ionicons name="heart" size={45} color={yesButtonIconColor} />
-                </TouchableOpacity>
-            </View>
+            {!loading && animals.length > 0 && (
+                <View style={styles.buttonsContainer}>
+                    <TouchableOpacity
+                        style={ [styles.button,
+                            { backgroundColor:  noButtonColor }
+                        ]}
+                        onPressIn={ () => setNoButtonColor(colors.activeNoButton) }
+                        onPressOut={ () => setNoButtonColor(colors.white) }
+                        onPress={ () => {
+                            resetOpacity(cardIndex);
+                            animateSwipe('left');
+                            swiperRef.current.swipeLeft();
+                        }}
+                    >
+                        <Ionicons name="close" size={50} color={noButtonIconColor} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={ [styles.button,
+                            { backgroundColor: yesButtonColor }
+                        ]}
+                        onPressIn={ () => setYesButtonColor(colors.activeYesButton) }
+                        onPressOut={ () => setYesButtonColor(colors.white) }
+                        onPress={ () => {
+                            resetOpacity(cardIndex);
+                            animateSwipe('right');
+                            swiperRef.current.swipeRight();
+                        }}
+                    >
+                        <Ionicons name="heart" size={45} color={yesButtonIconColor} />
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {/* Render the overlay if it should be shown */}
             {showOverlay && (
