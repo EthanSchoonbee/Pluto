@@ -10,7 +10,7 @@ export const Animal = {
     description: "",
     shelterId: "", // ID of the shelter that uploaded this animal
     location: "", // Used for filtering by user's location
-    imageUrl: "", // URL to the animal's photo
+    imageUrls: "", // URL to the animal's photo
     likedByUsers: [], // Array of user IDs who liked this animal
     createdAt: null,
     updatedAt: null,
