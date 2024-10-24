@@ -10,9 +10,12 @@ import {
     Platform,
     ImageBackground,
     StatusBar,
+    Modal,
+    Button,
     ActivityIndicator
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { Picker } from '@react-native-picker/picker';
 import strings from "../strings/en";
 import firebaseService from '../services/firebaseService';
 import ValidationClass from '../services/SettingsInputValidations';
@@ -22,22 +25,23 @@ const RegisterScreen = ({ navigation }) => {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [phoneNo, setPhoneNo] = useState('');
-    const [location, setLocation] = useState('');
     const [password, setPassword] = useState('');
     const [secureTextEntry, setSecureTextEntry] = useState(true);
     const [loading, setLoading] = useState(false);  // Add loading state
+    const [selectedProvince, setSelectedProvince] = useState('Western Cape');
+    const [isProvincePickerVisible, setIsProvincePickerVisible] = useState(false);
+
+    const provinces = ['Western Cape', 'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West'];
 
     const togglePasswordVisibility = () => {
         setSecureTextEntry(!secureTextEntry);
     };
 
     const handleRegister = async () => {
-
         if (ValidationClass.isEmptyOrWhitespace(fullName) ||
             ValidationClass.isEmptyOrWhitespace(email) ||
             ValidationClass.isEmptyOrWhitespace(password) ||
-            ValidationClass.isEmptyOrWhitespace(phoneNo) ||
-            ValidationClass.isEmptyOrWhitespace(location)) {
+            ValidationClass.isEmptyOrWhitespace(phoneNo)) {
             alert('Please fill in all required fields');
             return;
         }
@@ -52,15 +56,23 @@ const RegisterScreen = ({ navigation }) => {
             return;
         }
 
+        // Password validation regex
+        const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+
+        if (!passwordRegex.test(password)) {
+            alert('Insufficient password: Password must be at least 8 characters long, include an uppercase letter, a number, and a special character.');
+            return;
+        }
+
         setLoading(true);
         try {
-
-            const user = await firebaseService.registerUser(fullName, email, password, phoneNo, location);
+            const user = await firebaseService.registerUser(fullName, email, password, phoneNo, selectedProvince);
             setLoading(false);
             console.log('User registered:', user);
             navigation.navigate('UserHome');
         } catch (error) {
             console.log('Error during registration:', error);
+            setLoading(false);
             alert('Registration failed, please try again');
         }
     };
@@ -120,14 +132,36 @@ const RegisterScreen = ({ navigation }) => {
                         />
                     </View>
 
-                    <View style={styles.inputWrapper}>
-                        <Icon name="home" size={20} color="#aaa" style={styles.icon} />
-                        <TextInput
-                            style={styles.inputUnderline}
-                            placeholder={strings.location_placeholder}
-                            value={location}
-                            onChangeText={setLocation}
-                        />
+                    {/* Province Selector */}
+                    <View style={styles.pickerContainer}>
+                        <Icon name="location-on" size={20} color="#aaa" style={styles.locationIcon} />
+                        <Text style={styles.label}>{strings.provincesLabel}</Text>
+                        <TouchableOpacity onPress={() => setIsProvincePickerVisible(true)} style={styles.pickerButton}>
+                            <Text style={styles.pickerText}>{selectedProvince}</Text>
+                        </TouchableOpacity>
+                        <Modal
+                            visible={isProvincePickerVisible}
+                            transparent={true}
+                            animationType="slide"
+                            onRequestClose={() => setIsProvincePickerVisible(false)}
+                        >
+                            <View style={styles.modalContainer}>
+                                <View style={styles.modalContent}>
+                                    <Picker
+                                        selectedValue={selectedProvince}
+                                        onValueChange={(itemValue) => {
+                                            setSelectedProvince(itemValue);
+                                            setIsProvincePickerVisible(false);
+                                        }}
+                                    >
+                                        {provinces.map((province, index) => (
+                                            <Picker.Item key={index} label={province} value={province} />
+                                        ))}
+                                    </Picker>
+                                    <Button title={strings.closeButton} onPress={() => setIsProvincePickerVisible(false)} />
+                                </View>
+                            </View>
+                        </Modal>
                     </View>
 
                     <View style={styles.inputWrapper}>
