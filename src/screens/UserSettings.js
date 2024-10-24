@@ -23,6 +23,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import defaultProfileImage from "../../assets/handsome_squidward.jpg";
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
 import * as ImagePicker from "expo-image-picker";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+
+
 
 const UserSettingsScreen = () => {
     const defaultValues = {
@@ -43,6 +46,7 @@ const UserSettingsScreen = () => {
     const [loading, setLoading] = useState(true);  // Add loading state
     const [userData,setUserData] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
+    const storage = getStorage();
 
     const navigation = useNavigation();
     const defaultProfileImage = require('../../assets/pluto_logo.png');
@@ -73,6 +77,29 @@ const UserSettingsScreen = () => {
         }
     };
 
+    // Function to upload image to Firebase Storage
+    const uploadImage = async (imageUri) => {
+        if (!imageUri) return null;
+
+        const user = auth.currentUser;
+        const imageRef = ref(storage, `users/${user.uid}/${Date.now()}_profile.jpg`);
+        const blob = await fetch(imageUri).then((r) => r.blob());
+        const uploadTask = uploadBytesResumable(imageRef, blob);
+
+        return new Promise((resolve, reject) => {
+            uploadTask.on(
+                'state_changed',
+                null,
+                (error) => reject(error),
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                }
+            );
+        });
+    };
+
+
     // Check if details inputs are valid
     const checkDetailsInputs = () => {
 
@@ -98,7 +125,6 @@ const UserSettingsScreen = () => {
             return false;
         }
 
-
         if(SettingsInputValidations.containsNumber(location)){
             Alert.alert(strings.user_settings.validation_error,strings.user_settings.location_number)
             return false;
@@ -109,24 +135,24 @@ const UserSettingsScreen = () => {
         return true;
     };
 
-    const updateUserSettings = () => {
-        // Check if inputs were edited
+
+    // Function to validate input and update Firestore
+    const updateUserSettings = async () => {
         if (!isEditable) {
             Alert.alert('Info', "No changes were made.");
             return;
         }
 
-        // Call the input validation function
+        // Validate input fields
         if (!checkDetailsInputs()) {
             return;
         }
 
-        // Save all inputs in an object
         const updatedUserDetails = {
             fullName,
             location,
             email,
-            profileImage
+            profileImage: ''  // Will update this after image upload
         };
 
         // Confirm update with the user
@@ -140,10 +166,26 @@ const UserSettingsScreen = () => {
                 },
                 {
                     text: "Confirm",
-                    onPress: () => {
-                        firebaseService.updateUserSettings("users",updatedUserDetails)
-                        if(!SettingsInputValidations.isEmptyOrWhitespace(newPassword)){
-                            firebaseService.changePassword(newPassword)
+                    onPress: async () => {
+                        try {
+                            // Push the user data to Firestore
+                            await firebaseService.updateUserSettings("users", updatedUserDetails);
+
+                            // Upload the profile image after user data is pushed
+                            if (profileImage) {
+                                const imageUrl = await uploadImage(profileImage);
+                                // Update Firestore document with the image URL
+                                await firebaseService.updateUserSettings("users", { profileImage: imageUrl });
+                            }
+
+                            if (!SettingsInputValidations.isEmptyOrWhitespace(newPassword)) {
+                                firebaseService.changePassword(newPassword);
+                            }
+
+                            Alert.alert("Success", "Your profile has been updated.");
+                        } catch (error) {
+                            console.error("Error updating profile: ", error);
+                            Alert.alert("Error", "There was an issue updating your profile. Please try again.");
                         }
                     }
                 }
@@ -160,7 +202,6 @@ const UserSettingsScreen = () => {
     const handleDoubleClick = () => {
         setIsEditable(prev => !prev);
     };
-
 
     // Function to fetch userData from AsyncStorage
     const fetchUserData = async () => {
