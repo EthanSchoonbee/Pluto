@@ -12,6 +12,7 @@ import {
     updatePassword
 } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useState} from "react";
 
 class FirebaseService {
     constructor() {
@@ -23,7 +24,10 @@ class FirebaseService {
         createUserWithEmailAndPassword(this.auth, email, password)
             .then(async (userCredential) => {
                 const firebaseUser = userCredential.user;
+                const defaultRange = [0, 20];
+                const availableFurColors = ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
 
+                // Basic user information and preferences as a nested field
                 const userData = {
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
@@ -31,19 +35,38 @@ class FirebaseService {
                     phoneNo,
                     location,
                     role: "user",
-                    likedAnimals: [],
+                    likedAnimals: [],  // This stays in the main document
+
+                    // Preferences are nested inside the main user document
+                    preferences: {
+                        animalType: "dog",
+                        breed: "Any",
+                        gender: "Any",
+                        province: "Western Cape",
+                        ageRange: defaultRange,
+                        activityLevel: "Playful Pup",
+                        size: "Medium",
+                        furColors: availableFurColors
+                    }
                 };
 
-                await this.addUserData('users', userData);
+                try {
+                    // Save all data (including preferences) to the 'users' collection
+                    await this.addUserData('users', userData);
 
-                await AsyncStorage.setItem('userData', JSON.stringify(userData));
+                    // Optionally store the whole user data in AsyncStorage
+                    await AsyncStorage.setItem('userData', JSON.stringify(userData));
 
-                console.log("Firebase Authentication Service: Registration Process Successful");
-                onComplete(true, null); // Registration successful
+                    console.log("Firebase Authentication Service: Registration Process Successful");
+                    onComplete(true, null);  // Registration successful
+                } catch (error) {
+                    console.log("Error adding user data:", error);
+                    onComplete(false, error.message);  // Registration failed, return error message
+                }
             })
             .catch((error) => {
-                console.log("Firebase Authentication Service: Registration Process Failed");
-                onComplete(false, error.message); // Registration failed, return error message
+                console.log("Firebase Authentication Service: Registration Process Failed", error);
+                onComplete(false, error.message);  // Handle Firebase Authentication error
             });
     }
 

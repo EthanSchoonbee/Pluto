@@ -38,7 +38,6 @@ const LoginScreen = ({ navigation }) => {
         setLoading(true);
 
         firebaseService.loginUser(email, password, async (success, errorMessage) => {
-            setLoading(false);
             if (success) {
                 const user = firebaseService.getCurrentUser();
 
@@ -49,6 +48,7 @@ const LoginScreen = ({ navigation }) => {
                         console.log('Fetched user data:', userData);
                         const token = await user.getIdToken();
                         userSession.setUser(userData, token);
+                        setLoading(false);
                         navigation.navigate('UserHome');
                     } else {
                         const shelterData = await firebaseService.getUserData('shelters', user.uid);
@@ -56,18 +56,22 @@ const LoginScreen = ({ navigation }) => {
                             console.log('Fetched shelter data:', shelterData);
                             const token = await user.getIdToken();
                             userSession.setUser(shelterData, token);
+                            setLoading(false);
                             navigation.navigate('ShelterHome');
                         } else {
                             console.log('No user or shelter data found in Firestore');
+                            setLoading(false);
                             alert('Invalid login details');
                         }
                     }
                 } catch (error) {
                     console.log('Error fetching user/shelter data:', error);
+                    setLoading(false);
                     alert('An error occurred while fetching user data.');
                 }
             } else {
                 console.log('Error during login:', errorMessage);
+                setLoading(false);
                 alert('Invalid login details');
             }
         });
