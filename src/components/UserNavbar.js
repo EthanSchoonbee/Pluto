@@ -22,12 +22,6 @@ const UserNavbar = () => {
                 onPress={() => navigation.navigate('LikedAnimalsPage')}
             />
             <Ionicons
-                name="chatbubbles"
-                size={30}
-                color="black"
-                onPress={() => navigation.navigate('ShelterChats')}
-            />
-            <Ionicons
                 name="person"
                 size={30}
                 color="black"
