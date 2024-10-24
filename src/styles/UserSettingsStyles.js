@@ -112,6 +112,19 @@ const UserSettingsStyles = StyleSheet.create({
     logoutButtonText: {
         color: colors.userSettingsRedBorder,         // Red text for logout
     },
+    // New Style for Center Image
+    centerImageContainer: {
+    justifyContent: 'center', // Vertically center the content
+        alignItems: 'center', // Horizontally center the content
+        paddingTop:10,
+
+},
+centerImage: {
+    width: 100,    // Set width to 150
+        height: 100,   // Set height to 150
+        borderRadius: 75, // Keep it circular (optional, remove if not needed)
+        resizeMode: "cover", // Ensure the image fills the container
+}
 });
 
 export default UserSettingsStyles;

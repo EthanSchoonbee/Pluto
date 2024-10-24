@@ -22,6 +22,8 @@ import colors from "../styles/colors";
 import NavbarWrapper from "../components/NavbarWrapper";
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 import firebaseService from "../services/firebaseService";
+import {launchImageLibrary} from "react-native-image-picker";
+import * as ImagePicker from "expo-image-picker";
 
 const defaultProfileImage = require('../../assets/handsome_squidward.jpg');
 
@@ -52,6 +54,28 @@ const ShelterSettingsScreen = () => {
         setIsPushNotificationsEnabled(previousState => !previousState);
         setIsEditable(true);
     };
+
+    // Function to handle image selection
+    const handleImageSelect = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Sorry, we need media library permissions to make this work!');
+            return;
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            // Set the selected image's URI as the profile image
+            setProfileImage(result.assets[0].uri);
+            setIsEditable(true); // Mark the form as edited
+        }
+    };
+
 
     const handleUpdate = () => {
         updateUserSettings();
@@ -104,7 +128,7 @@ const ShelterSettingsScreen = () => {
             email,
             tel,
             notifications: isPushNotificationsEnabled,
-            profileImage: profileImage || defaultProfileImage,
+            profileImage: profileImage,
         };
 
         // Confirm update with the user
@@ -194,10 +218,13 @@ const ShelterSettingsScreen = () => {
             <ScrollView style={ShelterSettingsStyles.container} contentContainerStyle={{flexGrow:1}}>
                 {/* Centered Image */}
                 <View style={ShelterSettingsStyles.centerImageContainer}>
+                    <TouchableOpacity onPress={handleImageSelect}>
                     <Image
                         source={profileImage ? { uri: profileImage } : defaultProfileImage}
                         style={ShelterSettingsStyles.centerImage}
+                        editable ={true}
                     />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Shelter Details Section */}

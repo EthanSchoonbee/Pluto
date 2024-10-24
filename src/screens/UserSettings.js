@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import {View, Text, ScrollView, Switch, TouchableOpacity, TextInput, SafeAreaView, ActivityIndicator} from 'react-native';
+import {
+    View,
+    Text,
+    ScrollView,
+    Switch,
+    TouchableOpacity,
+    TextInput,
+    SafeAreaView,
+    ActivityIndicator,
+    Image
+} from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import UserSettingsStyles from "../styles/UserSettingsStyles";
 import strings from '../strings/en.js';
@@ -11,6 +21,8 @@ import { db, auth } from '../services/firebaseConfig';
 import firebaseService from "../services/firebaseService";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import defaultProfileImage from "../../assets/handsome_squidward.jpg";
+import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
+import * as ImagePicker from "expo-image-picker";
 
 const UserSettingsScreen = () => {
     const defaultValues = {
@@ -22,8 +34,7 @@ const UserSettingsScreen = () => {
         location: "Sample Location",
     };
 
-    const [isPushNotificationsEnabled, setIsPushNotificationsEnabled] = useState(false);
-    const [name, setName] = useState(defaultValues.name);
+    const [fullName, setfullName] = useState(defaultValues.name);
     const [email, setEmail] = useState(defaultValues.email);
     const [password, setPassword] = useState(defaultValues.password);
     const [newPassword, setNewPassword] = useState(defaultValues.newPassword);
@@ -31,24 +42,43 @@ const UserSettingsScreen = () => {
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);  // Add loading state
     const [userData,setUserData] = useState(null);
+    const [profileImage, setProfileImage] = useState(null);
 
     const navigation = useNavigation();
+    const defaultProfileImage = require('../../assets/pluto_logo.png');
 
-    const togglePushNotifications = () => {
-        setIsPushNotificationsEnabled(previousState => !previousState);
-        setIsEditable(true);
-    };
 
     const handleUpdate = () => {
         updateUserSettings()
+    };
+
+    // Function to handle image selection
+    const handleImageSelect = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'Sorry, we need media library permissions to make this work!');
+            return;
+        }
+
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            // Set the selected image's URI as the profile image
+            setProfileImage(result.assets[0].uri);
+            setIsEditable(true); // Mark the form as edited
+        }
     };
 
     // Check if details inputs are valid
     const checkDetailsInputs = () => {
 
         // Start of checking for null inputs
-        if (SettingsInputValidations.isEmptyOrWhitespace(name)) {
-            Alert.alert(strings.user_settings.validation_error, strings.user_settings.name_required);
+        if (SettingsInputValidations.isEmptyOrWhitespace(fullName)) {
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.fullName_required);
             return false;
         }
         if (SettingsInputValidations.isEmptyOrWhitespace(email)) {
@@ -73,7 +103,7 @@ const UserSettingsScreen = () => {
             Alert.alert(strings.user_settings.validation_error,strings.user_settings.location_number)
             return false;
         }
-        
+
 
         // If all inputs are valid
         return true;
@@ -93,10 +123,10 @@ const UserSettingsScreen = () => {
 
         // Save all inputs in an object
         const updatedUserDetails = {
-            name,
+            fullName,
             location,
             email,
-            notifications: isPushNotificationsEnabled,
+            profileImage
         };
 
         // Confirm update with the user
@@ -139,10 +169,10 @@ const UserSettingsScreen = () => {
             if (data !== null) {
                 const parsedData = JSON.parse(data);
                 setUserData(parsedData);
-                setName(parsedData.fullName || defaultValues.name);
+                setfullName(parsedData.fullName || defaultValues.name);
                 setEmail(parsedData.email || defaultValues.email);
                 setLocation(parsedData.location || defaultValues.location);
-                setIsPushNotificationsEnabled(parsedData.notifications || false); // Assume there's a notifications field
+                setProfileImage(parsedData.profileImage);
                 console.log('User data has been fetched');
             }
         } catch (error) {
@@ -157,8 +187,7 @@ const UserSettingsScreen = () => {
             fetchUserData();
             return () => {
                 // Reset the state when component loses focus
-                setIsPushNotificationsEnabled(false);
-                setName('');
+                setfullName('');
                 setEmail('');
                 setPassword('');
                 setNewPassword('');
@@ -182,9 +211,27 @@ const UserSettingsScreen = () => {
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <ScrollView style={UserSettingsStyles.scrollView} contentContainerStyle={{flexGrow:1}}>
+
+                {/* Centered Image */}
+                <View style={UserSettingsStyles.centerImageContainer}>
+                    <TouchableOpacity onPress={handleImageSelect}>
+                    <Image
+                        source={
+                            profileImage
+                                ? { uri: profileImage }  // Ensure profileImage is treated as a URI
+                                : defaultProfileImage     // Fallback to default image
+                        }
+                        style={UserSettingsStyles.centerImage}
+                        onError={() => setProfileImage(null)} // If loading fails, fallback to default
+                        resizeMode="cover" // Ensures the image scales properly within the view
+                    />
+                    </TouchableOpacity>
+                </View>
+
+
                 {/* Username and Location */}
                 <View style={UserSettingsStyles.headerSection}>
-                    <Text style={UserSettingsStyles.headerText}>{name}</Text>
+                    <Text style={UserSettingsStyles.headerText}>{fullName}</Text>
                     <Text style={UserSettingsStyles.headerText}>{location}</Text>
                 </View>
 
@@ -196,8 +243,8 @@ const UserSettingsScreen = () => {
                         <TouchableOpacity onPress={handleDoubleClick}>
                             <TextInput
                                 style={UserSettingsStyles.detailsValue}
-                                value={name}
-                                onChangeText={setName}
+                                value={fullName}
+                                onChangeText={setfullName}
                                 placeholder={strings.user_settings.sample_text}
                                 editable={isEditable}
                                 selectTextOnFocus={isEditable}
@@ -256,19 +303,7 @@ const UserSettingsScreen = () => {
                     </View>
                 </View>
 
-                {/* Privacy Section */}
-                <Text style={UserSettingsStyles.privacyTitle}>{strings.user_settings.privacy_title}</Text>
-                <View style={UserSettingsStyles.privacyContainer}>
-                    <View style={UserSettingsStyles.notificationRow}>
-                        <Text style={UserSettingsStyles.notificationText}>{strings.user_settings.push_notifications}</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={isPushNotificationsEnabled ? '#00C853' : "#f4f3f4"}
-                            onValueChange={togglePushNotifications}
-                            value={isPushNotificationsEnabled}
-                        />
-                    </View>
-                </View>
+
 
                 {/* Buttons Section */}
                 <View style={UserSettingsStyles.buttonContainer}>
