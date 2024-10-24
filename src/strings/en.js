@@ -32,6 +32,8 @@ export default {
     applyFiltersMessage: "Filters applied!",
     closeButton: "Close",
     selectFurColors: "Select Fur Colors:",
+    provincesLabel: "Province:",
+    genderLabel: "Gender:",
 
 
     //Add Animal Page//

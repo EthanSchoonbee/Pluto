@@ -8,7 +8,7 @@ import {
     Modal,
     TouchableOpacity,
     Dimensions,
-    ActivityIndicator
+    ActivityIndicator, ToastAndroid
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
@@ -18,15 +18,22 @@ import styles from "../styles/FilterStyles";
 import { db, auth } from '../services/firebaseConfig';
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
-
-
-
 const Filter = ({navigation}) => {
+
+    const provinces = ['Western Cape', 'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West'];
+    const dogBreeds = ['Labrador', 'Poodle', 'Bulldog', 'German Shepherd'];
+    const catBreeds = ['Siamese', 'Persian', 'Maine Coon', 'Bengal'];
+    const availableFurColors = ['Any', 'Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
+
+
     const userId = auth.currentUser.uid;
     const [loading, setLoading] = useState(true);  // Add loading state
     const [isDog, setIsDog] = useState(true);
     const [selectedBreed, setSelectedBreed] = useState(strings.anyBreed); // Use strings.anyBreed
-    const [maxDistance, setMaxDistance] = useState(0);
+    const [selectedGender, setSelectedGender] = useState("Any");
+    const [isGenderPickerVisible, setIsGenderPickerVisible] = useState(false);
+    const [selectedProvince, setSelectedProvince] = useState(provinces[0]);
+    const [isProvincePickerVisible, setIsProvincePickerVisible] = useState(false);
     const [ageRange, setAgeRange] = useState([0, 0]);
     const [activityLevel, setActivityLevel] = useState(0);
     const [size, setSize] = useState(1);
@@ -36,18 +43,15 @@ const Filter = ({navigation}) => {
     const [scrollEnabled, setScrollEnabled] = useState(true);
 
 
-    const dogBreeds = ['Labrador', 'Poodle', 'Bulldog', 'German Shepherd'];
-    const catBreeds = ['Siamese', 'Persian', 'Maine Coon', 'Bengal'];
-    const availableFurColors = ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
-
     const filters = {
         animalType: isDog ? 'dog' : 'cat',
         breed: selectedBreed,
-        maxDistance,
+        province: selectedProvince,
+        gender: selectedGender,
+        furColors: furColors.includes('Any') ? [] : furColors,
         ageRange,
         activityLevel,
         size,
-        furColors
     };
 
     useEffect(() => {
@@ -61,12 +65,21 @@ const Filter = ({navigation}) => {
 
                     // Set the state values with the data from Firestore
                     setIsDog(filters.animalType === 'dog');
-                    setSelectedBreed(filters.breed);
-                    setMaxDistance(filters.maxDistance);
-                    setAgeRange(filters.ageRange);
-                    setActivityLevel(filters.activityLevel);
-                    setSize(filters.size);
-                    setFurColors(filters.furColors);
+                    setSelectedBreed(filters.breed || 'Any Breed');  // Default to 'Any Breed'
+                    setSelectedProvince(filters.province || 'Any');  // Default to 'Any' for provinces
+                    setAgeRange(filters.ageRange || [0, 20]);         // Default age range
+                    setActivityLevel(filters.activityLevel ?? 0);     // Default activity level
+                    setSize(filters.size ?? 1);                       // Default size value
+
+                    // Set gender (with default of 'Any')
+                    setSelectedGender(filters.gender || 'Any');  // Default to 'Any' if gender is not set
+
+                    // Set fur colors (with default of 'Any')
+                    if (filters.furColors && filters.furColors.length > 0) {
+                        setFurColors(filters.furColors);
+                    } else {
+                        setFurColors(['Any']);  // Default to 'Any' if no fur colors are set
+                    }
                 }
             } catch (error) {
                 console.error("Error loading filters:", error);
@@ -78,6 +91,7 @@ const Filter = ({navigation}) => {
         // Call the async function
         loadFiltersFromFirestore();
     }, [userId]);
+
 
     if (loading) {
         // Display a loading indicator while data is being fetched
@@ -102,12 +116,22 @@ const Filter = ({navigation}) => {
     const relevantBreeds = isDog ? dogBreeds : catBreeds;
 
     const toggleFurColor = (color) => {
-        if (furColors.includes(color)) {
-            setFurColors(furColors.filter(furColor => furColor !== color));
+        if (color === 'Any') {
+            // If "Any" is selected, clear all other colors
+            setFurColors(['Any']);
         } else {
-            setFurColors([...furColors, color]);
+            if (furColors.includes('Any')) {
+                // If "Any" was selected, remove it and add the selected color
+                setFurColors([color]);
+            } else if (furColors.includes(color)) {
+                // Deselect the color if it's already selected
+                setFurColors(furColors.filter(furColor => furColor !== color));
+            } else {
+                // Add the selected color
+                setFurColors([...furColors, color]);
+            }
         }
-    }
+    };
 
     const saveFiltersToFirestore = async () => {
         if (!userId) return;
@@ -181,6 +205,68 @@ const Filter = ({navigation}) => {
                     </Modal>
                 </View>
 
+                {/* Gender Picker */}
+                <View style={styles.pickerContainer}>
+                    <Text style={styles.label}>{strings.genderLabel}</Text>
+                    <TouchableOpacity onPress={() => setIsGenderPickerVisible(true)} style={styles.pickerButton}>
+                        <Text style={styles.pickerText}>{selectedGender}</Text>
+                    </TouchableOpacity>
+                    <Modal
+                        visible={isGenderPickerVisible}
+                        transparent={true}
+                        animationType="slide"
+                        onRequestClose={() => setIsGenderPickerVisible(false)}
+                    >
+                        <View style={styles.modalContainer}>
+                            <View style={styles.modalContent}>
+                                <Picker
+                                    selectedValue={selectedGender}
+                                    onValueChange={(itemValue) => {
+                                        setSelectedGender(itemValue);
+                                        setIsGenderPickerVisible(false);
+                                    }}
+                                >
+                                    <Picker.Item label="Any" value="Any" />
+                                    <Picker.Item label="Male (M)" value="M" />
+                                    <Picker.Item label="Female (F)" value="F" />
+                                </Picker>
+                                <Button title={strings.closeButton} onPress={() => setIsGenderPickerVisible(false)} />
+                            </View>
+                        </View>
+                    </Modal>
+                </View>
+
+                {/* Province Selector */}
+                <View style={styles.pickerContainer}>
+                    <Text style={styles.label}>{strings.provincesLabel}</Text>
+                    <TouchableOpacity onPress={() => setIsProvincePickerVisible(true)} style={styles.pickerButton}>
+                        <Text style={styles.pickerText}>{selectedProvince}</Text>
+                    </TouchableOpacity>
+                    <Modal
+                        visible={isProvincePickerVisible}
+                        transparent={true}
+                        animationType="slide"
+                        onRequestClose={() => setIsProvincePickerVisible(false)}
+                    >
+                        <View style={styles.modalContainer}>
+                            <View style={styles.modalContent}>
+                                <Picker
+                                    selectedValue={selectedProvince}
+                                    onValueChange={(itemValue) => {
+                                        setSelectedProvince(itemValue);
+                                        setIsProvincePickerVisible(false);
+                                    }}
+                                >
+                                    {provinces.map((province, index) => (
+                                        <Picker.Item key={index} label={province} value={province} />
+                                    ))}
+                                </Picker>
+                                <Button title={strings.closeButton} onPress={() => setIsProvincePickerVisible(false)} />
+                            </View>
+                        </View>
+                    </Modal>
+                </View>
+
                 {/* Fur Color Selection */}
                 <View style={styles.colorPickerContainer}>
                     <Text style={styles.label}>{strings.furColorLabel}</Text>
@@ -212,22 +298,9 @@ const Filter = ({navigation}) => {
                             </View>
                         </View>
                     </Modal>
+
                 </View>
 
-                {/* Maximum Distance Slider */}
-                <View style={styles.sliderContainer}>
-                    <Text style={styles.label}>{strings.maximumDistanceLabel(maxDistance)}</Text>
-                    <Slider
-                        style={styles.slider}
-                        minimumValue={0}
-                        maximumValue={500}
-                        step={1}
-                        minimumTrackTintColor="gold"
-                        maximumTrackTintColor="gray"
-                        onValueChange={setMaxDistance}
-                        value={maxDistance}
-                    />
-                </View>
 
                 {/* Age Range Multi-Slider */}
                 <View style={styles.sliderContainer}>
