@@ -19,13 +19,11 @@ class FirebaseService {
         this.auth = getAuth();
     }
 
-    registerUser(fullName, email, password, phoneNo, location, onComplete) {
+    registerUser(fullName, email, password, phoneNo, selectedProvince, onComplete) {
         console.log("Firebase Authentication Service: Registering User");
         createUserWithEmailAndPassword(this.auth, email, password)
             .then(async (userCredential) => {
                 const firebaseUser = userCredential.user;
-                const defaultRange = [0, 20];
-                const availableFurColors = ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
 
                 // Basic user information and preferences as a nested field
                 const userData = {
@@ -34,20 +32,20 @@ class FirebaseService {
                     profileImage: "https://firebasestorage.googleapis.com/v0/b/pluto-2b00c.appspot.com/o/default_profile_image.jpg?alt=media&token=76543e99-1803-403a-9d11-eabfe5db5584",
                     fullName,
                     phoneNo,
-                    location,
+                    selectedProvince,
                     role: "user",
                     likedAnimals: [],  // This stays in the main document
 
                     // Preferences are nested inside the main user document
                     preferences: {
-                        animalType: "dog",
+                        animalType: "Dog",
                         breed: "Any",
                         gender: "Any",
-                        province: "Western Cape",
-                        ageRange: defaultRange,
-                        activityLevel: "Playful Pup",
-                        size: "Medium",
-                        furColors: availableFurColors
+                        province: selectedProvince,
+                        ageRange: [0, 20],
+                        activityLevel: 0,
+                        size: 1,
+                        furColors: ["Any"]
                     }
                 };
 

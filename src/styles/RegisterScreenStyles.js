@@ -46,8 +46,60 @@ const styles = StyleSheet.create({
         borderBottomColor: '#ddd',
         paddingHorizontal: 10,
     },
+    pickerContainer: {
+        marginBottom: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',  // Matches underline color of other inputs
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 10,  // Add horizontal padding for consistent layout
+    },
+    pickerButton: {
+        flex: 1,
+        justifyContent: 'center',
+        paddingVertical: 10,
+    },
+    pickerText: {
+        fontSize: 16,
+        color: '#333',  // Matches input text color
+        paddingHorizontal: 10,
+    },
+    label: {
+        fontSize: 16,
+        color: '#aaa',
+        marginRight: 10,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',  // Background overlay for the modal
+    },
+    modalContent: {
+        backgroundColor: '#fff',
+        marginHorizontal: 20,
+        padding: 20,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 2,
+        elevation: 5,  // Adds shadow for Android
+    },
+    closeButton: {
+        marginTop: 10,
+        alignSelf: 'center',
+        color: '#007BFF',  // Change color to match your theme
+    },
     icon: {
         marginRight: 10,
+    },
+    locationIcon: {
+        marginRight: 10,
+        color: '#aaa',  // Same color as other input icons
+    },
+    pickerUnderline: {
+        borderBottomWidth: 1,
+        borderBottomColor: '#ddd',  // Same underline color as the other inputs
     },
     inputUnderline: {
         flex: 1,
