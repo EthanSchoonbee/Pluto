@@ -26,6 +26,8 @@ import {launchImageLibrary} from "react-native-image-picker";
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { getAuth } from "firebase/auth";
+import {onAuthStateChanged} from "firebase/auth";
+import { signOut } from 'firebase/auth';
 
 
 const defaultProfileImage = require('../../assets/handsome_squidward.jpg');
@@ -191,10 +193,16 @@ const ShelterSettingsScreen = () => {
 
 
 
-    const handleLogout = () => {
-        console.log('Logout button pressed');
-        navigation.navigate('Login');
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            console.log('User signed out');
+            navigation.navigate('Login');
+        } catch (error) {
+            console.error('Error signing out: ', error);
+        }
     };
+
 
     const handleDoubleClick = () => {
         setIsEditable(prev => !prev);
