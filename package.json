@@ -45,6 +45,7 @@
     "react-native-svg": "^15.2.0",
     "react-native-svg-transformer": "^1.5.0",
     "react-native-swipeable-cards": "^1.1.23",
+    "react-native-toast-message": "^2.2.1",
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.10"
   },
