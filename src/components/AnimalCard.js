@@ -17,6 +17,8 @@ const AnimalCard = ({
                 const fileUri = `${FileSystem.cacheDirectory}${id}.jpg`;
                 const fileInfo = await FileSystem.getInfoAsync(fileUri);
 
+                console.log('file uri: >> ', fileUri);
+
                 if (!fileInfo.exists) {
                     // Download the image if it doesn't exist locally
                     const downloadedImage = await FileSystem.downloadAsync(

@@ -127,21 +127,36 @@ const UserHomeScreen = () => {
         const storage = getStorage();
         const promises = imageUrls.map(async (imageUrl) => {
             try {
+                // Get the download URL from Firebase Storage
                 const storageRef = ref(storage, imageUrl);
                 const downloadUrl = await getDownloadURL(storageRef);
-                const fileName = imageUrl.split('/').pop();
+
+                console.log(downloadUrl);
+
+                // Use the image filename as the cache file name
+                const fileName = imageUrl.split('/').pop().replace(/%2F/g, '_'); // Replace any %2F with _ to avoid subdirectories
+
+                console.log('File Name: ',fileName);
                 const localUri = `${FileSystem.cacheDirectory}${fileName}`;
 
+                console.log('Local Uri: ',localUri);
+
+                // Check if the image is already cached
                 const fileInfo = await FileSystem.getInfoAsync(localUri);
                 if (!fileInfo.exists) {
+                    // Download the image if it doesn't exist locally
                     await FileSystem.downloadAsync(downloadUrl, localUri);
                 }
+
+                // Return the local URI for the image
                 return { uri: localUri };
             } catch (error) {
                 console.error('Error downloading or caching image:', error);
-                return null;
+                return null; // Return null if there was an error
             }
         });
+
+        // Filter out any null results and return only successful image URIs
         return (await Promise.all(promises)).filter(Boolean);
     };
 
