@@ -27,7 +27,7 @@ const UserSettingsStyles = StyleSheet.create({
             marginBottom: 10,
         },
     detailsContainer: {
-        padding: 15,
+        padding: 20,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 10,
@@ -45,7 +45,7 @@ const UserSettingsStyles = StyleSheet.create({
         marginBottom: 10,
         borderBottomWidth: 1,
         borderBottomColor: colors.userSettingsLightGrayBorder, // Light gray border
-        paddingBottom: 5,
+        paddingBottom: 7,
     },
     detailsLabel: {
         fontSize: 14,
@@ -58,7 +58,7 @@ const UserSettingsStyles = StyleSheet.create({
     },
     // Privacy Section Styles
     privacyContainer: {
-        padding: 5,
+        padding: 10,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
         marginTop: 5,
@@ -86,6 +86,7 @@ const UserSettingsStyles = StyleSheet.create({
         backgroundColor: colors.userSettingsWhite,
         flexGrow: 1,
         justifyContent: "flex-end",
+        paddingBottom: 80,
     },
     customButton: {
         marginBottom: 15,

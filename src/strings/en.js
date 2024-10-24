@@ -67,7 +67,7 @@ export default {
         surname_label: "Surname:",
         email_label: "Email:",
         password_label: "Password:",
-        confirm_password_label: "Confirm Password:",
+        renew_password_label: "Renew Password:",
         privacy_title: "Privacy:",
         push_notifications: "Push Notifications",
         update_button: "Update",

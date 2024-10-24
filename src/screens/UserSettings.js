@@ -230,7 +230,7 @@ const UserSettingsScreen = () => {
                         </TouchableOpacity>
                     </View>
                     <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.confirm_password_label}</Text>
+                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.renew_password_label}</Text>
                         <TouchableOpacity onPress={handleDoubleClick}>
                             <TextInput
                                 style={UserSettingsStyles.detailsValue}
@@ -284,9 +284,9 @@ const UserSettingsScreen = () => {
                 </View>
             </ScrollView>
 
-            <View style={{height: 80}}>
+
                 <NavbarWrapper/>
-            </View>
+
         </SafeAreaView>
     );
 };
