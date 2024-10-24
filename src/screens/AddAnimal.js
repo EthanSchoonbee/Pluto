@@ -13,7 +13,6 @@ import { db, auth } from '../services/firebaseConfig';
 import {Animal} from "../models/AnimalModel";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
-
 const AddAnimal = ({ navigation }) => {
     const [isDog, setIsDog] = useState(true);
     const [selectedBreed, setSelectedBreed] = useState(strings.anyBreed); // Use strings.anyBreed
@@ -123,7 +122,7 @@ const AddAnimal = ({ navigation }) => {
             newAnimal.breed = selectedBreed;
             newAnimal.age = age;
             newAnimal.gender = selectedGender;
-            newAnimal.location = shelterLocation;
+            newAnimal.province = shelterLocation;
             newAnimal.activityLevel = activityLevel;
             newAnimal.size = sizes[size];
             newAnimal.furColor = furColors.join(", ");
@@ -260,9 +259,6 @@ const AddAnimal = ({ navigation }) => {
                     </Modal>
                 </View>
 
-
-
-
                 {/* Fur Color Selection */}
                 <View style={styles.colorPickerContainer}>
                     <TouchableOpacity onPress={() => setIsColorPickerVisible(true)} style={styles.pickerButton}>
@@ -296,7 +292,6 @@ const AddAnimal = ({ navigation }) => {
                     </Modal>
                 </View>
 
-
                 {/* Gender Picker */}
                 <View style={styles.pickerContainer}>
                     <TouchableOpacity onPress={() => setIsGenderPickerVisible(true)} style={styles.pickerButton}>
@@ -329,9 +324,6 @@ const AddAnimal = ({ navigation }) => {
                         </View>
                     </Modal>
                 </View>
-
-
-
 
                 {/* Activity Level Slider */}
                 <View style={styles.sliderContainer}>
