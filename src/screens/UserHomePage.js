@@ -3,7 +3,7 @@ import {
     ActivityIndicator,
     Animated,
     Button,
-    Image,
+    Image, Modal,
     Platform,
     SafeAreaView,
     ScrollView,
@@ -41,13 +41,18 @@ const UserHomeScreen = () => {
     const swiperRef = useRef(null); // reference for the swiper object
     const [animals, setAnimals] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [loadingLike, setLoadingLike] = useState(false);
     const [error, setError] = useState(null);
     const [cardIndex, setCardIndex] = useState(0); //  the card index
     const [imageIndexes, setImageIndexes] = useState(animals.map(() => 0));
     const [forceRerender, setForceRerender] = useState(1);
     const [showOverlay, setShowOverlay] = useState(false);
     const [selectedAnimal, setSelectedAnimal] = useState(null);
-    const [lastSwipeDirection, setLastSwipeDirection] = useState(null);
+    const swipeDataRef = useRef({
+        swipeDirection: ''
+    });
+    const swipePromisesRef = useRef([]);
+
     // like and dislike coloring:
     const [noButtonColor, setNoButtonColor] = useState(colors.white);
     const [yesButtonColor, setYesButtonColor] = useState(colors.white);
@@ -61,17 +66,13 @@ const UserHomeScreen = () => {
     useFocusEffect(
         useCallback(() => {
             fetchAnimals();
-            setYesButtonColor(colors.white);
-            setYesButtonIconColor(colors.inactiveYesButton);
-            setNoButtonColor(colors.white);
-            setNoButtonIconColor(colors.inactiveNoButton);
+            resetButtonColors();
         }, [])
     );
 
     useEffect(() => {
         if (animals.length > 0) {
-            setLikeOpacity(animals.map(() => new Animated.Value(0))); // Initialize like opacity values
-            setDislikeOpacity(animals.map(() => new Animated.Value(0))); // Initialize dislike opacity values
+            initializeOpacities();
         }
     }, [animals]);
 
@@ -84,6 +85,18 @@ const UserHomeScreen = () => {
         resetOpacity(cardIndex);
     }, [imageIndexes[cardIndex],cardIndex]);
 
+    const initializeOpacities = () => {
+        setLikeOpacity(animals.map(() => new Animated.Value(0)));
+        setDislikeOpacity(animals.map(() => new Animated.Value(0)));
+    };
+
+    const resetButtonColors = () => {
+        setYesButtonColor(colors.white);
+        setYesButtonIconColor(colors.inactiveYesButton);
+        setNoButtonColor(colors.white);
+        setNoButtonIconColor(colors.inactiveNoButton);
+    };
+
     const fetchAnimals = async () => {
         try {
             setLoading(true);
@@ -93,114 +106,24 @@ const UserHomeScreen = () => {
             const userPreferences = userData.preferences;
             const likedAnimals = userData.likedAnimals || [];
 
+            console.log('Liked animals:', likedAnimals);
+
             console.log('User preferences: ', userPreferences);
 
-            const {
-                activityLevel,
-                ageRange,
-                animalType,
-                breed,
-                furColors,
-                gender,
-                province,
-                size,
-            } = userPreferences;
-
-            let q = query(collection(db, 'animals'), limit(10));
-
-            console.log("Liked animals: ", likedAnimals);
-
-            /*
-            // If the user has liked animals, filter by those IDs
-            if (likedAnimals.length > 0) {
-                q = query(q, where('uid', 'in', likedAnimals));
-            }
-             */
-
-            console.log("Activity level: ", activityLevel);
-
-
-            if (activityLevel !== undefined) {
-                q = query(q, where('activityLevel', '==', activityLevel));
-            }
-
-            console.log('MIN: ', ageRange[0]);
-            console.log('MAX: ', ageRange[1]);
-
-            const minAge = ageRange[0];
-            const maxAge = ageRange[1];
-
-            if (ageRange && minAge !== undefined && maxAge !== undefined) {
-                q = query(q, where('age', '>=', minAge), where('age', '<=', maxAge));
-            }
-
-            console.log('Animal type: ', animalType);
-
-            if (animalType) {
-                q = query(q, where('species', '==', animalType));
-            }
-
-            if (breed && breed !== 'Any') {
-                q = query(q, where('breed', '==', breed));
-            }
-
-            console.log('Fur Colors: ', furColors);
-            console.log('Fur Color Length: ', furColors.length);
-
-            if (furColors && furColors.length > 0) {
-                q = query(q, where('furColors', 'array-contains-any', furColors));
-            }
-
-            console.log('Gender: ', gender);
-
-            if (gender && gender !== 'Any') {
-                q = query(q, where('gender', '==', gender));
-            }
-
-            console.log('Province: ', province);
-
-            if (province) {
-                q = query(q, where('province', '==', province));
-            }
-
-            console.log('Size: ', size);
-
-            if (size !== undefined) {
-                q = query(q, where('size', '==', size));
-            }
-
-            console.log(q);
+            const q = buildQuery(userPreferences);
 
             const querySnapshot = await getDocs(q);
 
-            const fetchedAnimals = [];
+            const fetchedAnimals = await processQuerySnapshot(querySnapshot);
 
-            for (const doc of querySnapshot.docs) {
-                const animalData = doc.data();
-                animalData.id = doc.id;
-                animalData.imageUrls = animalData.imageUrls || [];
-                animalData.images = await preloadImages(animalData.imageUrls);
-
-                console.log('Captured animal: ${animalData.name} (ID: ${animalData.id})');
-
-                // Only add animals with successfully preloaded images
-                if (animalData.images.length > 0) {
-                    fetchedAnimals.push(animalData);
-                } else {
-                    console.warn('No images found for animal: ${animalData.id}');
-                }
-            }
             console.log('Fetched animals: ', fetchedAnimals);
 
-            // Filter out liked animals after fetching
-            const filteredAnimals = fetchedAnimals.filter(
-                (animal) => !likedAnimals.includes(animal.id)
-            );
+            const filteredAnimals = filterLikedAnimals(fetchedAnimals, likedAnimals);
 
             console.log('Filtered animals: ', filteredAnimals);
 
             if (filteredAnimals .length === 0) {
-                setError('No animals found. Please try again later.');
+                setError('No animals found. Update your filters and try again.');
             }
 
             setAnimals(filteredAnimals );
@@ -215,6 +138,68 @@ const UserHomeScreen = () => {
         }
     };
 
+    const buildQuery = (preferences) => {
+        let q = query(collection(db, 'animals'), limit(10));
+        const {
+            activityLevel,
+            ageRange,
+            animalType,
+            breed,
+            furColors,
+            gender,
+            province,
+            size,
+        } = preferences;
+
+        if (activityLevel !== undefined) {
+            q = query(q, where('activityLevel', '==', activityLevel));
+        }
+        if (ageRange) {
+            q = query(q, where('age', '>=', ageRange[0]), where('age', '<=', ageRange[1]));
+        }
+        if (animalType) {
+            q = query(q, where('species', '==', animalType));
+        }
+        if (breed && breed !== 'Any') {
+            q = query(q, where('breed', '==', breed));
+        }
+        if (furColors && furColors.length > 0) {
+            q = query(q, where('furColors', 'array-contains-any', furColors));
+        }
+        if (gender && gender !== 'Any') {
+            q = query(q, where('gender', '==', gender));
+        }
+        if (province) {
+            q = query(q, where('province', '==', province));
+        }
+        if (size !== undefined) {
+            q = query(q, where('size', '==', size));
+        }
+        return q;
+    };
+
+    const processQuerySnapshot = async (querySnapshot) => {
+        const animals = [];
+        for (const doc of querySnapshot.docs) {
+            const animalData = doc.data();
+            animalData.id = doc.id;
+            animalData.images = await preloadImages(animalData.imageUrls  || []);
+
+            console.log('Captured animal: ${animalData.name} (ID: ${animalData.id})');
+
+            // Only add animals with successfully preloaded images
+            if (animalData.images.length > 0) {
+                animals.push(animalData);
+            } else {
+                console.warn('No images found for animal: ${animalData.id}');
+            }
+        }
+        return animals;
+    };
+
+    const filterLikedAnimals = (fetchedAnimals, likedAnimals) => {
+        return fetchedAnimals.filter((animal) => !likedAnimals.includes(animal.id));
+    };
 
     const preloadImages = async (imageUrls) => {
         const storage = getStorage();
@@ -223,19 +208,12 @@ const UserHomeScreen = () => {
                 // Get the download URL from Firebase Storage
                 const storageRef = ref(storage, imageUrl);
                 const downloadUrl = await getDownloadURL(storageRef);
-
-                console.log(downloadUrl);
-
                 // Use the image filename as the cache file name
                 const fileName = imageUrl.split('/').pop().replace(/%2F/g, '_'); // Replace any %2F with _ to avoid subdirectories
-
-                console.log('File Name: ',fileName);
                 const localUri = `${FileSystem.cacheDirectory}${fileName}`;
-
-                console.log('Local Uri: ',localUri);
-
                 // Check if the image is already cached
                 const fileInfo = await FileSystem.getInfoAsync(localUri);
+
                 if (!fileInfo.exists) {
                     // Download the image if it doesn't exist locally
                     await FileSystem.downloadAsync(downloadUrl, localUri);
@@ -248,130 +226,85 @@ const UserHomeScreen = () => {
                 return null; // Return null if there was an error
             }
         });
-
         // Filter out any null results and return only successful image URIs
         return (await Promise.all(promises)).filter(Boolean);
     };
 
     const animateSwipe = (direction) => {
-        if (direction === 'left') {
-            console.log('Animated Swiped left on card index:', cardIndex);
+        console.log(`Animated Swiped ${direction} on card index:`, cardIndex);
+        const animations = direction === 'left'
+            ? [createOpacityAnimation(dislikeOpacity[cardIndex], 1), createOpacityAnimation(likeOpacity[cardIndex], 0)]
+            : [createOpacityAnimation(likeOpacity[cardIndex], 1), createOpacityAnimation(dislikeOpacity[cardIndex], 0)];
+        Animated.parallel(animations).start();
+    };
+
+    const createOpacityAnimation = (opacityValue, toValue) => {
+        return Animated.timing(opacityValue, {
+            toValue,
+            duration: 0,
+            useNativeDriver: true,
+        });
+    };
+
+    const Swiping = (positionX) => {
+        const [likeOpacityValue, dislikeOpacityValue] = calculateOpacities(positionX);
+
+        if (positionX < 0) {
+            // swiping left
+            updateSwipeUI(colors.activeNoButton, colors.white, colors.white, colors.inactiveYesButton);
+
             Animated.parallel([
-                Animated.timing(dislikeOpacity[cardIndex], {
-                    toValue: 1,
-                    duration: 20,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(likeOpacity[cardIndex], {
-                    toValue: 0,
-                    duration: 20,
-                    useNativeDriver: true,
-                })
+                createOpacityAnimation(dislikeOpacity[cardIndex], dislikeOpacityValue),
+                createOpacityAnimation(likeOpacity[cardIndex], 0),
             ]).start();
-        } else if (direction === 'right') {
-            console.log('Animated Swiped right on card index:', cardIndex);
+        } else if (positionX > 0) {
+            // swiping right
+            updateSwipeUI(colors.white, colors.activeYesButton, colors.inactiveNoButton, colors.white);
+
             Animated.parallel([
-                Animated.timing(likeOpacity[cardIndex], {
-                    toValue: 1,
-                    duration: 20,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(dislikeOpacity[cardIndex], {
-                    toValue: 0,
-                    duration: 20,
-                    useNativeDriver: true,
-                })
+                createOpacityAnimation(likeOpacity[cardIndex], likeOpacityValue),
+                createOpacityAnimation(dislikeOpacity[cardIndex], 0),
             ]).start();
         }
     };
 
-    const Swiping = (positionX) => {
-        const likeOpacityValue = Math.min(Math.max(positionX / 100, 0), 1);
-        const dislikeOpacityValue = Math.min(Math.max(-positionX / 100, 0), 1);
+    const calculateOpacities = (positionX) => {
+        return [
+            Math.min(Math.max(positionX / 100, 0), 1),
+            Math.min(Math.max(-positionX / 100, 0), 1),
+        ];
+    };
 
-        if (positionX < 0) {
-            // swiping left
-            Animated.parallel([
-                Animated.timing(dislikeOpacity[cardIndex], {
-                    toValue: dislikeOpacityValue,
-                    duration: 0,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(likeOpacity[cardIndex], {
-                    toValue: 0,
-                    duration: 0,
-                    useNativeDriver: true,
-                })
-            ]).start();
-
-            setNoButtonColor(colors.activeNoButton);
-            setYesButtonColor(colors.white);
-            setNoButtonIconColor(colors.white);
-            setYesButtonIconColor(colors.inactiveYesButton);
-        } else if (positionX > 0) {
-            // swiping right
-            Animated.parallel([
-                Animated.timing(likeOpacity[cardIndex], {
-                    toValue: likeOpacityValue,
-                    duration: 0,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(dislikeOpacity[cardIndex], {
-                    toValue: 0,
-                    duration: 0,
-                    useNativeDriver: true,
-                })
-            ]).start();
-
-
-            setYesButtonColor(colors.activeYesButton);
-            setNoButtonColor(colors.white);
-            setNoButtonIconColor(colors.inactiveNoButton);
-            setYesButtonIconColor(colors.white);
-        }
+    const updateSwipeUI = (noBtnColor, yesBtnColor, noIconColor, yesIconColor) => {
+        setNoButtonColor(noBtnColor);
+        setYesButtonColor(yesBtnColor);
+        setNoButtonIconColor(noIconColor);
+        setYesButtonIconColor(yesIconColor);
     };
 
     const SwipedAborted = () => {
         resetOpacity(cardIndex);
-        setNoButtonColor(colors.white);
-        setYesButtonColor(colors.white);
-        setNoButtonIconColor(colors.inactiveNoButton);
-        setYesButtonIconColor(colors.inactiveYesButton);
-        console.log('Swipe aborted');
+        resetButtonColors();
     };
 
     const onSwipedLeft = () => {
-        setLastSwipeDirection('left');
+        swipeDataRef.current.swipeDirection = 'left';
+        console.log(swipeDataRef.current.swipeDirection);
 
-        console.log(lastSwipeDirection);
         resetOpacity(cardIndex);
 
         console.log('Swiped left on card index:', cardIndex);
 
-        // Move to the next card
-        const newIndex = (cardIndex + 1) % animals.length;
-        setCardIndex(newIndex); // Update card index
-
-        // Reset the image index for the new card
-        setImageIndexes((prevIndexes) => {
-            const newIndexes = [...prevIndexes];
-            newIndexes[newIndex] = 0; // Reset image index for the new card
-            return newIndexes;
-        });
-
-        // Reset button colors
-        setYesButtonColor(colors.white);
-        setYesButtonIconColor(colors.inactiveYesButton);
-        setNoButtonColor(colors.white);
-        setNoButtonIconColor(colors.inactiveNoButton);
-
-
-        console.log('New card index:', newIndex);
+        moveToNextCard();
     };
 
+
+
     const onSwipedRight = async () => {
-        setLastSwipeDirection('right');
-        console.log(lastSwipeDirection);
+        swipeDataRef.current.swipeDirection = 'right';
+        console.log(swipeDataRef.current.swipeDirection);
+
+        //setLoadingLike(true);
 
         resetOpacity(cardIndex);
         console.log('Swiped right on card index:', cardIndex);
@@ -383,102 +316,134 @@ const UserHomeScreen = () => {
         const newIndex = (cardIndex + 1) % animals.length;
         setCardIndex(newIndex);
 
-        setImageIndexes((prevIndexes) => {
-            const newIndexes = [...prevIndexes];
-            newIndexes[newIndex] = 0; // Reset image index for the new card
-            return newIndexes;
-        });
+        resetImageIndex(newIndex);
 
         // Reset button colors
-        setYesButtonColor(colors.white);
-        setYesButtonIconColor(colors.inactiveYesButton);
-        setNoButtonColor(colors.white);
-        setNoButtonIconColor(colors.inactiveNoButton);
+        resetButtonColors();
 
         console.log('New card index:', newIndex);
 
         const animalRef = doc(db, 'animals', animalId);
         const userRef = doc(db, 'users', userId);
 
+        console.log('Making new swipe promise for data push...');
+        const swipePromise = new Promise(async (resolve) => {
+            try {
+                // Fetch the current animal data
+                const animalDoc = await getDoc(animalRef);
+                const animalData = animalDoc.data();
+
+                // Fetch the current user data
+                const userDoc = await getDoc(userRef);
+                const userData = userDoc.data();
+
+                const userHasLikedAnimal = animalData.likedByUsers && animalData.likedByUsers.includes(userId);
+                const animalHasLikedUser = userData.likedAnimals && userData.likedAnimals.includes(animalId);
+
+                const updatePromises = [];
+
+                // Update likedByUsers and likedAnimals if necessary
+                if (!userHasLikedAnimal && !animalHasLikedUser) {
+                    console.log(`User ${userId} is liking animal ${animalId} for the first time.`);
+                    updatePromises.push(
+                        updateDoc(animalRef, {
+                            likedByUsers: arrayUnion(userId)
+                        }),
+                        updateDoc(userRef, {
+                            likedAnimals: arrayUnion(animalId)
+                        })
+                    );
+                } else if (userHasLikedAnimal && !animalHasLikedUser) {
+                    console.log(`Updating user ${userId} to include animal ${animalId}.`);
+                    updatePromises.push(
+                        updateDoc(userRef, {
+                            likedAnimals: arrayUnion(animalId)
+                        })
+                    );
+                } else if (!userHasLikedAnimal && animalHasLikedUser) {
+                    console.log(`Updating animal ${animalId} to include user ${userId}.`);
+                    updatePromises.push(
+                        updateDoc(animalRef, {
+                            likedByUsers: arrayUnion(userId)
+                        })
+                    );
+                }
+
+                // Increment the notificationCount for the animal
+                if (animalData.notificationCount !== undefined) {
+                    const newNotificationCount = (animalData.notificationCount || 0) + 1;
+                    updatePromises.push(
+                        updateDoc(animalRef, {
+                            notificationCount: newNotificationCount
+                        })
+                    );
+                } else {
+                    updatePromises.push(
+                        updateDoc(animalRef, {
+                            notificationCount: 1
+                        })
+                    );
+                }
+
+                await Promise.all(updatePromises);
+
+                // Update AsyncStorage with the new userData
+                const updatedUserDoc = await getDoc(userRef); // Fetch updated user data
+                const updatedUserData = updatedUserDoc.data();
+
+                await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
+                console.log(`User ${userId} interacted with animal ${animalId}.`);
+                resolve();
+            } catch (error) {
+                console.error('Error updating Firestore:', error);
+            } finally {
+                // Hide the loading dialog after updates are complete
+                //setLoadingLike(false);
+            }
+        });
+        console.log('Adding swipe to promise ref...');
+        swipePromisesRef.current.push(swipePromise);
+        console.log('SwipePromiseRef: ', swipePromisesRef.current.length);
+    };
+
+    const moveToNextCard = () => {
+        const newIndex = (cardIndex + 1) % animals.length;
+        setCardIndex(newIndex);
+        resetImageIndex(newIndex);
+        resetButtonColors();
+        console.log('New card index:', newIndex);
+    };
+
+    const resetImageIndex = (newIndex) => {
+        // Reset the image index for the new card
+        setImageIndexes((prevIndexes) => {
+            const newIndexes = [...prevIndexes];
+            newIndexes[newIndex] = 0; // Reset image index for the new card
+            return newIndexes;
+        });
+    }
+
+    const SwipedAll = async () => {
+        console.log('All cards swiped');
+        setLoadingLike(true);
         try {
-            // Fetch the current animal data
-            const animalDoc = await getDoc(animalRef);
-            const animalData = animalDoc.data();
+            await Promise.all(swipePromisesRef.current);
 
-            // Fetch the current user data
-            const userDoc = await getDoc(userRef);
-            const userData = userDoc.data();
+            console.log('All swipe promises completed.');
 
-            const userHasLikedAnimal = animalData.likedByUsers && animalData.likedByUsers.includes(userId);
-            const animalHasLikedUser = userData.likedAnimals && userData.likedAnimals.includes(animalId);
+            setLoadingLike(false); // Stop loading after processing
 
-            const updatePromises = [];
-
-            // Update likedByUsers and likedAnimals if necessary
-            if (!userHasLikedAnimal && !animalHasLikedUser) {
-                console.log(`User ${userId} is liking animal ${animalId} for the first time.`);
-                updatePromises.push(
-                    updateDoc(animalRef, {
-                        likedByUsers: arrayUnion(userId)
-                    }),
-                    updateDoc(userRef, {
-                        likedAnimals: arrayUnion(animalId)
-                    })
-                );
-            } else if (!userHasLikedAnimal && animalHasLikedUser) {
-                console.log(`Updating user ${userId} to include animal ${animalId}.`);
-                updatePromises.push(
-                    updateDoc(userRef, {
-                        likedAnimals: arrayUnion(animalId)
-                    })
-                );
-            } else if (userHasLikedAnimal && !animalHasLikedUser) {
-                console.log(`Updating animal ${animalId} to include user ${userId}.`);
-                updatePromises.push(
-                    updateDoc(animalRef, {
-                        likedByUsers: arrayUnion(userId)
-                    })
-                );
-            }
-
-            // Increment the notificationCount for the animal
-            if (animalData.notificationCount !== undefined) {
-                const newNotificationCount = (animalData.notificationCount || 0) + 1;
-                updatePromises.push(
-                    updateDoc(animalRef, {
-                        notificationCount: newNotificationCount
-                    })
-                );
-            } else {
-                updatePromises.push(
-                    updateDoc(animalRef, {
-                        notificationCount: 1
-                    })
-                );
-            }
-
-            await Promise.all(updatePromises);
-
-            // Update AsyncStorage with the new userData
-            const updatedUserDoc = await getDoc(userRef); // Fetch updated user data
-            const updatedUserData = updatedUserDoc.data();
-
-            await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
-            console.log(`User ${userId} interacted with animal ${animalId}.`);
+            await fetchAnimals();
         } catch (error) {
-            console.error('Error updating Firestore:', error);
+            console.error('Error in onSwipedAll:', error);
+            setError('Failed to process swipes. Please try again.');
         }
     };
 
-    const SwipedAll = async () => {
-        try {
-            if (lastSwipeDirection === 'right') {
-                await onSwipedRight();
-            }
-            await fetchAnimals(); // Fetch new animals only after the updates
-        } catch (error) {
-            console.error('Error in onSwipedAll:', error);
-        }
+    const wait = (duration) => {
+        return new Promise((resolve) => {
+            setTimeout(resolve, duration);
+        });
     };
 
     const resetOpacity = (currentIndex) => {
@@ -608,6 +573,14 @@ const UserHomeScreen = () => {
         );
     };
 
+    const LoadingDialog = ({ visible }) => (
+        <Modal transparent={true} visible={visible} animationType="fade">
+            <View style={styles.loadingLikeContainer}>
+                <ActivityIndicator size="large" color={'#d9cb94'} />
+            </View>
+        </Modal>
+    );
+
     const AnimalInfoOverlay = ({ animal, onClose }) => (
         <View style={styles.overlayContainer}>
             <View style={styles.overlayContent}>
@@ -664,17 +637,22 @@ const UserHomeScreen = () => {
         <SafeAreaView style={[styles.container, {paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight: 0}]} edges={['left', 'right']}>
             <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
             <Header />
-            {loading ? (
+            {loadingLike ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" color={'#d9cb94'} />
+                        <Text>Calibrating cuteness settings...</Text>
+                    </View>
+                ) : loading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={'#d9cb94'} />
                     <Text>Loading some pets...</Text>
                 </View>
-            ) :error ? (
+            ) : error ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ color: colors.errorText, fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
+                    <Text style={{ color: colors.errorText, paddingHorizontal: 15, fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
                         {error}
                     </Text>
-                    <Button title="Retry" onPress={fetchAnimals} color={colors.primary} />
+                    <Button title="Retry" onPress={fetchAnimals} color={'#d9cb94'}  />
                 </View>
             ) : (
                 <View style={styles.swiperContainer}>
@@ -700,7 +678,7 @@ const UserHomeScreen = () => {
                 </View>
             )}
             <NavbarWrapper noShadow={true} />
-            {!loading && animals.length > 0 && (
+            {!loadingLike && !loading && animals.length > 0 && (
                 <View style={styles.buttonsContainer}>
                     <TouchableOpacity
                         style={ [styles.button,
@@ -739,6 +717,10 @@ const UserHomeScreen = () => {
                     onClose={() => setShowOverlay(false)}
                 />
             )}
+
+
+
+
         </SafeAreaView>
     );
 };

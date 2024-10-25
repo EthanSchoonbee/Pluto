@@ -10,6 +10,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'rgba(255,255,255,0.06)'
     },
+    loadingLikeContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'transparent', // Semi-transparent background
+    },
     container: {
         flex: 1,
         backgroundColor: '#ffffff',
