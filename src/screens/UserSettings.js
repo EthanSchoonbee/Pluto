@@ -8,7 +8,7 @@ import {
     TextInput,
     SafeAreaView,
     ActivityIndicator,
-    Image
+    Image, Modal
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import UserSettingsStyles from "../styles/UserSettingsStyles";
@@ -23,7 +23,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import defaultProfileImage from "../../assets/handsome_squidward.jpg";
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
 import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import {getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject} from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import {onAuthStateChanged} from "firebase/auth";
 import { signOut } from 'firebase/auth';
@@ -49,16 +49,14 @@ const UserSettingsScreen = () => {
     const [userData,setUserData] = useState(null);
     const [profileImage, setProfileImage] = useState(null);
     const storage = getStorage();
-
+    const [imageChanged, setImageChanged] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
     const navigation = useNavigation();
     const defaultProfileImage = require('../../assets/pluto_logo.png');
 
 
-    const handleUpdate = () => {
-        updateUserSettings()
-    };
 
-    // Function to handle image selection
+    // Image picker and upload logic
     const handleImageSelect = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
@@ -73,34 +71,135 @@ const UserSettingsScreen = () => {
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            // Set the selected image's URI as the profile image
-            setProfileImage(result.assets[0].uri);
-            setIsEditable(true); // Mark the form as edited
+            const selectedImageUri = result.assets[0].uri;
+            setProfileImage(selectedImageUri); // Just set the image URI in the state
+            setIsEditable(true);
+            setImageChanged(true);
         }
     };
 
-    // Function to upload image to Firebase Storage
-    const uploadImage = async (imageUri) => {
-        if (!imageUri) return null;
-
+    // Image upload and update logic
+    const uploadProfileImage = async (uri) => {
         const user = auth.currentUser;
-        const imageRef = ref(storage, `users/${user.uid}/${Date.now()}_profile.jpg`);
-        const blob = await fetch(imageUri).then((r) => r.blob());
+        if (!user) {
+            Alert.alert('Error', 'User not authenticated.');
+            return;
+        }
+
+        const blob = await fetch(uri).then(r => r.blob()); // Convert the image to a blob
+        const imageRef = ref(storage, `users/${user.uid}/profile.jpg`);
+
+        // Delete old image before uploading a new one
+        await clearProfileImage();
+
         const uploadTask = uploadBytesResumable(imageRef, blob);
 
-        return new Promise((resolve, reject) => {
-            uploadTask.on(
-                'state_changed',
-                null,
-                (error) => reject(error),
-                async () => {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    resolve(downloadURL);
-                }
-            );
-        });
+
+
+        try {
+            await new Promise((resolve, reject) => {
+                uploadTask.on(
+                    'state_changed',
+                    null,
+                    (error) => reject(error),
+                    async () => {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        //await firebaseService.updateUserSettings("shelters", { profileImage: downloadURL });
+                        setProfileImage(downloadURL); // Update local state
+                        resolve();
+                    }
+                );
+            });
+        } catch (error) {
+            Alert.alert('Error', 'There was an issue uploading the image. Please try again.');
+            console.error('Image upload error:', error);
+        } finally {
+
+        }
     };
 
+
+
+
+
+    // Delete the old profile image from Firebase Storage
+    const clearProfileImage = async () => {
+        const user = auth.currentUser;
+        if (!user) {
+            Alert.alert('Error', 'User not authenticated.');
+            return;
+        }
+
+        const currentImageRef = ref(storage, `users/${user.uid}/profile.jpg`);
+
+        try {
+            const currentImageUrl = await getDownloadURL(currentImageRef);
+            if (currentImageUrl) {
+                await deleteObject(currentImageRef); // Delete the old image
+                console.log('Previous image deleted successfully.');
+            }
+        } catch (error) {
+            if (error.code !== 'storage/object-not-found') {
+                console.error('Error deleting the previous image:', error);
+            }
+        }
+    };
+
+    // Handle update button press
+    const handleUpdate = async () => {
+        if (!isEditable) {
+            Alert.alert('Info', "No changes were made.");
+            return;
+        }
+
+        if (!checkDetailsInputs()) {
+            return;
+        }
+
+        const updatedUserDetails = {
+            fullName,
+            location,
+            email,
+            profileImage
+        };
+
+        Alert.alert(
+            "Attention",
+            'Are you sure you want to update your details?',
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Confirm",
+                    onPress: async () => {
+                        setModalVisible(true);
+                        try {
+
+                            if(imageChanged){
+                                // First upload the image if a new one is selected
+                                let imageUrl = null;
+                                if (profileImage) {
+                                    imageUrl = await uploadProfileImage(profileImage);
+                                }
+                            }
+
+                            // Then update the user details, including the image URL if uploaded
+                            const finalDetails = {
+                                ...updatedUserDetails,
+                            };
+
+                            await firebaseService.updateUserSettings("users", finalDetails);
+
+                            Alert.alert("Success", "Your profile has been updated.");
+                        } catch (error) {
+                            Alert.alert("Error", "There was an issue updating your profile. Please try again.");
+                        } finally {
+                            setModalVisible(false);
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     // Check if details inputs are valid
     const checkDetailsInputs = () => {
@@ -137,63 +236,6 @@ const UserSettingsScreen = () => {
         return true;
     };
 
-
-    // Function to validate input and update Firestore
-    const updateUserSettings = async () => {
-        if (!isEditable) {
-            Alert.alert('Info', "No changes were made.");
-            return;
-        }
-
-        // Validate input fields
-        if (!checkDetailsInputs()) {
-            return;
-        }
-
-        const updatedUserDetails = {
-            fullName,
-            location,
-            email,
-            profileImage: ''  // Will update this after image upload
-        };
-
-        // Confirm update with the user
-        Alert.alert(
-            "Attention",
-            'Are you sure you want to update your details?',
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Confirm",
-                    onPress: async () => {
-                        try {
-                            // Push the user data to Firestore
-                            await firebaseService.updateUserSettings("users", updatedUserDetails);
-
-                            // Upload the profile image after user data is pushed
-                            if (profileImage) {
-                                const imageUrl = await uploadImage(profileImage);
-                                // Update Firestore document with the image URL
-                                await firebaseService.updateUserSettings("users", { profileImage: imageUrl });
-                            }
-
-                            if (!SettingsInputValidations.isEmptyOrWhitespace(newPassword)) {
-                                firebaseService.changePassword(newPassword);
-                            }
-
-                            Alert.alert("Success", "Your profile has been updated.");
-                        } catch (error) {
-                            console.error("Error updating profile: ", error);
-                            Alert.alert("Error", "There was an issue updating your profile. Please try again.");
-                        }
-                    }
-                }
-            ]
-        );
-    };
 
     const handleLogout = async () => {
         try {
@@ -320,7 +362,7 @@ const UserSettingsScreen = () => {
                                 onChangeText={setPassword}
                                 placeholder={strings.user_settings.password_placeholder}
                                 secureTextEntry={true}
-                                editable={isEditable}
+                                editable={false}
                             />
                         </TouchableOpacity>
                     </View>
@@ -365,6 +407,36 @@ const UserSettingsScreen = () => {
                         <Text style={[UserSettingsStyles.customButtonText, UserSettingsStyles.logoutButtonText]}>{strings.user_settings.logout_button}</Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* Modal component */}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => {
+                        Alert.alert("Modal has been closed.");
+                        setModalVisible(!modalVisible);
+                    }}>
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <View style={{
+                            width: '80%',
+                            backgroundColor: 'white',
+                            borderRadius: 20,
+                            padding: 20,
+                            alignItems: 'center',
+                            shadowColor: '#000',
+                            shadowOffset: {
+                                width: 0,
+                                height: 2
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 4,
+                            elevation: 5
+                        }}>
+                            <Text>Updating your settings!</Text>
+                        </View>
+                    </View>
+                </Modal>
             </ScrollView>
 
 
