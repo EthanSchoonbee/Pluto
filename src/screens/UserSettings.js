@@ -187,11 +187,13 @@ const UserSettingsScreen = () => {
                                 ...updatedUserDetails,
                             };
 
-                            if(!ewPassword == password){
+                            if(!newPassword == password){
                                 await firebaseService.changePassword(newPassword);
                             }
 
                             await firebaseService.updateUserSettings("users", finalDetails);
+
+                            await  updateUserDataToAsyncStorage(finalDetails);
 
                             Alert.alert("Success", "Your profile has been updated.");
                         } catch (error) {
@@ -208,10 +210,14 @@ const UserSettingsScreen = () => {
     // Check if details inputs are valid
     const checkDetailsInputs = () => {
 
-        if(!SettingsInputValidations.isLongerThanFive(newPassword)){
-            Alert.alert(strings.user_settings.validation_error, strings.user_settings.confirm_required);
-            return false;
+        if(!newPassword == password){
+            if(!SettingsInputValidations.isLongerThanFive(newPassword)){
+                Alert.alert(strings.user_settings.validation_error, strings.user_settings.confirm_required);
+                return false;
+            }
         }
+
+
         // Start of checking for null inputs
         if (SettingsInputValidations.isEmptyOrWhitespace(fullName)) {
             Alert.alert(strings.user_settings.validation_error, strings.user_settings.name_required);
@@ -259,6 +265,23 @@ const UserSettingsScreen = () => {
     const handleDoubleClick = () => {
         setIsEditable(prev => !prev);
     };
+
+    const updateUserDataToAsyncStorage = async (newData) =>{
+        try {
+            // Retrieve existing data
+            const existingData = await AsyncStorage.getItem('userData');
+            const existingUserData = existingData ? JSON.parse(existingData) : {};
+
+            // Merge existing data with new data
+            const mergedData = { ...existingUserData, ...newData };
+
+            // Save merged data to AsyncStorage
+            await AsyncStorage.setItem('userData', JSON.stringify(mergedData));
+            console.log('User data merged and saved to AsyncStorage');
+        } catch (error) {
+            console.error('Error saving user data to AsyncStorage:', error);
+        }
+    }
 
     // Function to fetch userData from AsyncStorage
     const fetchUserData = async () => {
@@ -432,7 +455,7 @@ const UserSettingsScreen = () => {
                             borderRadius: 20,
                             padding: 20,
                             alignItems: 'center',
-                            shadowColor: '#000',
+                            shadowColor: '#ffffff',
                             shadowOffset: {
                                 width: 0,
                                 height: 2

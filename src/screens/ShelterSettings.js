@@ -201,6 +201,8 @@ const ShelterSettingsScreen = () => {
                                 await firebaseService.changePassword(newPassword);
                             }
 
+                            await updateUserDataToAsyncStorage(finalDetails);
+
                             await firebaseService.updateUserSettings("shelters", finalDetails);
 
                             Alert.alert("Success", "Your profile has been updated.");
@@ -217,10 +219,13 @@ const ShelterSettingsScreen = () => {
 
     const checkDetailsInputs = () => {
 
-        if(!SettingsInputValidations.isLongerThanFive(newPassword)){
-            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.confirm_required);
-            return false;
+        if(!newPassword == password){
+            if(!SettingsInputValidations.isLongerThanFive(newPassword)){
+                Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.confirm_required);
+                return false;
+            }
         }
+
 
         if (SettingsInputValidations.isEmptyOrWhitespace(shelterName)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.name_required);
@@ -265,6 +270,25 @@ const ShelterSettingsScreen = () => {
     const handleDoubleClick = () => {
         setIsEditable(prev => !prev);
     };
+
+
+    const updateUserDataToAsyncStorage = async (newData) =>{
+        try {
+            // Retrieve existing data
+            const existingData = await AsyncStorage.getItem('userData');
+            const existingUserData = existingData ? JSON.parse(existingData) : {};
+
+            // Merge existing data with new data
+            const mergedData = { ...existingUserData, ...newData };
+
+            // Save merged data to AsyncStorage
+            await AsyncStorage.setItem('userData', JSON.stringify(mergedData));
+            console.log('User data merged and saved to AsyncStorage');
+        } catch (error) {
+            console.error('Error saving user data to AsyncStorage:', error);
+        }
+    }
+
 
     // Function to fetch user data from AsyncStorage
     const fetchUserDataFromAsyncStorage = async () => {
