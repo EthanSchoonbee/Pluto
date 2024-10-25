@@ -371,13 +371,10 @@ const UserHomeScreen = () => {
 
     const onSwipedRight = async () => {
         setLastSwipeDirection('right');
-
         console.log(lastSwipeDirection);
 
         resetOpacity(cardIndex);
-
         console.log('Swiped right on card index:', cardIndex);
-
 
         const animalId = animals[cardIndex]?.id;
         const userId = auth.currentUser.uid;
@@ -417,6 +414,7 @@ const UserHomeScreen = () => {
 
             const updatePromises = [];
 
+            // Update likedByUsers and likedAnimals if necessary
             if (!userHasLikedAnimal && !animalHasLikedUser) {
                 console.log(`User ${userId} is liking animal ${animalId} for the first time.`);
                 updatePromises.push(
@@ -439,6 +437,22 @@ const UserHomeScreen = () => {
                 updatePromises.push(
                     updateDoc(animalRef, {
                         likedByUsers: arrayUnion(userId)
+                    })
+                );
+            }
+
+            // Increment the notificationCount for the animal
+            if (animalData.notificationCount !== undefined) {
+                const newNotificationCount = (animalData.notificationCount || 0) + 1;
+                updatePromises.push(
+                    updateDoc(animalRef, {
+                        notificationCount: newNotificationCount
+                    })
+                );
+            } else {
+                updatePromises.push(
+                    updateDoc(animalRef, {
+                        notificationCount: 1
                     })
                 );
             }
