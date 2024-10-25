@@ -77,42 +77,21 @@ const Filter = ({navigation}) => {
                     setSize(parsedFilters.size ?? 1);
                     setSelectedGender(parsedFilters.gender || 'Any');
                     setFurColors(parsedFilters.furColors && parsedFilters.furColors.length > 0 ? parsedFilters.furColors : ['Any']);
-                } else {
-                    // If no AsyncStorage data, load from Firestore as fallback
-                    const userFiltersDocRef = doc(db, 'users', userId);
-                    const docSnap = await getDoc(userFiltersDocRef);
-
-                    if (docSnap.exists()) {
-                        const firestoreFilters = docSnap.data().preferences;
-
-                        // Set state with Firestore values
-                        setIsDog(firestoreFilters.animalType === 'dog');
-                        setSelectedBreed(firestoreFilters.breed || 'Any Breed');
-                        setSelectedProvince(firestoreFilters.province || 'Any');
-                        setAgeRange(firestoreFilters.ageRange || [0, 20]);
-                        setActivityLevel(firestoreFilters.activityLevel ?? 0);
-                        setSize(firestoreFilters.size ?? 1);
-                        setSelectedGender(firestoreFilters.gender || 'Any');
-                        setFurColors(firestoreFilters.furColors && firestoreFilters.furColors.length > 0 ? firestoreFilters.furColors : ['Any']);
-
-                        // Store Firestore data in AsyncStorage for future use
-                        await AsyncStorage.setItem('userPreferences', JSON.stringify(firestoreFilters));
-                    }
                 }
+                console.log(storedFilters);
             } catch (error) {
                 console.error("Error loading filters:", error);
             } finally {
                 setLoading(false);
             }
         };
-
         loadFilters();
     }, [userId]);
 
     const saveFilters = async () => {
         try {
             // Save to AsyncStorage
-            await AsyncStorage.setItem('userFilters', JSON.stringify(filters));
+            await AsyncStorage.setItem('userPreferences', JSON.stringify(filters));
             console.log('Filters saved to AsyncStorage.');
 
             // Asynchronously save to Firestore
@@ -134,7 +113,7 @@ const Filter = ({navigation}) => {
     }
 
     const toggleAnimalType = (type) => {
-        setIsDog(type === 'dogs');
+        setIsDog(type === 'Dogs');
         setSelectedBreed(strings.anyBreed); // Reset using strings.anyBreed
     };
 
