@@ -38,6 +38,7 @@ export default {
 
 
     //Add Animal Page//
+    shelterAvailableFurColors: ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'],
     addAnimalTitle: "Add New Animal",
     dogToggle: "Dogs",
     catToggle: "Cats",
@@ -77,7 +78,7 @@ export default {
 
     activityLevels: ['Couch Cushion', 'Lap Cat', 'Playful Pup', 'Adventure Hound'],
     sizes: ['Small', 'Medium', 'Large'],
-    availableFurColors: ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'],
+    availableFurColors: ['Any','Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'],
     shortImageLength: "Please add at least 3 images.",
     noCurrentUser: "You must be signed in to add an animal.",
     animalUploadFailed: "Failed to save the animal data. Please try again.",

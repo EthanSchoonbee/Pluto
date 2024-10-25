@@ -16,7 +16,7 @@ import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import strings from '../strings/en.js'; // Import the strings file
 import styles from "../styles/FilterStyles";
 import { db, auth } from '../services/firebaseConfig';
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Filter = ({navigation}) => {
@@ -69,7 +69,7 @@ const Filter = ({navigation}) => {
                     const parsedFilters = JSON.parse(storedFilters);
 
                     // Set state with AsyncStorage values
-                    setIsDog(parsedFilters.animalType === 'dog');
+                    setIsDog(parsedFilters.animalType === 'Dog');
                     setSelectedBreed(parsedFilters.breed || 'Any Breed');
                     setSelectedProvince(parsedFilters.province || 'Any');
                     setAgeRange(parsedFilters.ageRange || [0, 20]);
@@ -113,7 +113,7 @@ const Filter = ({navigation}) => {
     }
 
     const toggleAnimalType = (type) => {
-        setIsDog(type === 'Dogs');
+        setIsDog(type === 'Dog');
         setSelectedBreed(strings.anyBreed); // Reset using strings.anyBreed
     };
 
@@ -147,14 +147,14 @@ const Filter = ({navigation}) => {
                     <View style={styles.toggleButtonGroup}>
                         <TouchableOpacity
                             style={[styles.toggleButton, isDog && styles.selectedButton]}
-                            onPress={() => toggleAnimalType('dogs')}
+                            onPress={() => toggleAnimalType('Dog')}
                         >
                             <Text style={styles.toggleButtonText}>{strings.dogsButton}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={[styles.toggleButton, !isDog && styles.selectedButton]}
-                            onPress={() => toggleAnimalType('cats')}
+                            onPress={() => toggleAnimalType('Cat')}
                         >
                             <Text style={styles.toggleButtonText}>{strings.catsButton}</Text>
                         </TouchableOpacity>
