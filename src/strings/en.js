@@ -34,6 +34,7 @@ export default {
     selectFurColors: "Select Fur Colors:",
     provincesLabel: "Province:",
     genderLabel: "Gender:",
+    provinceArray: ['Western Cape', 'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West',],
 
 
     //Add Animal Page//

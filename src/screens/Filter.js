@@ -17,13 +17,14 @@ import strings from '../strings/en.js'; // Import the strings file
 import styles from "../styles/FilterStyles";
 import { db, auth } from '../services/firebaseConfig';
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Filter = ({navigation}) => {
 
-    const provinces = ['Western Cape', 'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West'];
+    const provinces = strings.provinceArray
     const dogBreeds = strings.dogBreeds;
     const catBreeds = strings.catBreeds;
-    const availableFurColors = ['Any', 'Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
+    const availableFurColors = strings.availableFurColors
 
 
     const userId = auth.currentUser.uid;
@@ -41,10 +42,15 @@ const Filter = ({navigation}) => {
     const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
     const [furColors, setFurColors] = useState([]);
     const [scrollEnabled, setScrollEnabled] = useState(true);
+    const activityLevels = strings.activityLevels
+    const sizes = strings.sizes
+
+    const screenWidth = Dimensions.get('window').width;
+    const relevantBreeds = isDog ? dogBreeds : catBreeds;
 
 
     const filters = {
-        animalType: isDog ? 'dog' : 'cat',
+        animalType: isDog ? 'Dog' : 'Cat',
         breed: selectedBreed,
         province: selectedProvince,
         gender: selectedGender,
@@ -55,45 +61,70 @@ const Filter = ({navigation}) => {
     };
 
     useEffect(() => {
-        const loadFiltersFromFirestore = async () => {
+        const loadFilters = async () => {
             try {
-                const userFiltersDocRef = doc(db, 'users', userId);
-                const docSnap = await getDoc(userFiltersDocRef);
+                const storedFilters = await AsyncStorage.getItem('userPreferences');
 
-                if (docSnap.exists()) {
-                    const filters = docSnap.data().preferences;
+                if (storedFilters) {
+                    const parsedFilters = JSON.parse(storedFilters);
 
-                    // Set the state values with the data from Firestore
-                    setIsDog(filters.animalType === 'dog');
-                    setSelectedBreed(filters.breed || 'Any Breed');  // Default to 'Any Breed'
-                    setSelectedProvince(filters.province || 'Any');  // Default to 'Any' for provinces
-                    setAgeRange(filters.ageRange || [0, 20]);         // Default age range
-                    setActivityLevel(filters.activityLevel ?? 0);     // Default activity level
-                    setSize(filters.size ?? 1);                       // Default size value
+                    // Set state with AsyncStorage values
+                    setIsDog(parsedFilters.animalType === 'dog');
+                    setSelectedBreed(parsedFilters.breed || 'Any Breed');
+                    setSelectedProvince(parsedFilters.province || 'Any');
+                    setAgeRange(parsedFilters.ageRange || [0, 20]);
+                    setActivityLevel(parsedFilters.activityLevel ?? 0);
+                    setSize(parsedFilters.size ?? 1);
+                    setSelectedGender(parsedFilters.gender || 'Any');
+                    setFurColors(parsedFilters.furColors && parsedFilters.furColors.length > 0 ? parsedFilters.furColors : ['Any']);
+                } else {
+                    // If no AsyncStorage data, load from Firestore as fallback
+                    const userFiltersDocRef = doc(db, 'users', userId);
+                    const docSnap = await getDoc(userFiltersDocRef);
 
-                    // Set gender (with default of 'Any')
-                    setSelectedGender(filters.gender || 'Any');  // Default to 'Any' if gender is not set
+                    if (docSnap.exists()) {
+                        const firestoreFilters = docSnap.data().preferences;
 
-                    // Set fur colors (with default of 'Any')
-                    if (filters.furColors && filters.furColors.length > 0) {
-                        setFurColors(filters.furColors);
-                    } else {
-                        setFurColors(['Any']);  // Default to 'Any' if no fur colors are set
+                        // Set state with Firestore values
+                        setIsDog(firestoreFilters.animalType === 'dog');
+                        setSelectedBreed(firestoreFilters.breed || 'Any Breed');
+                        setSelectedProvince(firestoreFilters.province || 'Any');
+                        setAgeRange(firestoreFilters.ageRange || [0, 20]);
+                        setActivityLevel(firestoreFilters.activityLevel ?? 0);
+                        setSize(firestoreFilters.size ?? 1);
+                        setSelectedGender(firestoreFilters.gender || 'Any');
+                        setFurColors(firestoreFilters.furColors && firestoreFilters.furColors.length > 0 ? firestoreFilters.furColors : ['Any']);
+
+                        // Store Firestore data in AsyncStorage for future use
+                        await AsyncStorage.setItem('userPreferences', JSON.stringify(firestoreFilters));
                     }
                 }
             } catch (error) {
                 console.error("Error loading filters:", error);
             } finally {
-                setLoading(false);  // Stop loading once the data is fetched
+                setLoading(false);
             }
         };
-        // Call the async function
-        loadFiltersFromFirestore();
+
+        loadFilters();
     }, [userId]);
 
+    const saveFilters = async () => {
+        try {
+            // Save to AsyncStorage
+            await AsyncStorage.setItem('userFilters', JSON.stringify(filters));
+            console.log('Filters saved to AsyncStorage.');
+
+            // Asynchronously save to Firestore
+            const userFiltersDocRef = doc(db, 'users', userId);
+            await setDoc(userFiltersDocRef, { preferences: filters }, { merge: true });
+            console.log('Filters saved to Firestore.');
+        } catch (error) {
+            console.error("Error saving filters:", error);
+        }
+    };
 
     if (loading) {
-        // Display a loading indicator while data is being fetched
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <ActivityIndicator size="large" color="#FFD700" />
@@ -107,12 +138,6 @@ const Filter = ({navigation}) => {
         setSelectedBreed(strings.anyBreed); // Reset using strings.anyBreed
     };
 
-
-    const activityLevels = ['Couch Cushion', 'Lap Cat', 'Playful Pup', 'Adventure Hound'];
-    const sizes = ['Small', 'Medium', 'Large'];
-
-    const screenWidth = Dimensions.get('window').width;
-    const relevantBreeds = isDog ? dogBreeds : catBreeds;
 
     const toggleFurColor = (color) => {
         if (color === 'Any') {
@@ -129,21 +154,6 @@ const Filter = ({navigation}) => {
                 // Add the selected color
                 setFurColors([...furColors, color]);
             }
-        }
-    };
-
-    const saveFiltersToFirestore = async () => {
-        if (!userId) return;
-        try {
-            // Directly link the user document to a preferences document
-            const userFiltersDocRef = doc(db, 'users', userId);  // Directly reference the user's document
-
-            // Set the filters directly in the user's document
-            await setDoc(userFiltersDocRef, { preferences: filters }, { merge: true });  // Merge to avoid overwriting other fields
-
-            console.log('Filters saved successfully!');
-        } catch (error) {
-            console.error("Error saving filters:", error);
         }
     };
 
@@ -358,7 +368,7 @@ const Filter = ({navigation}) => {
                     <TouchableOpacity
                         style={styles.button}
                         onPress={() => {
-                            saveFiltersToFirestore(); // Save filters when user applies
+                            saveFilters(); // Save filters when user applies
                             navigation.navigate('UserHome'); // Navigate back to home
                         }}
                     >
