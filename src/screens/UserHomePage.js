@@ -718,9 +718,6 @@ const UserHomeScreen = () => {
                 />
             )}
 
-
-
-
         </SafeAreaView>
     );
 };

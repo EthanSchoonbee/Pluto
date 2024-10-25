@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
     View,
     Text,
@@ -18,6 +18,7 @@ import styles from "../styles/FilterStyles";
 import { db, auth } from '../services/firebaseConfig';
 import { doc, setDoc } from "firebase/firestore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useFocusEffect} from "@react-navigation/native";
 
 const Filter = ({navigation}) => {
 
@@ -60,46 +61,70 @@ const Filter = ({navigation}) => {
         size,
     };
 
-    useEffect(() => {
-        const loadFilters = async () => {
-            try {
-                const storedFilters = await AsyncStorage.getItem('userPreferences');
+    useFocusEffect(
+        useCallback(() => {
+            const loadFilters = async () => {
+                try {
+                    const userData = JSON.parse(await AsyncStorage.getItem('userData'));
+                    console.log('user data', userData);
 
-                if (storedFilters) {
-                    const parsedFilters = JSON.parse(storedFilters);
+                    const storedFilters = userData?.preferences;
 
-                    // Set state with AsyncStorage values
-                    setIsDog(parsedFilters.animalType === 'Dog');
-                    setSelectedBreed(parsedFilters.breed || 'Any Breed');
-                    setSelectedProvince(parsedFilters.province || 'Any');
-                    setAgeRange(parsedFilters.ageRange || [0, 20]);
-                    setActivityLevel(parsedFilters.activityLevel ?? 0);
-                    setSize(parsedFilters.size ?? 1);
-                    setSelectedGender(parsedFilters.gender || 'Any');
-                    setFurColors(parsedFilters.furColors && parsedFilters.furColors.length > 0 ? parsedFilters.furColors : ['Any']);
+                    console.log('stored filters', storedFilters);
+
+                    if (storedFilters) {
+                        // Set state with AsyncStorage values
+                        setIsDog(storedFilters.animalType === 'Dog');
+                        setSelectedBreed(storedFilters.breed || 'Any Breed');
+                        setSelectedProvince(storedFilters.province || 'Any');
+                        setAgeRange(storedFilters.ageRange || [0, 20]);
+                        setActivityLevel(storedFilters.activityLevel ?? 0);
+                        setSize(storedFilters.size ?? 1);
+                        setSelectedGender(storedFilters.gender || 'Any');
+                        setFurColors(storedFilters.furColors && storedFilters.furColors.length > 0 ? storedFilters.furColors : ['Any']);
+                    }
+                } catch (error) {
+                    console.error("Error loading filters:", error);
+                } finally {
+                    setLoading(false);
                 }
-                console.log(storedFilters);
-            } catch (error) {
-                console.error("Error loading filters:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        loadFilters();
-    }, [userId]);
+            };
 
-    const saveFilters = async () => {
+            // Call the loadFilters function when the screen is focused.
+            loadFilters();
+
+            // Cleanup function (optional if you want to do something when the screen is unfocused)
+            return () => setLoading(true);  // Reset loading state when leaving the screen, if necessary.
+        }, [userId])
+    );
+
+    const saveFilters = async (callback) => {
         try {
-            // Save to AsyncStorage
-            await AsyncStorage.setItem('userPreferences', JSON.stringify(filters));
-            console.log('Filters saved to AsyncStorage.');
+            setLoading(true);  // Show loading indicator while saving
+
+            // Load the current user data from AsyncStorage
+            const userData = JSON.parse(await AsyncStorage.getItem('userData')) || {};
+
+            // Update the userData with the new preferences
+            userData.preferences = filters;
+
+            // Save the updated userData back to AsyncStorage
+            await AsyncStorage.setItem('userData', JSON.stringify(userData));
+            console.log('User preferences updated in AsyncStorage.');
 
             // Asynchronously save to Firestore
             const userFiltersDocRef = doc(db, 'users', userId);
             await setDoc(userFiltersDocRef, { preferences: filters }, { merge: true });
             console.log('Filters saved to Firestore.');
+
+            // Invoke the callback if provided
+            if (callback) {
+                callback();
+            }
         } catch (error) {
             console.error("Error saving filters:", error);
+        } finally {
+            setLoading(false);  // Hide loading indicator when done
         }
     };
 
@@ -134,6 +159,13 @@ const Filter = ({navigation}) => {
                 setFurColors([...furColors, color]);
             }
         }
+    };
+
+    const handleApply = () => {
+        saveFilters(() => {
+            // Navigate back to UserHome page after filters are saved
+            navigation.navigate('UserHome');
+        });
     };
 
     return (
@@ -347,8 +379,7 @@ const Filter = ({navigation}) => {
                     <TouchableOpacity
                         style={styles.button}
                         onPress={() => {
-                            saveFilters(); // Save filters when user applies
-                            navigation.navigate('UserHome'); // Navigate back to home
+                            handleApply(); // Save filters when user applies
                         }}
                     >
                         <Text style={styles.buttonText}>{strings.applyFilterButton}</Text>
