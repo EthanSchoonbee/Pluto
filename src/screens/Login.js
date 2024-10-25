@@ -67,12 +67,12 @@ const LoginScreen = ({ navigation }) => {
                 } catch (error) {
                     console.log('Error fetching user/shelter data:', error);
                     setLoading(false);
-                    alert('An error occurred while fetching user data.');
+                    alert(errorMessage);
                 }
             } else {
                 console.log('Error during login:', errorMessage);
                 setLoading(false);
-                alert('Invalid login details');
+                alert(errorMessage);
             }
         });
     };
