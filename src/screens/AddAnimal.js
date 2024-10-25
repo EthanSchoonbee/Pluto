@@ -31,7 +31,7 @@ const AddAnimal = ({ navigation }) => {
     const [selectedGender, setSelectedGender] = useState([]);
     const [shelterLocation, setShelterLocation] = useState(""); // State for shelter location
     const [isGenderPickerVisible, setIsGenderPickerVisible] = useState(false);
-    const [age, setAge] = useState("");
+    const [age, setAge] = useState(0);
     const [biography, setBiography] = useState("");
     const [activityLevel, setActivityLevel] = useState(0);
     const [size, setSize] = useState(0);
