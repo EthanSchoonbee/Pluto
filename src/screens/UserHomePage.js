@@ -1,14 +1,12 @@
-import React, {
-    useEffect,
-    useRef,
-    useState
-} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
     ActivityIndicator,
-    Animated, Button,
+    Animated,
+    Button,
     Image,
     Platform,
-    SafeAreaView, ScrollView,
+    SafeAreaView,
+    ScrollView,
     StatusBar,
     Text,
     TouchableOpacity,
@@ -22,20 +20,12 @@ import colors from "../styles/colors";
 import styles from '../styles/UserHomePageStyles';
 import Header from '../components/Header';
 import NavbarWrapper from "../components/NavbarWrapper";
-import {
-    collection,
-    doc,
-    getDocs,
-    limit,
-    query,
-    updateDoc,
-    arrayUnion, getDoc, where
-} from "firebase/firestore";
+import {arrayUnion, collection, doc, getDoc, getDocs, limit, query, updateDoc, where} from "firebase/firestore";
 import {auth, db} from "../services/firebaseConfig";
 import {getDownloadURL, getStorage, ref} from "firebase/storage";
 import * as FileSystem from 'expo-file-system';
-import {defaultProps as animal} from "react-native-web/src/modules/forwardedProps";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useFocusEffect} from "@react-navigation/native";
 
 const floatingImageDislike = require('../../assets/dislike.png');
 const floatingImageLike = require('../../assets/like.png');
@@ -57,6 +47,7 @@ const UserHomeScreen = () => {
     const [forceRerender, setForceRerender] = useState(1);
     const [showOverlay, setShowOverlay] = useState(false);
     const [selectedAnimal, setSelectedAnimal] = useState(null);
+    const [lastSwipeDirection, setLastSwipeDirection] = useState(null);
     // like and dislike coloring:
     const [noButtonColor, setNoButtonColor] = useState(colors.white);
     const [yesButtonColor, setYesButtonColor] = useState(colors.white);
@@ -67,13 +58,15 @@ const UserHomeScreen = () => {
     const [likeOpacity, setLikeOpacity] = useState([]);
     const [dislikeOpacity, setDislikeOpacity] = useState([]);
 
-    useEffect(() => {
-        fetchAnimals();
-        setYesButtonColor(colors.white);
-        setYesButtonIconColor(colors.inactiveYesButton);
-        setNoButtonColor(colors.white);
-        setNoButtonIconColor(colors.inactiveNoButton);
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchAnimals();
+            setYesButtonColor(colors.white);
+            setYesButtonIconColor(colors.inactiveYesButton);
+            setNoButtonColor(colors.white);
+            setNoButtonIconColor(colors.inactiveNoButton);
+        }, [])
+    );
 
     useEffect(() => {
         if (animals.length > 0) {
@@ -95,17 +88,100 @@ const UserHomeScreen = () => {
         try {
             setLoading(true);
             setError(null);
-            const q = query(collection(db, 'animals'), limit(10));
+
+            const userData = JSON.parse(await AsyncStorage.getItem('userData'));
+            const userPreferences = userData.preferences;
+            const likedAnimals = userData.likedAnimals || [];
+
+            console.log('User preferences: ', userPreferences);
+
+            const {
+                activityLevel,
+                ageRange,
+                animalType,
+                breed,
+                furColors,
+                gender,
+                province,
+                size,
+            } = userPreferences;
+
+            let q = query(collection(db, 'animals'), limit(10));
+
+            console.log("Liked animals: ", likedAnimals);
+
+            /*
+            // If the user has liked animals, filter by those IDs
+            if (likedAnimals.length > 0) {
+                q = query(q, where('uid', 'in', likedAnimals));
+            }
+             */
+
+            console.log("Activity level: ", activityLevel);
+
+
+            if (activityLevel !== undefined) {
+                q = query(q, where('activityLevel', '==', activityLevel));
+            }
+
+            console.log('MIN: ', ageRange[0]);
+            console.log('MAX: ', ageRange[1]);
+
+            const minAge = ageRange[0];
+            const maxAge = ageRange[1];
+
+            if (ageRange && minAge !== undefined && maxAge !== undefined) {
+                q = query(q, where('age', '>=', minAge), where('age', '<=', maxAge));
+            }
+
+            console.log('Animal type: ', animalType);
+
+            if (animalType) {
+                q = query(q, where('species', '==', animalType));
+            }
+
+            if (breed && breed !== 'Any') {
+                q = query(q, where('breed', '==', breed));
+            }
+
+            console.log('Fur Colors: ', furColors);
+            console.log('Fur Color Length: ', furColors.length);
+
+            if (furColors && furColors.length > 0) {
+                q = query(q, where('furColors', 'array-contains-any', furColors));
+            }
+
+            console.log('Gender: ', gender);
+
+            if (gender && gender !== 'Any') {
+                q = query(q, where('gender', '==', gender));
+            }
+
+            console.log('Province: ', province);
+
+            if (province) {
+                q = query(q, where('province', '==', province));
+            }
+
+            console.log('Size: ', size);
+
+            if (size !== undefined) {
+                q = query(q, where('size', '==', size));
+            }
+
+            console.log(q);
+
             const querySnapshot = await getDocs(q);
 
             const fetchedAnimals = [];
+
             for (const doc of querySnapshot.docs) {
                 const animalData = doc.data();
                 animalData.id = doc.id;
                 animalData.imageUrls = animalData.imageUrls || [];
                 animalData.images = await preloadImages(animalData.imageUrls);
 
-                //console.log(Captured animal: ${animalData.name} (ID: ${animalData.id}));
+                console.log('Captured animal: ${animalData.name} (ID: ${animalData.id})');
 
                 // Only add animals with successfully preloaded images
                 if (animalData.images.length > 0) {
@@ -114,14 +190,21 @@ const UserHomeScreen = () => {
                     console.warn('No images found for animal: ${animalData.id}');
                 }
             }
+            console.log('Fetched animals: ', fetchedAnimals);
 
-            if (fetchedAnimals.length === 0) {
+            // Filter out liked animals after fetching
+            const filteredAnimals = fetchedAnimals.filter(
+                (animal) => !likedAnimals.includes(animal.id)
+            );
+
+            console.log('Filtered animals: ', filteredAnimals);
+
+            if (filteredAnimals .length === 0) {
                 setError('No animals found. Please try again later.');
             }
 
-            console.log('Captured animals: ', fetchedAnimals);
-            setAnimals(fetchedAnimals);
-            setImageIndexes(fetchedAnimals.map(() => 0)); // Initialize image indexes for each animal
+            setAnimals(filteredAnimals );
+            setImageIndexes(filteredAnimals .map(() => 0)); // Initialize image indexes for each animal
             console.log('Card index: ',cardIndex);
             console.log('Image index: ',imageIndexes);
         } catch (error) {
@@ -172,6 +255,7 @@ const UserHomeScreen = () => {
 
     const animateSwipe = (direction) => {
         if (direction === 'left') {
+            console.log('Animated Swiped left on card index:', cardIndex);
             Animated.parallel([
                 Animated.timing(dislikeOpacity[cardIndex], {
                     toValue: 1,
@@ -185,6 +269,7 @@ const UserHomeScreen = () => {
                 })
             ]).start();
         } else if (direction === 'right') {
+            console.log('Animated Swiped right on card index:', cardIndex);
             Animated.parallel([
                 Animated.timing(likeOpacity[cardIndex], {
                     toValue: 1,
@@ -256,9 +341,12 @@ const UserHomeScreen = () => {
     };
 
     const onSwipedLeft = () => {
+        setLastSwipeDirection('left');
+
+        console.log(lastSwipeDirection);
         resetOpacity(cardIndex);
 
-        console.log('Card index:', cardIndex);
+        console.log('Swiped left on card index:', cardIndex);
 
         // Move to the next card
         const newIndex = (cardIndex + 1) % animals.length;
@@ -278,23 +366,26 @@ const UserHomeScreen = () => {
         setNoButtonIconColor(colors.inactiveNoButton);
 
 
-        console.log('Swiped left on card index:', newIndex);
+        console.log('New card index:', newIndex);
     };
 
     const onSwipedRight = async () => {
-        resetOpacity(cardIndex);
-        console.log('Card index:', cardIndex);
+        setLastSwipeDirection('right');
 
-        // Store the current index to reference the correct animal for the like action
-        const currentCardIndex = cardIndex;
-        const animalId = animals[currentCardIndex]?.id;
+        console.log(lastSwipeDirection);
+
+        resetOpacity(cardIndex);
+
+        console.log('Swiped right on card index:', cardIndex);
+
+
+        const animalId = animals[cardIndex]?.id;
         const userId = auth.currentUser.uid;
 
         // Update the card index first to move to the next card
         const newIndex = (cardIndex + 1) % animals.length;
         setCardIndex(newIndex);
 
-        // Reset the image index for the new card
         setImageIndexes((prevIndexes) => {
             const newIndexes = [...prevIndexes];
             newIndexes[newIndex] = 0; // Reset image index for the new card
@@ -309,7 +400,6 @@ const UserHomeScreen = () => {
 
         console.log('New card index:', newIndex);
 
-        // Now, handle Firestore updates in the background using currentCardIndex
         const animalRef = doc(db, 'animals', animalId);
         const userRef = doc(db, 'users', userId);
 
@@ -325,42 +415,55 @@ const UserHomeScreen = () => {
             const userHasLikedAnimal = animalData.likedByUsers && animalData.likedByUsers.includes(userId);
             const animalHasLikedUser = userData.likedAnimals && userData.likedAnimals.includes(animalId);
 
-            // If both have liked each other, skip the update
-            if (userHasLikedAnimal && animalHasLikedUser) {
-                console.log(`User ${userId} and animal ${animalId} have already liked each other. Skipping update.`);
-                return;
-            }
+            const updatePromises = [];
 
-            // If the user has liked the animal but the animal hasn't liked the user, update the animal's document
-            if (userHasLikedAnimal && !animalHasLikedUser) {
-                console.log(`Updating animal ${animalId} to include user ${userId}.`);
-                await updateDoc(animalRef, {
-                    likedByUsers: arrayUnion(userId)
-                });
-            }
-
-            // If the animal has liked the user but the user hasn't liked the animal, update the user's document
-            if (!userHasLikedAnimal && animalHasLikedUser) {
-                console.log(`Updating user ${userId} to include animal ${animalId}.`);
-                await updateDoc(userRef, {
-                    likedAnimals: arrayUnion(animalId)
-                });
-            }
-
-            // If neither has liked each other, update both documents
             if (!userHasLikedAnimal && !animalHasLikedUser) {
                 console.log(`User ${userId} is liking animal ${animalId} for the first time.`);
-                await updateDoc(animalRef, {
-                    likedByUsers: arrayUnion(userId)
-                });
-                await updateDoc(userRef, {
-                    likedAnimals: arrayUnion(animalId)
-                });
+                updatePromises.push(
+                    updateDoc(animalRef, {
+                        likedByUsers: arrayUnion(userId)
+                    }),
+                    updateDoc(userRef, {
+                        likedAnimals: arrayUnion(animalId)
+                    })
+                );
+            } else if (!userHasLikedAnimal && animalHasLikedUser) {
+                console.log(`Updating user ${userId} to include animal ${animalId}.`);
+                updatePromises.push(
+                    updateDoc(userRef, {
+                        likedAnimals: arrayUnion(animalId)
+                    })
+                );
+            } else if (userHasLikedAnimal && !animalHasLikedUser) {
+                console.log(`Updating animal ${animalId} to include user ${userId}.`);
+                updatePromises.push(
+                    updateDoc(animalRef, {
+                        likedByUsers: arrayUnion(userId)
+                    })
+                );
             }
 
+            await Promise.all(updatePromises);
+
+            // Update AsyncStorage with the new userData
+            const updatedUserDoc = await getDoc(userRef); // Fetch updated user data
+            const updatedUserData = updatedUserDoc.data();
+
+            await AsyncStorage.setItem('userData', JSON.stringify(updatedUserData));
             console.log(`User ${userId} interacted with animal ${animalId}.`);
         } catch (error) {
             console.error('Error updating Firestore:', error);
+        }
+    };
+
+    const SwipedAll = async () => {
+        try {
+            if (lastSwipeDirection === 'right') {
+                await onSwipedRight();
+            }
+            await fetchAnimals(); // Fetch new animals only after the updates
+        } catch (error) {
+            console.error('Error in onSwipedAll:', error);
         }
     };
 
@@ -572,7 +675,7 @@ const UserHomeScreen = () => {
                         onSwipedLeft={ onSwipedLeft }
                         onSwipedRight={ onSwipedRight }
                         onSwipedAborted={ SwipedAborted }
-                        onSwipedAll={ fetchAnimals }
+                        onSwipedAll={ SwipedAll }
                         stackSize={ 2 }
                         disableBottomSwipe
                         disableTopSwipe
