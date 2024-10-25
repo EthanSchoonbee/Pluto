@@ -135,6 +135,11 @@ const styles = StyleSheet.create({
         marginBottom: 16,
         paddingHorizontal: 20, // Added padding to align the inputs with other elements
     },
+    textInputContainer: {
+        marginTop: 6,
+        marginBottom: 6,
+        // Added padding to align the inputs with other elements
+    },
     input: {
         borderWidth: 1,
         borderColor: '#ccc',
@@ -220,7 +225,11 @@ const styles = StyleSheet.create({
         borderColor: '#ccc',
         backgroundColor: '#fff', // or any other color for your options
     },
-
+    errorText: {
+        color: 'red',
+        fontSize: 12,
+        marginTop: 5,
+    },
 });
 
 export default styles;

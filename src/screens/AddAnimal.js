@@ -10,7 +10,7 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/Ionicons'; // or any other icon set you prefer
 import { db, auth } from '../services/firebaseConfig';
-import {Animal} from "../models/AnimalModel";
+import {Animal as animalData, Animal} from "../models/AnimalModel";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const AddAnimal = ({ navigation }) => {
@@ -29,38 +29,72 @@ const AddAnimal = ({ navigation }) => {
     const [images, setImages] = useState([]);
     const [name, setName] = useState("");
     const [selectedGender, setSelectedGender] = useState([]);
-    const [shelterLocation, setShelterLocation] = useState(""); // State for shelter location
+    const [shelterProvince, setShelterProvince] = useState(""); // State for shelter location
     const [isGenderPickerVisible, setIsGenderPickerVisible] = useState(false);
     const [age, setAge] = useState(0);
     const [biography, setBiography] = useState("");
     const [activityLevel, setActivityLevel] = useState(0);
     const [size, setSize] = useState(0);
     const sizes = strings.sizes;
-    const availableFurColors = strings.availableFurColors;
+    const availableFurColors = strings.shelterAvailableFurColors;
     const dogBreeds = strings.dogBreeds
     const catBreeds = strings.catBreeds
     const relevantBreeds = isDog ? dogBreeds : catBreeds;
     const activityLevels = strings.activityLevels;
     const [furColors, setFurColors] = useState([]);
+    const newAnimal = { ...Animal };
+    const [errors, setErrors] = useState({});
 
 
     // Fetch the shelter's location when the component mounts
     useEffect(() => {
-        const fetchShelterLocation = async () => {
+        const fetchShelterProvince = async () => {
             if (user) {
                 const shelterDocRef = doc(db, "shelters", user.uid);
                 const shelterDoc = await getDoc(shelterDocRef);
 
                 if (shelterDoc.exists()) {
                     const shelterData = shelterDoc.data();
-                    setShelterLocation(shelterData.location);
+                    setShelterProvince(shelterData.location);
                 } else {
                     console.log("No such document!");
                 }
             }
         };
-        fetchShelterLocation();
+        fetchShelterProvince();
     }, [user]);
+
+    const validateForm = () => {
+        let formErrors = {};
+
+        // Name validation: No numbers allowed
+        if (!newAnimal.name || /\d/.test(newAnimal.name)) {
+            formErrors.name = 'Name should not contain numbers and cannot be empty';
+        }
+
+        // Age validation: Must be a number
+        if (!newAnimal.age || isNaN(newAnimal.age)) {
+            formErrors.age = 'Age must be a valid number';
+        }
+
+        // Fur color validation: Required field
+        if (!newAnimal.furColor) {
+            formErrors.furColor = 'Fur color is required';
+        }
+
+        // Breed validation: Required field
+        if (selectedBreed === strings.anyBreed) {
+            formErrors.breed = 'Breed is required';
+        }
+
+        // Gender validation: Required field
+        if (!selectedGender) {
+            formErrors.gender = 'Gender is required';
+        }
+
+        setErrors(formErrors);
+        return Object.keys(formErrors).length === 0;
+    };
 
     const handleImageUpload = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -123,22 +157,26 @@ const AddAnimal = ({ navigation }) => {
 
         try {
             // Create a new Animal object
-            const newAnimal = { ...Animal };
             newAnimal.name = name;
             newAnimal.species = isDog ? "Dog" : "Cat";
             newAnimal.breed = selectedBreed;
             newAnimal.age = age;
             newAnimal.gender = selectedGender;
-            newAnimal.province = shelterLocation;
+            newAnimal.province = shelterProvince;
             newAnimal.activityLevel = activityLevel;
             newAnimal.size = sizes[size];
-            newAnimal.furColor = furColors.join(", ");
+            newAnimal.furColor = furColors.length > 0 ? furColors.join(", ") : ""; // Saves empty array if "Any" was selected
             newAnimal.description = biography;
             newAnimal.shelterId = user.uid;
             newAnimal.imageUrls = images; // Store the array of image URLs
             newAnimal.likedByUsers = [];
             newAnimal.createdAt = new Date();
             newAnimal.updatedAt = new Date();
+
+            if (!validateForm()){
+                alert("Error Creating animal. Check all data fields have valid entries" )
+                return;
+            }
 
             // Add the animal data to Firestore under the "animals" collection
             await addDoc(collection(db, "animals"), newAnimal);
@@ -147,14 +185,16 @@ const AddAnimal = ({ navigation }) => {
             navigation.navigate("ShelterHome");
         } catch (error) {
             console.error("Error adding animal data: ", error);
-            alert(strings.animalUploadSuccessful);
+            alert(strings.animalUploadFailed);
         }
     };
 
+
     const toggleAnimalType = (type) => {
-        setIsDog(type === 'dogs');
+        setIsDog(type === 'Dog');
         setSelectedBreed(strings.anyBreed); // Reset using strings.anyBreed
     };
+
 
     const toggleFurColor = (color) => {
         if (furColors.includes(color)) {
@@ -175,19 +215,20 @@ const AddAnimal = ({ navigation }) => {
                     <View style={styles.toggleButtonGroup}>
                         <TouchableOpacity
                             style={[styles.toggleButton, isDog && styles.selectedButton]}
-                            onPress={() => toggleAnimalType('dogs')}
+                            onPress={() => toggleAnimalType('Dog')}
                         >
                             <Text style={styles.toggleButtonText}>{strings.dogsButton}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={[styles.toggleButton, !isDog && styles.selectedButton]}
-                            onPress={() => toggleAnimalType('cats')}
+                            onPress={() => toggleAnimalType('Cat')}
                         >
                             <Text style={styles.toggleButtonText}>{strings.catsButton}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+
 
                 {/* Image Upload */}
                 <View style={styles.imageContainer}>
@@ -212,25 +253,39 @@ const AddAnimal = ({ navigation }) => {
 
                 {/* Name, Breed, Age, Biography */}
                 <View style={styles.inputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder={strings.namePlaceholder}
-                        value={name}
-                        onChangeText={setName}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder={strings.agePlaceholder}
-                        value={age}
-                        onChangeText={setAge}
-                    />
-                    <TextInput
-                        style={styles.textArea}
-                        placeholder={strings.biographyPlaceholder}
-                        value={biography}
-                        onChangeText={setBiography}
-                        multiline
-                    />
+                    {/* Name Input */}
+                    <View style={styles.textInputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter Name"
+                            value={name}
+                            onChangeText={setName}
+                        />
+                        {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
+                    </View>
+
+                    {/* Age Input */}
+                    <View style={styles.textInputContainer}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter Age"
+                            value={age}
+                            onChangeText={setAge}
+                        />
+                        {errors.age && <Text style={styles.errorText}>{errors.age}</Text>}
+                    </View>
+
+                    {/* Biography Input */}
+                    <View style={styles.textInputContainer}>
+                        <TextInput
+                            style={styles.textArea}
+                            placeholder="Enter Biography"
+                            value={biography}
+                            onChangeText={setBiography}
+                            multiline
+                        />
+                        {errors.biography && <Text style={styles.errorText}>{errors.biography}</Text>}
+                    </View>
                 </View>
 
                 {/* Breed Picker */}
@@ -299,6 +354,7 @@ const AddAnimal = ({ navigation }) => {
                     </Modal>
                 </View>
 
+
                 {/* Gender Picker */}
                 <View style={styles.pickerContainer}>
                     <TouchableOpacity onPress={() => setIsGenderPickerVisible(true)} style={styles.pickerButton}>
@@ -322,7 +378,6 @@ const AddAnimal = ({ navigation }) => {
                                         setIsGenderPickerVisible(false);
                                     }}
                                 >
-                                    {/* Removed "Select Gender" option */}
                                     <Picker.Item label="Male" value="M" />
                                     <Picker.Item label="Female" value="F" />
                                 </Picker>
