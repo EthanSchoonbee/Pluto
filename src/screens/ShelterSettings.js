@@ -197,6 +197,10 @@ const ShelterSettingsScreen = () => {
                                 ...updatedUserDetails,
                             };
 
+                            if(!newPassword ==  password){
+                                await firebaseService.changePassword(newPassword);
+                            }
+
                             await firebaseService.updateUserSettings("shelters", finalDetails);
 
                             Alert.alert("Success", "Your profile has been updated.");
@@ -212,6 +216,12 @@ const ShelterSettingsScreen = () => {
     };
 
     const checkDetailsInputs = () => {
+
+        if(!SettingsInputValidations.isLongerThanFive(newPassword)){
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.confirm_required);
+            return false;
+        }
+
         if (SettingsInputValidations.isEmptyOrWhitespace(shelterName)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.name_required);
             return false;
@@ -396,7 +406,7 @@ const ShelterSettingsScreen = () => {
                         <TouchableOpacity onPress={handleDoubleClick}>
                             <TextInput
                                 style={ShelterSettingsStyles.detailsValue}
-                                value={setNewPassword}
+                                value={newPassword}
                                 onChangeText={setNewPassword}
                                 placeholder={strings.shelter_settings.shelter_confirm_password_placeholder}
                                 secureTextEntry={true}
