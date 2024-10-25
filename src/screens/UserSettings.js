@@ -187,6 +187,10 @@ const UserSettingsScreen = () => {
                                 ...updatedUserDetails,
                             };
 
+                            if(!ewPassword == password){
+                                await firebaseService.changePassword(newPassword);
+                            }
+
                             await firebaseService.updateUserSettings("users", finalDetails);
 
                             Alert.alert("Success", "Your profile has been updated.");
@@ -204,9 +208,13 @@ const UserSettingsScreen = () => {
     // Check if details inputs are valid
     const checkDetailsInputs = () => {
 
+        if(!SettingsInputValidations.isLongerThanFive(newPassword)){
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.confirm_required);
+            return false;
+        }
         // Start of checking for null inputs
         if (SettingsInputValidations.isEmptyOrWhitespace(fullName)) {
-            Alert.alert(strings.user_settings.validation_error, strings.user_settings.fullName_required);
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.name_required);
             return false;
         }
         if (SettingsInputValidations.isEmptyOrWhitespace(email)) {

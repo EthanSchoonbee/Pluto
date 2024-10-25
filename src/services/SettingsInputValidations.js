@@ -28,6 +28,11 @@ const ValidationClass = {
         return stringA === stringB; // Returns true if both strings are exactly the same
     },
 
+    // Check if the input string length is greater than 5
+    isLongerThanFive: function(input) {
+        return input.length > 5;
+    }
+
 };
 
 export default ValidationClass;
