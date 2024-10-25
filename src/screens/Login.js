@@ -15,7 +15,6 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import strings from "../strings/en";
 import firebaseService from "../services/firebaseService";
-import userSession from "../services/UserSession";
 import styles from '../styles/LoginScreenStyles'; // Import the new styles file
 
 const LoginScreen = ({ navigation }) => {
@@ -46,16 +45,12 @@ const LoginScreen = ({ navigation }) => {
 
                     if (userData) {
                         console.log('Fetched user data:', userData);
-                        const token = await user.getIdToken();
-                        userSession.setUser(userData, token);
                         setLoading(false);
                         navigation.navigate('UserHome');
                     } else {
                         const shelterData = await firebaseService.getUserData('shelters', user.uid);
                         if (shelterData) {
                             console.log('Fetched shelter data:', shelterData);
-                            const token = await user.getIdToken();
-                            userSession.setUser(shelterData, token);
                             setLoading(false);
                             navigation.navigate('ShelterHome');
                         } else {

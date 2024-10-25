@@ -24,8 +24,6 @@ class FirebaseService {
         createUserWithEmailAndPassword(this.auth, email, password)
             .then(async (userCredential) => {
                 const firebaseUser = userCredential.user;
-
-                // Basic user information and preferences as a nested field
                 const userData = {
                     uid: firebaseUser.uid,
                     email: firebaseUser.email,
@@ -34,9 +32,7 @@ class FirebaseService {
                     phoneNo,
                     selectedProvince,
                     role: "user",
-                    likedAnimals: [],  // This stays in the main document
-
-                    // Preferences are nested inside the main user document
+                    likedAnimals: [],
                     preferences: {
                         animalType: "Dog",
                         breed: "Any",
@@ -50,24 +46,30 @@ class FirebaseService {
                 };
 
                 try {
-                    // Save all data (including preferences) to the 'users' collection
                     await this.addUserData('users', userData);
-
-                    // Optionally store the whole user data in AsyncStorage
                     await AsyncStorage.setItem('userData', JSON.stringify(userData));
-
                     console.log("Firebase Authentication Service: Registration Process Successful");
-                    onComplete(true, null);  // Registration successful
+
+                    // Ensure onComplete is a function before calling it
+                    if (typeof onComplete === "function") {
+                        onComplete(true, null);  // Registration successful
+                    }
                 } catch (error) {
                     console.log("Error adding user data:", error);
-                    onComplete(false, error.message);  // Registration failed, return error message
+
+                    if (typeof onComplete === "function") {
+                        onComplete(false, error.message);  // Registration failed
+                    }
                 }
             })
             .catch((error) => {
                 console.log("Firebase Authentication Service: Registration Process Failed", error);
-                onComplete(false, error.message);  // Handle Firebase Authentication error
+                if (typeof onComplete === "function") {
+                    onComplete(false, error.message);  // Handle Firebase Authentication error
+                }
             });
     }
+
 
     loginUser(email, password, onComplete) {
         console.log("Firebase Authentication Service: Logging In User");
