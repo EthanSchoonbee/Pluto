@@ -14,6 +14,16 @@ import {Animal} from "../models/AnimalModel";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 const AddAnimal = ({ navigation }) => {
+
+    //Firebase
+    const user = auth.currentUser;
+    const storage = getStorage();
+
+    //Interface
+    const [isPickerVisible, setIsPickerVisible] = useState(false);
+    const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+
+    //Animal Data
     const [isDog, setIsDog] = useState(true);
     const [selectedBreed, setSelectedBreed] = useState(strings.anyBreed); // Use strings.anyBreed
     const [images, setImages] = useState([]);
@@ -25,28 +35,25 @@ const AddAnimal = ({ navigation }) => {
     const [biography, setBiography] = useState("");
     const [activityLevel, setActivityLevel] = useState(0);
     const [size, setSize] = useState(0);
-    const [isPickerVisible, setIsPickerVisible] = useState(false);
-    const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
-    const [furColors, setFurColors] = useState([]);
-    const activityLevels = ['Couch Cushion', 'Lap Cat', 'Playful Pup', 'Adventure Hound'];
-    const sizes = ['Small', 'Medium', 'Large'];
-    const dogBreeds = ['Labrador', 'Poodle', 'Bulldog', 'German Shepherd'];
-    const catBreeds = ['Siamese', 'Persian', 'Maine Coon', 'Bengal'];
-    const availableFurColors = ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
+    const sizes = strings.sizes;
+    const availableFurColors = strings.availableFurColors;
+    const dogBreeds = strings.dogBreeds
+    const catBreeds = strings.catBreeds
     const relevantBreeds = isDog ? dogBreeds : catBreeds;
-    const user = auth.currentUser;
-    const storage = getStorage();
+    const activityLevels = strings.activityLevels;
+    const [furColors, setFurColors] = useState([]);
+
 
     // Fetch the shelter's location when the component mounts
     useEffect(() => {
         const fetchShelterLocation = async () => {
             if (user) {
-                const shelterDocRef = doc(db, "shelters", user.uid); // Adjust this to your shelters collection
+                const shelterDocRef = doc(db, "shelters", user.uid);
                 const shelterDoc = await getDoc(shelterDocRef);
 
                 if (shelterDoc.exists()) {
                     const shelterData = shelterDoc.data();
-                    setShelterLocation(shelterData.location); // Assuming location is stored in the shelter document
+                    setShelterLocation(shelterData.location);
                 } else {
                     console.log("No such document!");
                 }
@@ -105,12 +112,12 @@ const AddAnimal = ({ navigation }) => {
 
     const handleSubmit = async () => {
         if (images.length < 3) {
-            alert("Please add at least 3 images.");
+            alert(strings.shortImageLength);
             return;
         }
 
         if (!user) {
-            alert("You must be signed in to add an animal.");
+            alert(strings.noCurrentUser);
             return;
         }
 
@@ -136,11 +143,11 @@ const AddAnimal = ({ navigation }) => {
             // Add the animal data to Firestore under the "animals" collection
             await addDoc(collection(db, "animals"), newAnimal);
 
-            alert("Animal data has been saved successfully!");
+            alert(strings.animalUploadSuccessful);
             navigation.navigate("ShelterHome");
         } catch (error) {
             console.error("Error adding animal data: ", error);
-            alert("Failed to save the animal data. Please try again.");
+            alert(strings.animalUploadSuccessful);
         }
     };
 

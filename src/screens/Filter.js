@@ -8,7 +8,7 @@ import {
     Modal,
     TouchableOpacity,
     Dimensions,
-    ActivityIndicator, ToastAndroid
+    ActivityIndicator,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
@@ -21,8 +21,8 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 const Filter = ({navigation}) => {
 
     const provinces = ['Western Cape', 'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West'];
-    const dogBreeds = ['Labrador', 'Poodle', 'Bulldog', 'German Shepherd'];
-    const catBreeds = ['Siamese', 'Persian', 'Maine Coon', 'Bengal'];
+    const dogBreeds = strings.dogBreeds;
+    const catBreeds = strings.catBreeds;
     const availableFurColors = ['Any', 'Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'];
 
 
@@ -87,7 +87,6 @@ const Filter = ({navigation}) => {
                 setLoading(false);  // Stop loading once the data is fetched
             }
         };
-
         // Call the async function
         loadFiltersFromFirestore();
     }, [userId]);
