@@ -24,7 +24,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Import 
 import firebaseService from "../services/firebaseService";
 import {launchImageLibrary} from "react-native-image-picker";
 import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import {onAuthStateChanged} from "firebase/auth";
 import { signOut } from 'firebase/auth';
@@ -57,6 +57,7 @@ const ShelterSettingsScreen = () => {
     const [isUpdating, setIsUpdating] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const navigation = useNavigation();
+    const [imageChanged, setImageChanged] = useState(false);
 
     const togglePushNotifications = () => {
         setIsPushNotificationsEnabled(previousState => !previousState);
@@ -78,39 +79,81 @@ const ShelterSettingsScreen = () => {
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            setProfileImage(result.assets[0].uri);
+            const selectedImageUri = result.assets[0].uri;
+            setProfileImage(selectedImageUri); // Just set the image URI in the state
             setIsEditable(true);
+            setImageChanged(true);
         }
     };
 
-    const uploadImage = async (imageUri) => {
-        if (!imageUri) return null;
-
+    // Image upload and update logic
+    const uploadProfileImage = async (uri) => {
         const user = auth.currentUser;
         if (!user) {
             Alert.alert('Error', 'User not authenticated.');
             return;
         }
 
-        const imageRef = ref(storage, `shelters/${user.uid}/${Date.now()}_profile.jpg`);
-        const blob = await fetch(imageUri).then(r => r.blob());
+        const blob = await fetch(uri).then(r => r.blob()); // Convert the image to a blob
+        const imageRef = ref(storage, `shelters/${user.uid}/profile.jpg`);
+
+        // Delete old image before uploading a new one
+        await clearProfileImage();
+
         const uploadTask = uploadBytesResumable(imageRef, blob);
 
-        return new Promise((resolve, reject) => {
-            uploadTask.on(
-                'state_changed',
-                null,
-                (error) => reject(error),
-                async () => {
-                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                    resolve(downloadURL);
-                }
-            );
-        });
+        setModalVisible(true); // Show modal during upload
+
+        try {
+            await new Promise((resolve, reject) => {
+                uploadTask.on(
+                    'state_changed',
+                    null,
+                    (error) => reject(error),
+                    async () => {
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        //await firebaseService.updateUserSettings("shelters", { profileImage: downloadURL });
+                        setProfileImage(downloadURL); // Update local state
+                        resolve();
+                    }
+                );
+            });
+        } catch (error) {
+            Alert.alert('Error', 'There was an issue uploading the image. Please try again.');
+            console.error('Image upload error:', error);
+        } finally {
+            setModalVisible(false); // Hide modal after upload
+        }
+    };
+
+    // Delete the old profile image from Firebase Storage
+    const clearProfileImage = async () => {
+        const user = auth.currentUser;
+        if (!user) {
+            Alert.alert('Error', 'User not authenticated.');
+            return;
+        }
+
+        const currentImageRef = ref(storage, `shelters/${user.uid}/profile.jpg`);
+
+        try {
+            const currentImageUrl = await getDownloadURL(currentImageRef);
+            if (currentImageUrl) {
+                await deleteObject(currentImageRef); // Delete the old image
+                console.log('Previous image deleted successfully.');
+            }
+        } catch (error) {
+            if (error.code !== 'storage/object-not-found') {
+                console.error('Error deleting the previous image:', error);
+            }
+        }
     };
 
 
 
+
+
+// Handle update button press
     const handleUpdate = async () => {
         if (!isEditable) {
             Alert.alert('Info', "No changes were made.");
@@ -126,8 +169,8 @@ const ShelterSettingsScreen = () => {
             location,
             email,
             phoneNumber,
-            notifications: isPushNotificationsEnabled,
-            profileImage: '', // Will update this after image upload
+            profileImage,
+            isPushNotificationsEnabled
         };
 
         Alert.alert(
@@ -140,16 +183,21 @@ const ShelterSettingsScreen = () => {
                     onPress: async () => {
                         setModalVisible(true);
                         try {
-                            await firebaseService.updateUserSettings("shelters", updatedUserDetails);
 
-                            if (profileImage) {
-                                const imageUrl = await uploadImage(profileImage);
-                                await firebaseService.updateUserSettings("shelters", { profileImage: imageUrl });
+                            if(imageChanged){
+                                // First upload the image if a new one is selected
+                                let imageUrl = null;
+                                if (profileImage) {
+                                    imageUrl = await uploadProfileImage(profileImage);
+                                }
                             }
 
-                            if (!SettingsInputValidations.isEmptyOrWhitespace(newPassword)) {
-                                firebaseService.changePassword(newPassword);
-                            }
+                            // Then update the user details, including the image URL if uploaded
+                            const finalDetails = {
+                                ...updatedUserDetails,
+                            };
+
+                            await firebaseService.updateUserSettings("shelters", finalDetails);
 
                             Alert.alert("Success", "Your profile has been updated.");
                         } catch (error) {
@@ -215,7 +263,7 @@ const ShelterSettingsScreen = () => {
             if (data !== null) {
                 const userData = JSON.parse(data); // Parse the data into an object
                 if (userData) {
-                    setIsPushNotificationsEnabled(userData.notifications);
+                    setIsPushNotificationsEnabled(userData.isPushNotificationsEnabled);
                     setShelterName(userData.shelterName);
                     setLocation(userData.location);
                     setEmail(userData.email);
@@ -413,7 +461,7 @@ const ShelterSettingsScreen = () => {
                             shadowRadius: 4,
                             elevation: 5
                         }}>
-                            <Text>updating your settings!</Text>
+                            <Text>Updating your settings!</Text>
                         </View>
                     </View>
                 </Modal>
