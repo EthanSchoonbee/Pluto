@@ -41,11 +41,11 @@ class FirebaseService {
                         animalType: "Dog",
                         breed: "Any",
                         gender: "Any",
-                        location: selectedProvince,
+                        province: selectedProvince,
                         ageRange: [0, 20],
-                        activityLevel: 0,
-                        size: 1,
-                        furColors: ["Any"]
+                        activityLevel: 1,
+                        size: 0,
+                        furColors: []
                     }
                 };
 
