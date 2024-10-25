@@ -8,7 +8,7 @@ import {
     Modal,
     TouchableOpacity,
     Dimensions,
-    ActivityIndicator, ToastAndroid
+    ActivityIndicator,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { Picker } from '@react-native-picker/picker';
@@ -87,7 +87,6 @@ const Filter = ({navigation}) => {
                 setLoading(false);  // Stop loading once the data is fetched
             }
         };
-
         // Call the async function
         loadFiltersFromFirestore();
     }, [userId]);

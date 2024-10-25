@@ -61,19 +61,19 @@ export default {
     selectFur: "Select Fur Color:",
     selectGender: "Select Gender:",
     dogBreeds: [
-        'Labrador Retriever', 'French Bulldog', 'German Shepherd', 'Golden Retriever',
-        'Bulldog', 'Poodle', 'Beagle', 'Rottweiler', 'Yorkshire Terrier', 'Boxer',
-        'Dachshund', 'Siberian Husky', 'Great Dane', 'Chihuahua', 'Shih Tzu',
-        'Doberman Pinscher', 'Australian Shepherd', 'Pembroke Welsh Corgi',
-        'Cavalier King Charles Spaniel', 'Shetland Sheepdog'
+        'Australian Shepherd', 'Beagle', 'Boxer', 'Bulldog', 'Cavalier King Charles Spaniel',
+        'Chihuahua', 'Dachshund', 'Doberman Pinscher', 'French Bulldog', 'German Shepherd',
+        'Golden Retriever', 'Great Dane', 'Labrador Retriever', 'Pembroke Welsh Corgi',
+        'Poodle', 'Rottweiler', 'Shih Tzu', 'Shetland Sheepdog', 'Siberian Husky', 'Yorkshire Terrier'
     ],
-    catBreeds : [
-        'Siamese', 'Persian', 'Maine Coon', 'Ragdoll', 'Bengal',
-        'British Shorthair', 'Sphynx', 'Scottish Fold', 'Abyssinian',
-        'Russian Blue', 'Birman', 'American Shorthair', 'Oriental',
-        'Devon Rex', 'Himalayan', 'Burmese', 'Chartreux', 'Tonkinese',
-        'Turkish Angora', 'Norwegian Forest Cat'
+
+    catBreeds: [
+        'Abyssinian', 'American Shorthair', 'Bengal', 'Birman', 'British Shorthair',
+        'Burmese', 'Chartreux', 'Devon Rex', 'Himalayan', 'Maine Coon',
+        'Norwegian Forest Cat', 'Oriental', 'Persian', 'Ragdoll', 'Russian Blue',
+        'Scottish Fold', 'Siamese', 'Sphynx', 'Tonkinese', 'Turkish Angora'
     ],
+
     activityLevels: ['Couch Cushion', 'Lap Cat', 'Playful Pup', 'Adventure Hound'],
     sizes: ['Small', 'Medium', 'Large'],
     availableFurColors: ['Black', 'White', 'Brown', 'Golden', 'Spotted', 'Striped'],
