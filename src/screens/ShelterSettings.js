@@ -24,6 +24,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage'; // Import 
 import firebaseService from "../services/firebaseService";
 import {launchImageLibrary} from "react-native-image-picker";
 import * as ImagePicker from "expo-image-picker";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+import {onAuthStateChanged} from "firebase/auth";
+import { signOut } from 'firebase/auth';
+
 
 const defaultProfileImage = require('../../assets/handsome_squidward.jpg');
 
@@ -41,13 +46,16 @@ const ShelterSettingsScreen = () => {
     const [shelterName, setShelterName] = useState(defaultValues.shelterName);
     const [location, setLocation] = useState(defaultValues.location);
     const [email, setEmail] = useState(defaultValues.email);
-    const [tel, setTel] = useState(defaultValues.tel);
+    const [phoneNumber, setphoneNumber] = useState(defaultValues.phoneNumber);
     const [password, setPassword] = useState(defaultValues.password);
     const [newPassword, setNewPassword] = useState(defaultValues.newPassword);
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);
     const [profileImage, setProfileImage] = useState(null);
-
+    const storage = getStorage();
+    const auth = getAuth();
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
     const navigation = useNavigation();
 
     const togglePushNotifications = () => {
@@ -55,7 +63,7 @@ const ShelterSettingsScreen = () => {
         setIsEditable(true);
     };
 
-    // Function to handle image selection
+    // Image picker and upload logic
     const handleImageSelect = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== 'granted') {
@@ -70,15 +78,89 @@ const ShelterSettingsScreen = () => {
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            // Set the selected image's URI as the profile image
             setProfileImage(result.assets[0].uri);
-            setIsEditable(true); // Mark the form as edited
+            setIsEditable(true);
         }
     };
 
+    const uploadImage = async (imageUri) => {
+        if (!imageUri) return null;
 
-    const handleUpdate = () => {
-        updateUserSettings();
+        const user = auth.currentUser;
+        if (!user) {
+            Alert.alert('Error', 'User not authenticated.');
+            return;
+        }
+
+        const imageRef = ref(storage, `shelters/${user.uid}/${Date.now()}_profile.jpg`);
+        const blob = await fetch(imageUri).then(r => r.blob());
+        const uploadTask = uploadBytesResumable(imageRef, blob);
+
+        return new Promise((resolve, reject) => {
+            uploadTask.on(
+                'state_changed',
+                null,
+                (error) => reject(error),
+                async () => {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                }
+            );
+        });
+    };
+
+
+
+    const handleUpdate = async () => {
+        if (!isEditable) {
+            Alert.alert('Info', "No changes were made.");
+            return;
+        }
+
+        if (!checkDetailsInputs()) {
+            return;
+        }
+
+        const updatedUserDetails = {
+            shelterName,
+            location,
+            email,
+            phoneNumber,
+            notifications: isPushNotificationsEnabled,
+            profileImage: '', // Will update this after image upload
+        };
+
+        Alert.alert(
+            "Attention",
+            'Are you sure you want to update your details?',
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Confirm",
+                    onPress: async () => {
+                        setModalVisible(true);
+                        try {
+                            await firebaseService.updateUserSettings("shelters", updatedUserDetails);
+
+                            if (profileImage) {
+                                const imageUrl = await uploadImage(profileImage);
+                                await firebaseService.updateUserSettings("shelters", { profileImage: imageUrl });
+                            }
+
+                            if (!SettingsInputValidations.isEmptyOrWhitespace(newPassword)) {
+                                firebaseService.changePassword(newPassword);
+                            }
+
+                            Alert.alert("Success", "Your profile has been updated.");
+                        } catch (error) {
+                            Alert.alert("Error", "There was an issue updating your profile. Please try again.");
+                        } finally {
+                            setModalVisible(false);
+                        }
+                    }
+                }
+            ]
+        );
     };
 
     const checkDetailsInputs = () => {
@@ -94,7 +176,7 @@ const ShelterSettingsScreen = () => {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.email_required);
             return false;
         }
-        if (SettingsInputValidations.isEmptyOrWhitespace(tel)) {
+        if (SettingsInputValidations.isEmptyOrWhitespace(phoneNumber)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.phone_required);
             return false;
         }
@@ -102,62 +184,25 @@ const ShelterSettingsScreen = () => {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.valid_email);
             return false;
         }
-        if (!SettingsInputValidations.isValidNumberInput(tel)) {
+        if (!SettingsInputValidations.isValidNumberInput(phoneNumber)) {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.valid_number);
             return false;
         }
         return true;
     };
 
-    const updateUserSettings = () => {
-        // Check if inputs were edited
-        if (!isEditable) {
-            Alert.alert('Info', "No changes were made.");
-            return;
+
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            console.log('User signed out');
+            navigation.navigate('Login');
+        } catch (error) {
+            console.error('Error signing out: ', error);
         }
-
-        // Call the input validation function
-        if (!checkDetailsInputs()) {
-            return;
-        }
-
-        // Save all inputs in an object
-        const updatedUserDetails = {
-            shelterName,
-            location,
-            email,
-            tel,
-            notifications: isPushNotificationsEnabled,
-            profileImage: profileImage,
-        };
-
-        // Confirm update with the user
-        Alert.alert(
-            "Attention",
-            'Are you sure you want to update your details?',
-            [
-                {
-                    text: "Cancel",
-                    style: "cancel"
-                },
-                {
-                    text: "Confirm",
-                    onPress: () => {
-                        firebaseService.updateUserSettings("shelters",updatedUserDetails)
-                        if(!SettingsInputValidations.isEmptyOrWhitespace(newPassword)){
-                            firebaseService.changePassword(newPassword)
-                        }
-                    }
-                }
-            ]
-        );
     };
 
-
-    const handleLogout = () => {
-        console.log('Logout button pressed');
-        navigation.navigate('Login');
-    };
 
     const handleDoubleClick = () => {
         setIsEditable(prev => !prev);
@@ -174,7 +219,7 @@ const ShelterSettingsScreen = () => {
                     setShelterName(userData.shelterName);
                     setLocation(userData.location);
                     setEmail(userData.email);
-                    setTel(userData.phoneNumber);
+                    setphoneNumber(userData.phoneNumber);
                     setProfileImage(userData.profileImage || null);
                     setPassword('');  // Clear password fields for security
                     setNewPassword('');
@@ -203,6 +248,8 @@ const ShelterSettingsScreen = () => {
             };
         }, [])
     );
+
+
 
     if (loading) {
         // Display a loading spinner or text while data is being fetched
@@ -274,8 +321,8 @@ const ShelterSettingsScreen = () => {
                         <TouchableOpacity onPress={handleDoubleClick}>
                             <TextInput
                                 style={ShelterSettingsStyles.detailsValue}
-                                value={tel}
-                                onChangeText={setTel}
+                                value={phoneNumber}
+                                onChangeText={setphoneNumber}
                                 placeholder={strings.shelter_settings.shelter_tel_placeholder}
                                 editable={isEditable}
                                 selectTextOnFocus={isEditable}
@@ -340,6 +387,37 @@ const ShelterSettingsScreen = () => {
                         <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.shelter_logout_button}</Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* Modal component */}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => {
+                        Alert.alert("Modal has been closed.");
+                        setModalVisible(!modalVisible);
+                    }}>
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <View style={{
+                            width: '80%',
+                            backgroundColor: 'white',
+                            borderRadius: 20,
+                            padding: 20,
+                            alignItems: 'center',
+                            shadowColor: '#000',
+                            shadowOffset: {
+                                width: 0,
+                                height: 2
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 4,
+                            elevation: 5
+                        }}>
+                            <Text>updating your settings!</Text>
+                        </View>
+                    </View>
+                </Modal>
+
             </ScrollView>
             <NavbarWrapper />
         </SafeAreaView>
