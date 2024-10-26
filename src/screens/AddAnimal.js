@@ -344,7 +344,7 @@ const AddAnimal = ({ navigation }) => {
                                         style={styles.colorOption}
                                         onPress={() => toggleFurColor(color)}
                                     >
-                                        <View style={[styles.colorIndicator, { backgroundColor: furColors.includes(color) ? 'gold' : 'gray' }]} />
+                                        <View style={[styles.colorIndicator, { backgroundColor: furColors.includes(color) ? '#d9cb94' : 'gray' }]} />
                                         <Text style={styles.checkboxLabel}>{color}</Text>
                                     </TouchableOpacity>
                                 ))}
@@ -395,7 +395,7 @@ const AddAnimal = ({ navigation }) => {
                         minimumValue={0}
                         maximumValue={3}
                         step={1}
-                        minimumTrackTintColor="gold"
+                        minimumTrackTintColor="#d9cb94"
                         maximumTrackTintColor="gray"
                         onValueChange={setActivityLevel}
                         value={activityLevel}
@@ -410,7 +410,7 @@ const AddAnimal = ({ navigation }) => {
                         minimumValue={0}
                         maximumValue={2}
                         step={1}
-                        minimumTrackTintColor="gold"
+                        minimumTrackTintColor="#d9cb94"
                         maximumTrackTintColor="gray"
                         onValueChange={setSize}
                         value={size}
