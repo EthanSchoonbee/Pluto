@@ -1,125 +1,316 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
     View,
     Text,
     FlatList,
     Image,
     TouchableOpacity,
-    KeyboardAvoidingView,
     ScrollView,
-    Platform,
+    ActivityIndicator,
+    Modal,
 } from "react-native";
-import PetPageHeader from "../components/PetPageHeader";
-import Navbar from "../components/ShelterNavbar";
+import LikedAnimalsPageHeader from "../components/LikedAnimalsPageHeader";
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
 import styles from "../styles/LikedAnimalsPageStyle";
+import { db, auth } from "../services/firebaseConfig";
+import { doc, onSnapshot, getDoc } from "firebase/firestore";
+import { getLocalImageUrl } from "../utils/imageUtils";
+import { useFocusEffect } from "@react-navigation/native";
 import NavbarWrapper from "../components/NavbarWrapper";
+import * as FileSystem from "expo-file-system";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { Ionicons, Entypo } from "@expo/vector-icons";
+import colors from "../styles/colors";
 
-//Creating an object of dummy pets for testing that will have a id, name, image and type. Type is either dog or cat
-const dummyPets = [
-    {
-        id: "1",
-        name: "Max",
-        image:
-            "https://www.usatoday.com/gcdn/-mm-/c85c9394cb01a8015d8939de412ad73f42eafc87/c=835-682-5178-3135/local/-/media/2015/06/17/USATODAY/USATODAY/635701398627851742-MAX-17945.jpg?width=660&height=373&fit=crop&format=pjpg&auto=webp",
-        type: "dog",
-    },
-    {
-        id: "2",
-        name: "Bella",
-        image: "https://images.dog.ceo/breeds/poodle-toy/n02113624_1178.jpg",
-        type: "dog",
-    },
-    {
-        id: "3",
-        name: "Charlie",
-        image: "https://images.dog.ceo/breeds/rottweiler/n02106550_6286.jpg",
-        type: "dog",
-    },
-    {
-        id: "4",
-        name: "Lucy",
-        image: "https://images.dog.ceo/breeds/australian-shepherd/sadie.jpg",
-        type: "dog",
-    },
-    {
-        id: "5",
-        name: "Whiskers",
-        image: "https://api-ninjas.com/images/cats/abyssinian.jpg",
-        type: "cat",
-    },
-    {
-        id: "6",
-        name: "Mittens",
-        image: "https://cdn2.thecatapi.com/images/BborJBuoW.jpg",
-        type: "cat",
-    },
-    {
-        id: "7",
-        name: "Luna",
-        image: "https://cdn2.thecatapi.com/images/UCifm-g71.jpg",
-        type: "cat",
-    },
-    {
-        id: "8",
-        name: "Oliver",
-        image: "https://cdn2.thecatapi.com/images/Va2B7D5rG.png",
-        type: "cat",
-    },
-];
+const activityLevelMapping = {
+    0: "Couch Cushion",
+    1: "Lap Cat",
+    2: "Playful Pup",
+    3: "Adventure Hound",
+};
 
-//The entire pet list component frontend elements
 const LikedAnimalsPage = ({ navigation }) => {
-    //The current active tab will be set to dogs
+    const [animals, setAnimals] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("Dogs");
+    const [showOverlay, setShowOverlay] = useState(false);
+    const [selectedAnimal, setSelectedAnimal] = useState(null);
 
-    //function to show each pet item
-    //The item is touchable when pressed and will be used to navigate to a different screen when pressed
+    const preloadImages = async (imageUrls) => {
+        const storage = getStorage();
+        const promises = imageUrls.map(async (imageUrl) => {
+            try {
+                const storageRef = ref(storage, imageUrl);
+                const downloadUrl = await getDownloadURL(storageRef);
+
+                const fileName = imageUrl.split("/").pop().replace(/%2F/g, "_");
+                const dirPath = `${FileSystem.cacheDirectory}animals/`;
+                const localUri = `${dirPath}${fileName}`;
+
+                await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
+
+                const fileInfo = await FileSystem.getInfoAsync(localUri);
+
+                if (!fileInfo.exists) {
+                    await FileSystem.downloadAsync(downloadUrl, localUri);
+                }
+
+                return { uri: localUri };
+            } catch (error) {
+                console.error("Error downloading or caching image:", error);
+                return null;
+            }
+        });
+
+        return (await Promise.all(promises)).filter(Boolean);
+    };
+
+    const fetchLikedAnimals = useCallback(async () => {
+        setLoading(true);
+        try {
+            //creating a reference to the users document
+            const userDocRef = doc(db, "users", auth.currentUser.uid);
+            //listen for changes to the users document in the firestore database
+            const unsubscribe = onSnapshot(userDocRef, async (docSnapshot) => {
+                //if the collection document exists
+                if (docSnapshot.exists()) {
+                    //getting the document data
+                    const userData = docSnapshot.data();
+                    //gettting all the liked animal ids
+                    const likedAnimalIds = userData.likedAnimals || [];
+
+                    //mapping through each liked animal id and fetching the animal data
+                    const animalPromises = likedAnimalIds.map(async (animalId) => {
+                        //creating a reference to the animal document in the database
+                        const animalDocRef = doc(db, "animals", animalId);
+                        //asynchrounously getting the animal document reference
+                        const animalDoc = await getDoc(animalDocRef);
+                        //if the animal document exists
+                        if (animalDoc.exists()) {
+                            //getting the animal document data
+                            const animalData = animalDoc.data();
+                            //initally setting the local image url to null
+                            let localImageUrl = null;
+                            try {
+                                //calling the method that will preload the images using the image urls found in the database
+                                const images = await preloadImages(animalData.imageUrls || []);
+                                //setting the local image url to the first image in the array
+                                localImageUrl = images[0]?.uri || null;
+                                console.log("Local image URL:", localImageUrl);
+                            } catch (error) {
+                                //if there is an error, log it
+                                console.error("Error getting local image URL:", error);
+                            }
+                            //returning the animal data
+                            return {
+                                id: animalDoc.id,
+                                name: animalData.name,
+                                species: animalData.species || "Unknown",
+                                imageUrl: localImageUrl,
+                                age: animalData.age,
+                                gender: animalData.gender,
+                                breed: animalData.breed,
+                                adoptionStatus: animalData.adoptionStatus,
+                            };
+                        }
+                        //else will return null
+                        return null;
+                    });
+                    //this will return and filter out the array of all liked animals. (will filter out the null values)
+                    const animalsList = (await Promise.all(animalPromises)).filter(
+                        Boolean
+                    );
+                    //setting the animals state to the animals list
+                    setAnimals(animalsList);
+                }
+                //will stop loading the page
+                setLoading(false);
+            });
+
+            //returning the unsubscribe function
+            return unsubscribe;
+        } catch (error) {
+            console.error("Error fetching liked animals:", error);
+            setLoading(false);
+        }
+    }, []);
+
+    //use focus effect to fetch the liked animals when the any changes are detected in the firestore database
+    useFocusEffect(
+        //using the use callback hook to fetch the liked animals
+        useCallback(() => {
+            //calling the fetchLikedAnimals function
+            const unsubscribe = fetchLikedAnimals();
+            //returning the unsubscribe function
+            return () => {
+                //will call the unsubscribe function if it exists
+                if (unsubscribe && typeof unsubscribe === "function") {
+                    unsubscribe();
+                }
+            };
+        }, [fetchLikedAnimals])
+    );
+
+    const renderGenderIcon = (gender) => {
+        if (gender === "M") {
+            return (
+                <Ionicons
+                    style={styles.gender}
+                    name="male"
+                    size={18}
+                    color={colors.genderMaleBlue}
+                />
+            );
+        } else if (gender === "F") {
+            return (
+                <Ionicons
+                    style={styles.gender}
+                    name="female"
+                    size={18}
+                    color={colors.genderFemalePink}
+                />
+            );
+        }
+        return null;
+    };
+
+    /**
+     * AnimalInfoOverlay component that will display the animal information in a modal
+     * @param {object} param0 - The animal object and the onClose function
+     * @returns
+     */
+    const AnimalInfoOverlay = ({ animal, onClose }) => (
+        //modal that will display the animal information
+        <Modal
+            transparent={true}
+            visible={showOverlay}
+            onRequestClose={onClose}
+            animationType="fade"
+        >
+            <View style={styles.overlayContainer}>
+                <View style={styles.overlayContent}>
+                    <Text style={styles.overlayName}>{animal.name}</Text>
+                    <ScrollView
+                        contentContainerStyle={{ alignItems: "center" }}
+                        style={styles.scrollView}
+                    >
+                        <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldTitle}>Species</Text>
+                            <Text style={styles.overlayDetails}>{animal.species}</Text>
+                        </View>
+                        <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldTitle}>Breed</Text>
+                            <Text style={styles.overlayDetails}>{animal.breed}</Text>
+                        </View>
+                        <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldTitle}>Age</Text>
+                            <Text style={styles.overlayDetails}>{animal.age} years</Text>
+                        </View>
+                        <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldTitle}>Gender</Text>
+                            <View style={styles.genderOverlayContainer}>
+                                {renderGenderIcon(animal.gender)}
+                            </View>
+                        </View>
+                        <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldTitle}>Activity Level</Text>
+                            <Text style={styles.overlayDetails}>
+                                {activityLevelMapping[animal.activityLevel] || "Unknown"}
+                            </Text>
+                        </View>
+                        <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldTitle}>Fur Color</Text>
+                            <Text style={styles.overlayDetails}>{animal.furColor}</Text>
+                        </View>
+                        <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldTitle}>Location</Text>
+                            <Text style={styles.overlayDetails}>{animal.location}</Text>
+                        </View>
+                        <View style={styles.fieldContainer}>
+                            <Text style={styles.fieldTitle}>Description</Text>
+                            <Text style={styles.overlayDetailsDescription}>
+                                {animal.description}
+                            </Text>
+                        </View>
+                    </ScrollView>
+                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                        <Text style={styles.closeButtonText}>Close</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </Modal>
+    );
+
+    /**
+     * Showing the pet item in the flat list
+     */
     const showPetItem = ({ item }) => (
         <TouchableOpacity
-            //uses the pet item style
             style={styles.petItem}
-            //when its pressed will navigate to the shelter chats screen
-            onPress={() =>
-                navigation.navigate("InterestedAdoptersPage", {
-                    //its passing the pet name and pet image to the shelter chats screen
-                    petName: item.name,
-                    petImage: item.image,
-                })
-            }
+            //when its pressed will open the caht overlay
+            onPress={() => {
+                setSelectedAnimal(item);
+                setShowOverlay(true);
+            }}
         >
-            {/* displays the pet image */}
-            <Image source={{ uri: item.image }} style={styles.petImage} />
-            {/* displays the pet name */}
+            {item.imageUrl ? (
+                <Image source={{ uri: item.imageUrl }} style={styles.petImage} />
+            ) : (
+                <View style={[styles.petImage, styles.placeholderImage]}>
+                    <Text>No Image</Text>
+                </View>
+            )}
             <Text style={styles.petName}>{item.name}</Text>
+            <TouchableOpacity
+                style={styles.infoButton}
+                onPress={() => {
+                    setSelectedAnimal(item);
+                    setShowOverlay(true);
+                }}
+            >
+                <Entypo
+                    name="info-with-circle"
+                    size={24}
+                    color={colors.genderMaleBlue}
+                />
+            </TouchableOpacity>
         </TouchableOpacity>
     );
 
     //filters the pets based on the active tab
-    const filteredPets = dummyPets.filter(
-        (pet) => pet.type + "s" === activeTab.toLowerCase()
-    );
+    const filteredPets = animals.filter((animal) => {
+        const species = (animal.species || "").toLowerCase();
+        return species + "s" === activeTab.toLowerCase();
+    });
 
-    //The entire pet Page component frontend elements
+    /**
+     * If the loading state is true, will display the loading indicator
+     */
+    if (loading) {
+        return (
+            <SafeAreaWrapper>
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={"#d9cb94"} />
+                    <Text>Loading...</Text>
+                </View>
+            </SafeAreaWrapper>
+        );
+    }
+
     return (
         <SafeAreaWrapper>
-            <PetPageHeader />
-            {/* in a scroll view so the content can scroll up and down */}
+            <LikedAnimalsPageHeader />
             <ScrollView
                 contentContainerStyle={styles.scrollContainer}
                 showsVerticalScrollIndicator={false}
             >
-                {/* title of the page */}
-                <Text style={styles.title}>Available Pets</Text>
+                <Text style={styles.title}>Liked Pets</Text>
 
-                {/* container for the tabs */}
                 <View style={styles.tabContainer}>
-                    {/* touchable dog tab */}
                     <TouchableOpacity
                         style={[styles.tab, activeTab === "Dogs" && styles.activeTab]}
                         onPress={() => setActiveTab("Dogs")}
                     >
-                        {/* text for the dog tab */}
                         <Text
                             style={[
                                 styles.tabText,
@@ -129,12 +320,10 @@ const LikedAnimalsPage = ({ navigation }) => {
                             Dogs
                         </Text>
                     </TouchableOpacity>
-                    {/* touchable cat tab */}
                     <TouchableOpacity
                         style={[styles.tab, activeTab === "Cats" && styles.activeTab]}
                         onPress={() => setActiveTab("Cats")}
                     >
-                        {/* text for the cat tab */}
                         <Text
                             style={[
                                 styles.tabText,
@@ -146,19 +335,21 @@ const LikedAnimalsPage = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* flat list to display the pets */}
                 <FlatList
-                    //filtered pets, is all the pets that pertains to the type of pet either dog or cat
                     data={filteredPets}
-                    //shows each pet item
                     renderItem={showPetItem}
-                    //getting the id of each pet
                     keyExtractor={(item) => item.id}
                     numColumns={2}
                     scrollEnabled={false}
                 />
             </ScrollView>
             <NavbarWrapper />
+            {showOverlay && (
+                <AnimalInfoOverlay
+                    animal={selectedAnimal}
+                    onClose={() => setShowOverlay(false)}
+                />
+            )}
         </SafeAreaWrapper>
     );
 };
