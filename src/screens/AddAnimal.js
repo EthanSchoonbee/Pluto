@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {collection, addDoc, doc, getDoc} from "firebase/firestore";
+import {collection, addDoc, doc, getDoc, updateDoc} from "firebase/firestore";
 import Slider from '@react-native-community/slider';
 import React from "react";
 import { View, Text, TextInput, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Alert } from 'react-native';
@@ -26,11 +26,11 @@ const AddAnimal = ({ navigation }) => {
 
     //Animal Data
     const [isDog, setIsDog] = useState(true);
-    const [selectedBreed, setSelectedBreed] = useState(strings.anyBreed); // Use strings.anyBreed
+    const [selectedBreed, setSelectedBreed] = useState("");
     const [images, setImages] = useState([]);
     const [name, setName] = useState("");
     const [selectedGender, setSelectedGender] = useState([]);
-    const [shelterProvince, setShelterProvince] = useState(""); // State for shelter location
+    const [shelterProvince, setShelterProvince] = useState("");
     const [isGenderPickerVisible, setIsGenderPickerVisible] = useState(false);
     const [age, setAge] = useState(0);
     const [biography, setBiography] = useState("");
@@ -76,22 +76,25 @@ const AddAnimal = ({ navigation }) => {
         }
 
         // Age validation: Must be a number
-        if (!newAnimal.age || isNaN(newAnimal.age)) {
+        if (!newAnimal.age || isNaN(newAnimal.age) || newAnimal.age > 20|| newAnimal.age < 0) {
             formErrors.age = 'Age must be a valid number';
         }
 
         // Fur color validation: Required field
-        if (!newAnimal.furColor) {
-            formErrors.furColor = 'Fur color is required';
+        if (!newAnimal.furColors) {
+            console.log("Fur error")
+            formErrors.furColors = 'Fur color is required';
         }
 
         // Breed validation: Required field
         if (selectedBreed === strings.anyBreed) {
+            console.log("Breed error")
             formErrors.breed = 'Breed is required';
         }
 
         // Gender validation: Required field
         if (!selectedGender) {
+            console.log("Gender error")
             formErrors.gender = 'Gender is required';
         }
 
@@ -183,12 +186,13 @@ const AddAnimal = ({ navigation }) => {
             newAnimal.name = name;
             newAnimal.species = isDog ? "Dog" : "Cat";
             newAnimal.breed = selectedBreed;
-            newAnimal.age = age;
+            newAnimal.age = Number(age);
             newAnimal.gender = selectedGender;
             newAnimal.province = shelterProvince;
             newAnimal.activityLevel = activityLevel;
-            newAnimal.size = sizes[size];
-            newAnimal.furColor = furColors.length > 0 ? furColors.join(", ") : ""; // Saves empty array if "Any" was selected
+            newAnimal.size = size;
+            newAnimal.adoptionStatus = false;
+            newAnimal.furColors = furColors.length > 0 ? furColors : []; // Stores the array directly
             newAnimal.description = biography;
             newAnimal.shelterId = user.uid;
             newAnimal.imageUrls = await uploadImagesToFirebase(); // Store the array of image URLs
@@ -202,7 +206,11 @@ const AddAnimal = ({ navigation }) => {
             }
 
             // Add the animal data to Firestore under the "animals" collection
-            await addDoc(collection(db, "animals"), newAnimal);
+            const animalRef = await addDoc(collection(db, "animals"), newAnimal);
+
+            await updateDoc(animalRef,{
+                uid: animalRef.id,
+            })
 
             alert(strings.animalUploadSuccessful);
             navigation.navigate("ShelterHome");
@@ -221,7 +229,7 @@ const AddAnimal = ({ navigation }) => {
 
     const toggleFurColor = (color) => {
         if (furColors.includes(color)) {
-            setFurColors(furColors.filter(furColor => furColor !== color));
+            setFurColors(furColors.filter(furColors => furColors !== color));
         } else {
             setFurColors([...furColors, color]);
         }
@@ -292,7 +300,7 @@ const AddAnimal = ({ navigation }) => {
                     <View style={styles.textInputContainer}>
                         <TextInput
                             style={styles.input}
-                            placeholder="Enter Age"
+                            placeholder="Enter Age (1 - 20)"
                             value={age}
                             onChangeText={setAge}
                         />
@@ -316,7 +324,7 @@ const AddAnimal = ({ navigation }) => {
                 <View style={styles.pickerContainer}>
                     <TouchableOpacity onPress={() => setIsPickerVisible(true)} style={styles.pickerButton}>
                         <Text style={styles.pickerText}>
-                            {selectedBreed === strings.anyBreed ? strings.selectBreed : selectedBreed}
+                            {selectedBreed === "" ? strings.selectBreed : selectedBreed}
                         </Text>
                         <Icon name="chevron-down" size={20} color="#000" style={styles.arrowIcon} />
                     </TouchableOpacity>
@@ -335,6 +343,8 @@ const AddAnimal = ({ navigation }) => {
                                         setIsPickerVisible(false);
                                     }}
                                 >
+                                    {/* Blank option at the top */}
+                                    <Picker.Item label="" value="" />
                                     {relevantBreeds.map((breed, index) => (
                                         <Picker.Item key={index} label={breed} value={breed} />
                                     ))}
@@ -402,6 +412,7 @@ const AddAnimal = ({ navigation }) => {
                                         setIsGenderPickerVisible(false);
                                     }}
                                 >
+                                    <Picker.Item label="" value="" />
                                     <Picker.Item label="Male" value="M" />
                                     <Picker.Item label="Female" value="F" />
                                 </Picker>
