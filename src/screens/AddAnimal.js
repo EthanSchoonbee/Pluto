@@ -12,6 +12,7 @@ import Icon from 'react-native-vector-icons/Ionicons'; // or any other icon set 
 import { db, auth } from '../services/firebaseConfig';
 import {Animal as animalData, Animal} from "../models/AnimalModel";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import * as FileSystem from 'expo-file-system';
 
 const AddAnimal = ({ navigation }) => {
 
@@ -44,6 +45,8 @@ const AddAnimal = ({ navigation }) => {
     const [furColors, setFurColors] = useState([]);
     const newAnimal = { ...Animal };
     const [errors, setErrors] = useState({});
+    //state for local images as the user is selecting them. It will first be all the images that the user is selecting on their device
+    const [localImages, setLocalImages] = useState([]);
 
 
     // Fetch the shelter's location when the component mounts
@@ -111,41 +114,61 @@ const AddAnimal = ({ navigation }) => {
         });
 
         if (!result.canceled) {
-            const uploadedImageUrls = [];
-
-            for (const image of result.assets) {
-                const blob = await fetch(image.uri).then(r => r.blob()); // Convert the image to a blob
-                const imageRef = ref(storage, `animals/${user.uid}/${Date.now()}_${image.fileName}`); // Create a storage reference
-
-                // Upload the image to Firebase Storage
-                const uploadTask = uploadBytesResumable(imageRef, blob);
-
-                // Handle upload progress and complete the task
-                await new Promise((resolve, reject) => {
-                    uploadTask.on(
-                        'state_changed',
-                        null,
-                        (error) => reject(error),
-                        async () => {
-                            // Once uploaded, get the download URL
-                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                            uploadedImageUrls.push(downloadURL); // Add the download URL to the array
-                            resolve();
-                        }
-                    );
-                });
-            }
-
-            setImages([...images, ...uploadedImageUrls]); // Add the uploaded image URLs to the state
+            //variable to store new local images
+            const newLocalImages = result.assets.map(asset => ({
+                uri: asset.uri,//uri of the image
+                fileName: asset.fileName || `image_${Date.now()}.jpg`//if the file name is not provided, use a default name
+            }));
+            //setting the local image variable to the new local images
+            setLocalImages([...localImages, ...newLocalImages]);
         }
     };
 
+    //function to remove an image from the local images
     const removeImage = (index) => {
-        setImages(images.filter((_, i) => i !== index));
+        setLocalImages(localImages.filter((_, i) => i !== index));
     };
 
+    /**
+     * Function to upload images to Firebase Storage
+     * @returns array of image URLs
+     */
+    const uploadImagesToFirebase = async () => {
+        const uploadedImageUrls = [];
+
+        for (const image of localImages) {
+            const blob = await fetch(image.uri).then(r => r.blob());
+            const imageRef = ref(storage, `animals/${user.uid}/${Date.now()}_${image.fileName}`);
+
+            // Upload the image to Firebase Storage
+            const uploadTask = uploadBytesResumable(imageRef, blob);
+
+            // Handle upload progress and complete the task
+            await new Promise((resolve, reject) => {
+                uploadTask.on(
+                    'state_changed',
+                    null,
+                    (error) => reject(error),
+                    async () => {
+                        // Once uploaded, get the download URL
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        uploadedImageUrls.push(downloadURL); // Add the download URL to the array
+                        resolve();
+                    }
+                );
+            });
+        }
+
+        //return the array of image URLs
+        return uploadedImageUrls;
+    };
+
+    /**
+     * Function to handle the submission of the animal data
+     */
     const handleSubmit = async () => {
-        if (images.length < 3) {
+        //if the local images array is less than 3, alert the user
+        if (localImages.length < 3) {
             alert(strings.shortImageLength);
             return;
         }
@@ -168,7 +191,7 @@ const AddAnimal = ({ navigation }) => {
             newAnimal.furColor = furColors.length > 0 ? furColors.join(", ") : ""; // Saves empty array if "Any" was selected
             newAnimal.description = biography;
             newAnimal.shelterId = user.uid;
-            newAnimal.imageUrls = images; // Store the array of image URLs
+            newAnimal.imageUrls = await uploadImagesToFirebase(); // Store the array of image URLs
             newAnimal.likedByUsers = [];
             newAnimal.createdAt = new Date();
             newAnimal.updatedAt = new Date();
@@ -232,9 +255,10 @@ const AddAnimal = ({ navigation }) => {
 
                 {/* Image Upload */}
                 <View style={styles.imageContainer}>
-                    {images.map((img, index) => (
+                    {/* Map through the local images and display them */}
+                    {localImages.map((img, index) => (
                         <View key={index} style={styles.imageWrapper}>
-                            <Image source={{ uri: img }} style={styles.image} />
+                            <Image source={{ uri: img.uri }} style={styles.image} />
                             <TouchableOpacity
                                 style={styles.deleteImageButton}
                                 onPress={() => removeImage(index)}
@@ -243,7 +267,7 @@ const AddAnimal = ({ navigation }) => {
                             </TouchableOpacity>
                         </View>
                     ))}
-                    {images.length < 7 && (
+                    {localImages.length < 7 && (
                         <TouchableOpacity style={styles.uploadImage} onPress={handleImageUpload}>
                             <Text style={styles.uploadImageText}>+</Text>
                         </TouchableOpacity>
