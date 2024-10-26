@@ -34,7 +34,7 @@ export default StyleSheet.create({
     //Styling for the active tab
     activeTab: {
         borderBottomWidth: 5, //This will allow the bottom of the active tab to be highlighted
-        borderBottomColor:"#EDE3BB" , //Setting the colour of the bottom of the active tab
+        borderBottomColor: "#EDE3BB", //Setting the colour of the bottom of the active tab
     },
     //Styling for the tab text
     tabText: {
@@ -96,5 +96,99 @@ export default StyleSheet.create({
         fontSize: 16,
         fontWeight: "600",
         color: colors.textPrimary,
+    },
+
+    //overlay container for the modal
+    overlayContainer: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0, 0, 0, 0.7)", // Semi-transparent background
+        justifyContent: "center",
+        alignItems: "stretch",
+        zIndex: 1000, // Ensures it is above other content
+    },
+    scrollView: {
+        width: "100%", // Adjust this width to your desired size
+        maxHeight: "90%", // Limit the height to prevent overflow
+    },
+    overlayContent: {
+        width: "100%",
+        height: "60%", // Increase height to accommodate the scrollable content
+        backgroundColor: "white",
+        borderRadius: 10,
+        padding: 20,
+        alignItems: "center",
+        justifyContent: "flex-start",
+    },
+
+    overlayName: {
+        fontSize: 24,
+        fontWeight: "bold",
+        marginBottom: 20,
+        alignSelf: "center", // Center the animal's name
+    },
+
+    fieldContainer: {
+        alignItems: "center", // Center titles and values
+        marginVertical: 10, // Add vertical spacing between fields
+        width: "100%", // Make sure the field container takes full width
+    },
+
+    fieldTitle: {
+        fontSize: 18,
+        fontWeight: "bold",
+        marginBottom: 5, // Space between title and value
+        textAlign: "center", // Center the title
+    },
+
+    overlayDetails: {
+        fontSize: 18,
+        textAlign: "center", // Center the details
+    },
+
+    genderOverlayContainer: {
+        flexDirection: "row", // Aligns text and icon in a row
+        alignItems: "center", // Centers items vertically
+        marginLeft: 9,
+    },
+    genderOverlay: {
+        marginLeft: 8, // Add space between text and icon
+    },
+
+    overlayDetailsDescription: {
+        fontSize: 18,
+        textAlign: "center", // Center the description
+        marginTop: 5,
+        textAlignVertical: "top", // Align text at the top if it's long
+        overflow: "scroll", // Enable scrolling if the text is long
+        width: "100%", // Make sure the details take full width
+    },
+
+    closeButton: {
+        marginTop: 20,
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        backgroundColor: colors.darkGrey,
+        color: colors.darkGrey,
+        alignSelf: "center",
+        borderRadius: 5,
+    },
+
+    closeButtonText: {
+        color: "white",
+        fontSize: 16,
+    },
+    infoButton: {
+        position: "absolute",
+        top: 5,
+        right: 5,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
