@@ -9,13 +9,14 @@ import {
     TouchableOpacity,
     Modal,
     FlatList,
-    ActivityIndicator,
+    ActivityIndicator, Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 //imports the safe area wrapper component
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
 //imports the styles for the user details form
 import styles from "../styles/UserDetailsFormStyles";
+import fullScreenStyles from "../styles/FullScreenImageStyle";
 //imports the linking function to open the email client
 import { Linking } from "react-native";
 //imports the functions from the notification messages file
@@ -43,6 +44,9 @@ const UserDetailForm = ({ route, navigation }) => {
     const [selectedStatus, setSelectedStatus] = useState(null);
     //state to handle the loading of the data
     const [loading, setLoading] = useState(true);
+
+    //state to hold and set the full screen image
+    const [fullScreenImage, setFullScreenImage] = useState(null);
 
     //fetching the user details and the animal details
     useEffect(() => {
@@ -104,7 +108,7 @@ const UserDetailForm = ({ route, navigation }) => {
         };
 
         //fetching the data
-        fetchData();
+        fetchData().then(r => console.log("Data fetched"));
     }, [userId, animalId]);
 
     const fetchAndCacheImage = async (imageUrl, type) => {
@@ -153,6 +157,44 @@ const UserDetailForm = ({ route, navigation }) => {
             </SafeAreaWrapper>
         );
     }
+
+    //******************************************************************************************************************
+    //full screen image handling
+
+    /**
+     * Function to open full-screen image
+     * @param {string} imageUri
+     */
+    const openFullScreenImage = (imageUri) => {
+        setFullScreenImage(imageUri);
+    };
+
+    /**
+     * Function to close full-screen image
+     */
+    const closeFullScreenImage = () => {
+        setFullScreenImage(null);
+    };
+
+    /**
+     * Component for full-screen image view
+     */
+    const FullScreenImageView = ({ imageUri, onClose }) => (
+        <Modal
+            animationType="fade"
+            transparent={true}
+            visible={!!imageUri}
+            onRequestClose={onClose}
+        >
+            <View style={fullScreenStyles.fullScreenContainer}>
+                <Pressable style={fullScreenStyles.closeFullScreen} onPress={onClose}>
+                    <Ionicons name="close" size={30} color="#fff" />
+                </Pressable>
+                <Image source={{ uri: imageUri }} style={fullScreenStyles.fullScreenImage} />
+            </View>
+        </Modal>
+    );
+//******************************************************************************************************************
 
     /**
      * Function that takes a label and value and returns the user details
@@ -233,10 +275,12 @@ const UserDetailForm = ({ route, navigation }) => {
                     </TouchableOpacity>
                     {/* content of the header showing the pet name and image */}
                     <View style={styles.headerContent}>
-                        <Image
-                            source={{ uri: animalDetails.image }}
-                            style={styles.headerPetImage}
-                        />
+                        <TouchableOpacity onPress={() => openFullScreenImage(animalDetails.image)}>
+                            <Image
+                                source={{ uri: animalDetails.image }}
+                                style={styles.headerPetImage}
+                            />
+                        </TouchableOpacity>
                         <Text style={styles.headerPetName}>{animalDetails.name}</Text>
                     </View>
                     <View style={{ width: 24 }} />
@@ -251,10 +295,12 @@ const UserDetailForm = ({ route, navigation }) => {
                         showsVerticalScrollIndicator={false}
                     >
                         <View style={styles.userInfoContainer}>
-                            <Image
-                                source={{ uri: userDetails.image }}
-                                style={styles.userImage}
-                            />
+                            <TouchableOpacity onPress={() => openFullScreenImage(userDetails.image)}>
+                                <Image
+                                    source={{ uri: userDetails.image }}
+                                    style={styles.userImage}
+                                />
+                            </TouchableOpacity>
                             <Text style={styles.userName}>{userDetails.fullName}</Text>
                         </View>
                         {/* form container showing the user details */}
@@ -264,7 +310,7 @@ const UserDetailForm = ({ route, navigation }) => {
                             {showUserDetails("Address", userDetails.location)}
                         </View>
 
-                        {/* when the notifcation button is pressed the sendNotification function is called */}
+                        {/* when the notification button is pressed the sendNotification function is called */}
                         <TouchableOpacity
                             style={styles.notificationButton}
                             onPress={openSelectionModal}
@@ -325,6 +371,11 @@ const UserDetailForm = ({ route, navigation }) => {
                     </View>
                 </Modal>
             </View>
+
+            <FullScreenImageView
+                imageUri={fullScreenImage}
+                onClose={closeFullScreenImage}
+            />
         </SafeAreaWrapper>
     );
 };

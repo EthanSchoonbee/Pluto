@@ -105,10 +105,10 @@ export default StyleSheet.create({
         right: 0,
     },
     modalView: {
-        margin: 20,
+        width: '80%',
         backgroundColor: colors.surface,
         borderRadius: 20,
-        padding: 35, //space between modal and edge of the screen
+        padding: 25, //space between modal and edge of the screen
         alignItems: "center",
         shadowColor: colors.black,
         shadowOffset: {
@@ -121,7 +121,7 @@ export default StyleSheet.create({
         elevation: 5,
     },
     modalText: {
-        marginBottom: 15,
+        marginBottom: 20,
         textAlign: "center",
         fontSize: 18,
         color: colors.textPrimary,
@@ -146,13 +146,18 @@ export default StyleSheet.create({
     },
     //styling for the close button
     closeButton: {
-        marginTop: 20,
-        padding: 10,
+        marginTop: 25, // Increased top margin
+        padding: 12, // Slightly increased padding
+        backgroundColor: colors.surface, // Add a background color
+        borderRadius: 8, // Add border radius
+        borderWidth: 1, // Add a border
+        borderColor: colors.primary, // Border color
     },
     //styling for the close button text
     closeButtonText: {
         fontSize: 16,
         color: colors.primary,
         textAlign: "center",
+        fontWeight: '600', // Make the text slightly bolder
     },
 });

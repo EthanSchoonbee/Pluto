@@ -7,11 +7,12 @@ import {
     TouchableOpacity,
     ScrollView,
     ActivityIndicator,
-    Modal,
+    Modal, Pressable,
 } from "react-native";
 import LikedAnimalsPageHeader from "../components/LikedAnimalsPageHeader";
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
 import styles from "../styles/LikedAnimalsPageStyle";
+import fullScreenStyles from "../styles/FullScreenImageStyle";
 import { db, auth } from "../services/firebaseConfig";
 import { doc, onSnapshot, getDoc } from "firebase/firestore";
 import { getLocalImageUrl } from "../utils/imageUtils";
@@ -30,11 +31,16 @@ const activityLevelMapping = {
 };
 
 const LikedAnimalsPage = ({ navigation }) => {
+
+    //all asynchronous states
     const [animals, setAnimals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("Dogs");
     const [showOverlay, setShowOverlay] = useState(false);
     const [selectedAnimal, setSelectedAnimal] = useState(null);
+
+    //state to hold and set the full screen image
+    const [fullScreenImage, setFullScreenImage] = useState(null);
 
     const preloadImages = async (imageUrls) => {
         const storage = getStorage();
@@ -83,7 +89,7 @@ const LikedAnimalsPage = ({ navigation }) => {
                     const animalPromises = likedAnimalIds.map(async (animalId) => {
                         //creating a reference to the animal document in the database
                         const animalDocRef = doc(db, "animals", animalId);
-                        //asynchrounously getting the animal document reference
+                        //asynchronously getting the animal document reference
                         const animalDoc = await getDoc(animalDocRef);
                         //if the animal document exists
                         if (animalDoc.exists()) {
@@ -254,7 +260,9 @@ const LikedAnimalsPage = ({ navigation }) => {
             }}
         >
             {item.imageUrl ? (
-                <Image source={{ uri: item.imageUrl }} style={styles.petImage} />
+                    <TouchableOpacity onPress={() => openFullScreenImage(item.imageUrl)}>
+                        <Image source={{ uri: item.imageUrl }} style={styles.petImage} />
+                    </TouchableOpacity>
             ) : (
                 <View style={[styles.petImage, styles.placeholderImage]}>
                     <Text>No Image</Text>
@@ -296,7 +304,43 @@ const LikedAnimalsPage = ({ navigation }) => {
             </SafeAreaWrapper>
         );
     }
+//******************************************************************************************************************
+    //full screen image handling
 
+    /**
+     * Function to open full-screen image
+     * @param {string} imageUri
+     */
+    const openFullScreenImage = (imageUri) => {
+        setFullScreenImage(imageUri);
+    };
+
+    /**
+     * Function to close full-screen image
+     */
+    const closeFullScreenImage = () => {
+        setFullScreenImage(null);
+    };
+
+    /**
+     * Component for full-screen image view
+     */
+    const FullScreenImageView = ({ imageUri, onClose }) => (
+        <Modal
+            animationType="fade"
+            transparent={true}
+            visible={!!imageUri}
+            onRequestClose={onClose}
+        >
+            <View style={fullScreenStyles.fullScreenContainer}>
+                <Pressable style={fullScreenStyles.closeFullScreen} onPress={onClose}>
+                    <Ionicons name="close" size={30} color="#fff" />
+                </Pressable>
+                <Image source={{ uri: imageUri }} style={fullScreenStyles.fullScreenImage} />
+            </View>
+        </Modal>
+    );
+//******************************************************************************************************************
     return (
         <SafeAreaWrapper>
             <LikedAnimalsPageHeader />
@@ -350,6 +394,11 @@ const LikedAnimalsPage = ({ navigation }) => {
                     onClose={() => setShowOverlay(false)}
                 />
             )}
+
+            <FullScreenImageView
+                imageUri={fullScreenImage}
+                onClose={closeFullScreenImage}
+            />
         </SafeAreaWrapper>
     );
 };

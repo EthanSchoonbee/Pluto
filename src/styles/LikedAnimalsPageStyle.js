@@ -1,5 +1,8 @@
-import { StyleSheet } from "react-native";
+import {Dimensions, StyleSheet} from "react-native";
 import colors from "./colors";
+
+const { width, height } = Dimensions.get("window");
+
 
 //Exporting the styles for the PetPage screen
 export default StyleSheet.create({
@@ -191,4 +194,7 @@ export default StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
+    placeholderImage:
+        {borderRadius: 60, height: 120, marginBottom: 10, width: 120}
+
 });
