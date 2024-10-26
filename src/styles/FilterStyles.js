@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
     },
     selectedButton: {
-        backgroundColor: 'gold', // Background color for selected button
+        backgroundColor: '#d9cb94', // Background color for selected button
     },
     toggleButtonText: {
         fontSize: 18,
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     button: {
-        backgroundColor: 'gold',
+        backgroundColor: '#d9cb94',
         paddingVertical: 12,
         paddingHorizontal: 48,
         borderRadius: 25,
