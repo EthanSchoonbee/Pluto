@@ -76,7 +76,7 @@ const ShelterHomeScreen = () => {
     }, []);
 
     const handleViewLikes = (animalId) => {
-        navigation.navigate('ShelterChats', { animalId });
+        navigation.navigate('InterestedAdoptersPage', { animalId });
     };
 
     useFocusEffect(

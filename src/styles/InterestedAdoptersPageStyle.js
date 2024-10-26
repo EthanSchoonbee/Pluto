@@ -72,11 +72,33 @@ export default StyleSheet.create({
     },
     adopterMessage: {
         fontSize: 14,
-        colour: colors.textSecondary,
+        color: '#666',
+        fontStyle: 'italic',
+    },
+    loadingMessageContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    loadingMessageText: {
+        marginLeft: 10,
+        fontSize: 14,
+        color: '#666',
+        fontStyle: 'italic',
     },
     timestamp: {
         fontSize: 14,
         colour: colors.textSecondary,
         marginLeft: 8,
+    },
+
+    petType: {
+        fontSize: 16,
+        color: '#666',
+        marginTop: 4,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
     },
 });
