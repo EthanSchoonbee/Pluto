@@ -119,8 +119,45 @@ const ShelterSettingsStyles = StyleSheet.create({
         height: 100,   // Set height to 150
         borderRadius: 75, // Keep it circular (optional, remove if not needed)
         resizeMode: "cover", // Ensure the image fills the container
-    }
-
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(250,250,250,0.5)',
+        justifyContent: 'flex-end',
+    },
+    modalContainer: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        maxHeight: '50%',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+        textAlign: 'center',
+    },
+    locationOption: {
+        padding: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+    },
+    locationText: {
+        fontSize: 16,
+    },
+    closeButton: {
+        marginTop: 10,
+        padding: 15,
+        backgroundColor: '#0066a9',
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    closeButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });
 
 export default ShelterSettingsStyles;

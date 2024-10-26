@@ -9,6 +9,8 @@ import {
     SafeAreaView,
     ScrollView,
     ActivityIndicator,
+    Modal,
+    FlatList
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
@@ -24,6 +26,7 @@ import { signOut } from 'firebase/auth';
 
 
 const defaultprofileImageLocal = require('../../assets/handsome_squidward.jpg');
+
 
 const ShelterSettingsScreen = () => {
     const defaultValues = {
@@ -50,6 +53,25 @@ const ShelterSettingsScreen = () => {
     const navigation = useNavigation();
     const [imageChanged, setImageChanged] = useState(false);
     const profileImageRef = useRef({profilesImage: null});
+    const [isModalVisible, setModalVisible] = useState(false);
+
+    const provinces= ['Western Cape', 'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West'];
+
+    // Function to handle selecting a location
+    const handlePickedLocation = (selectedLocation) => {
+        if (isEditable) {
+            setLocation(selectedLocation);
+            setModalVisible(false);
+        }
+    };
+
+    // Function to open the modal
+    const openModal = () => {
+        if (isEditable) {
+            setModalVisible(true);
+        }
+    };
+
 
 
     // Image picker and upload logic
@@ -376,17 +398,11 @@ const ShelterSettingsScreen = () => {
                                 />
                             </TouchableOpacity>
                         </View>
+                        {/* Shelter Location */}
                         <View style={ShelterSettingsStyles.detailsRow}>
-                            <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_location}</Text>
-                            <TouchableOpacity onPress={handleDoubleClick}>
-                                <TextInput
-                                    style={ShelterSettingsStyles.detailsValue}
-                                    value={location}
-                                    onChangeText={setLocation}
-                                    placeholder={strings.shelter_settings.shelter_sample_text}
-                                    editable={isEditable}
-                                    selectTextOnFocus={isEditable}
-                                />
+                            <Text style={ShelterSettingsStyles.detailsLabel}>Location</Text>
+                            <TouchableOpacity onPress={() => { openModal(); handleDoubleClick(); }}>
+                                <Text style={ShelterSettingsStyles.detailsValue}>{location}</Text>
                             </TouchableOpacity>
                         </View>
                         <View style={ShelterSettingsStyles.detailsRow}>
@@ -458,6 +474,40 @@ const ShelterSettingsScreen = () => {
                         <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.shelter_logout_button}</Text>
                     </TouchableOpacity>
                 </View>
+
+
+                {/* Location Picker Modal */}
+                <Modal
+                    transparent={true}
+                    visible={isModalVisible}
+                    animationType="slide"
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View style={ShelterSettingsStyles.modalOverlay}>
+                        <View style={ShelterSettingsStyles.modalContainer}>
+                            <Text style={ShelterSettingsStyles.modalTitle}>Select Location</Text>
+                            <FlatList
+                                data={provinces}
+                                keyExtractor={(item) => item}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={ShelterSettingsStyles.locationOption}
+                                        onPress={() => handlePickedLocation(item)}
+                                    >
+                                        <Text style={ShelterSettingsStyles.locationText}>{item}</Text>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                            <TouchableOpacity
+                                style={ShelterSettingsStyles.closeButton}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text style={ShelterSettingsStyles.closeButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
+
 
             </ScrollView>
             <NavbarWrapper />
