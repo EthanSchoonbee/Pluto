@@ -1,8 +1,7 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useRef} from 'react';
 import {
     View,
     Text,
-    Switch,
     TouchableOpacity,
     TextInput,
     Image,
@@ -10,23 +9,17 @@ import {
     SafeAreaView,
     ScrollView,
     ActivityIndicator,
-    Modal,
-    Button
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
 import strings from '../strings/en.js';
-import Navbar from "../components/ShelterNavbar";
 import SettingsInputValidations from "../services/SettingsInputValidations";
-import colors from "../styles/colors";
 import NavbarWrapper from "../components/NavbarWrapper";
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 import firebaseService from "../services/firebaseService";
-import {launchImageLibrary} from "react-native-image-picker";
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { getAuth } from "firebase/auth";
-import {onAuthStateChanged} from "firebase/auth";
 import { signOut } from 'firebase/auth';
 
 
@@ -54,18 +47,10 @@ const ShelterSettingsScreen = () => {
     const [profileImageLocal, setprofileImageLocal] = useState(null);
     const storage = getStorage();
     const auth = getAuth();
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
     const navigation = useNavigation();
     const [imageChanged, setImageChanged] = useState(false);
-    const profileImageRef = useRef({
-        profilesImage: null
-    });
+    const profileImageRef = useRef({profilesImage: null});
 
-    const togglePushNotifications = () => {
-        setIsPushNotificationsEnabled(previousState => !previousState);
-        setIsEditable(true);
-    };
 
     // Image picker and upload logic
     const handleImageSelect = async () => {
@@ -105,7 +90,6 @@ const ShelterSettingsScreen = () => {
 
         const uploadTask = uploadBytesResumable(imageRef, blob);
 
-        setModalVisible(true); // Show modal during upload
 
         try {
             await new Promise((resolve, reject) => {
@@ -128,7 +112,6 @@ const ShelterSettingsScreen = () => {
             Alert.alert('Error', 'There was an issue uploading the image. Please try again.');
             console.error('Image upload error:', error);
         } finally {
-            setModalVisible(false); // Hide modal after upload
         }
     };
 
@@ -182,10 +165,8 @@ const ShelterSettingsScreen = () => {
                         try {
 
                             if(imageChanged){
-                                // First upload the image if a new one is selected
-                                let imageUrl = null;
                                 if (profileImageLocal) {
-                                    imageUrl = await uploadProfileImage(profileImageLocal);
+                                    await uploadProfileImage(profileImageLocal);
                                 }
                             }
 
@@ -205,7 +186,7 @@ const ShelterSettingsScreen = () => {
                                 ...updatedUserDetails,
                             };
 
-                            if(!newPassword ==  password){
+                            if(newPassword !==  password){
                                 await firebaseService.changePassword(newPassword);
                             }
 
@@ -217,6 +198,7 @@ const ShelterSettingsScreen = () => {
                         } catch (error) {
                             Alert.alert("Error", "There was an issue updating your profile. Please try again.");
                         } finally {
+                            setImageChanged(false);
                             setLoading(false);
                         }
                     }
@@ -243,7 +225,7 @@ const ShelterSettingsScreen = () => {
 
     const checkDetailsInputs = () => {
 
-        if(!newPassword == password){
+        if(newPassword !== password){
             if(!SettingsInputValidations.isLongerThanFive(newPassword)){
                 Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.confirm_required);
                 return false;
