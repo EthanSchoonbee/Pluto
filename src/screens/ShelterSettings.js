@@ -30,7 +30,7 @@ import {onAuthStateChanged} from "firebase/auth";
 import { signOut } from 'firebase/auth';
 
 
-const defaultProfileImage = require('../../assets/handsome_squidward.jpg');
+const defaultprofileImageLocal = require('../../assets/handsome_squidward.jpg');
 
 const ShelterSettingsScreen = () => {
     const defaultValues = {
@@ -80,7 +80,7 @@ const ShelterSettingsScreen = () => {
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
             const selectedImageUri = result.assets[0].uri;
-            setProfileImage(selectedImageUri); // Just set the image URI in the state
+            setprofileImageLocal(selectedImageUri); // Just set the image URI in the state
             setIsEditable(true);
             setImageChanged(true);
         }
@@ -112,8 +112,11 @@ const ShelterSettingsScreen = () => {
                     (error) => reject(error),
                     async () => {
                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                        //await firebaseService.updateUserSettings("shelters", { profileImage: downloadURL });
-                        setProfileImage(downloadURL); // Update local state
+                        setprofileImageLocal(downloadURL); // Update local state
+                        profileImageRef.current.profilesImage = downloadURL;
+                        console.log(downloadURL);
+                        console.log(profileImageLocal);
+
                         resolve();
                     }
                 );
@@ -164,15 +167,6 @@ const ShelterSettingsScreen = () => {
             return;
         }
 
-        const updatedUserDetails = {
-            shelterName,
-            location,
-            email,
-            phoneNumber,
-            profileImage,
-            isPushNotificationsEnabled
-        };
-
         Alert.alert(
             "Attention",
             'Are you sure you want to update your details?',
@@ -187,10 +181,21 @@ const ShelterSettingsScreen = () => {
                             if(imageChanged){
                                 // First upload the image if a new one is selected
                                 let imageUrl = null;
-                                if (profileImage) {
-                                    imageUrl = await uploadProfileImage(profileImage);
+                                if (profileImageLocal) {
+                                    imageUrl = await uploadProfileImage(profileImageLocal);
                                 }
                             }
+
+                            const profileImage = profileImageRef.current.profilesImage;
+
+                            const updatedUserDetails = {
+                                shelterName,
+                                location,
+                                email,
+                                phoneNumber,
+                                profileImage,
+                                isPushNotificationsEnabled
+                            };
 
                             // Then update the user details, including the image URL if uploaded
                             const finalDetails = {
@@ -302,7 +307,7 @@ const ShelterSettingsScreen = () => {
                     setLocation(userData.location);
                     setEmail(userData.email);
                     setphoneNumber(userData.phoneNumber);
-                    setProfileImage(userData.profileImage || null);
+                    setprofileImageLocal(userData.profileImage || null);
                     setPassword('');  // Clear password fields for security
                     setNewPassword('');
                     setIsEditable(false);
@@ -325,7 +330,7 @@ const ShelterSettingsScreen = () => {
                 setPassword('');
                 setNewPassword('');
                 setLocation('');
-                setProfileImage(null);
+                setprofileImageLocal(null);
                 setIsEditable(false);
             };
         }, [])
@@ -349,7 +354,7 @@ const ShelterSettingsScreen = () => {
                 <View style={ShelterSettingsStyles.centerImageContainer}>
                     <TouchableOpacity onPress={handleImageSelect}>
                     <Image
-                        source={profileImage ? { uri: profileImage } : defaultProfileImage}
+                        source={profileImageLocal ? { uri: profileImageLocal } : defaultprofileImageLocal}
                         style={ShelterSettingsStyles.centerImage}
                         editable ={true}
                     />
