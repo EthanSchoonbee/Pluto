@@ -6,13 +6,16 @@ import {
     Image,
     TouchableOpacity,
     ActivityIndicator,
+    Modal,
+    Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
 //styling for the shelter chats screen
 import styles from "../styles/InterestedAdoptersPageStyle";
-import { db, storage } from "../services/firebaseConfig";
+import fullScreenStyles from "../styles/FullScreenImageStyle";
+import { db } from "../services/firebaseConfig";
 import {
     doc,
     onSnapshot,
@@ -52,6 +55,8 @@ const InterestedAdoptersPage = ({ route }) => {
     const [updatingMessages, setUpdatingMessages] = useState({});
     //This state will hold pending updates for adoption messages
     const [pendingUpdates, setPendingUpdates] = useState([]);
+    //state to hold and set the full screen image
+    const [fullScreenImage, setFullScreenImage] = useState(null);
 
     /**
      * Function to preload the images
@@ -325,7 +330,7 @@ const InterestedAdoptersPage = ({ route }) => {
                 //getting a random adoption message
                 const updatedMessage = getRandomAdoptionMessage(
                     adopter?.name || "User",
-                    petInfo.name//with the adopter name and the pet name
+                    petInfo.name //with the adopter name and the pet name
                 );
                 //calling the function to update the adoption message in the database
                 updateAdoptionMessageInDB(userId, updatedMessage);
@@ -341,7 +346,7 @@ const InterestedAdoptersPage = ({ route }) => {
             //setting the pending updates state to an empty array
             setPendingUpdates([]);
         }
-    }, [petInfo, pendingUpdates, adopters, updateAdoptionMessageInDB]);//removing the isFocused from dependencies
+    }, [petInfo, pendingUpdates, adopters, updateAdoptionMessageInDB]); //removing the isFocused from dependencies
 
     /**
      * Function to update the adoption message
@@ -387,7 +392,43 @@ const InterestedAdoptersPage = ({ route }) => {
         },
         [animalId]
     );
+//********************************************************************************************************************
+    // functions for full screen view
+    /**
+     * Function to open full-screen image
+     * @param {string} imageUri
+     */
+    const openFullScreenImage = (imageUri) => {
+        setFullScreenImage(imageUri);
+    };
 
+    /**
+     * Function to close full-screen image
+     */
+    const closeFullScreenImage = () => {
+        setFullScreenImage(null);
+    };
+
+    /**
+     * Component for full-screen image view
+     */
+    const FullScreenImageView = ({ imageUri, onClose }) => (
+        <Modal
+            animationType="fade"
+            transparent={true}
+            visible={!!imageUri}
+            onRequestClose={onClose}
+        >
+            <View style={fullScreenStyles.fullScreenContainer}>
+                {/*the */}
+                <Pressable style={fullScreenStyles.closeFullScreen} onPress={onClose}>
+                    <Ionicons name="close" size={30} color="#fff" />
+                </Pressable>
+                <Image source={{ uri: imageUri }} style={fullScreenStyles.fullScreenImage} />
+            </View>
+        </Modal>
+    );
+//********************************************************************************************************************
     /**
      * Function to render the pet info
      * @returns {JSX.Element}
@@ -403,7 +444,9 @@ const InterestedAdoptersPage = ({ route }) => {
          */
         return (
             <View style={styles.petInfoContainer}>
-                <Image source={{ uri: petInfo.image }} style={styles.petImage} />
+                <TouchableOpacity onPress={() => openFullScreenImage(petInfo.image)}>
+                    <Image source={{ uri: petInfo.image }} style={styles.petImage} />
+                </TouchableOpacity>
                 <Text style={styles.petName}>{petInfo.name}</Text>
                 <Text style={styles.petSpecies}>{petInfo.species}</Text>
             </View>
@@ -428,7 +471,9 @@ const InterestedAdoptersPage = ({ route }) => {
         >
             {/* if the adopter image is found, will render the adopter image */}
             {item.image && (
-                <Image source={{ uri: item.image }} style={styles.adopterImage} />
+                <TouchableOpacity onPress={() => openFullScreenImage(item.image)}>
+                    <Image source={{ uri: item.image }} style={styles.adopterImage} />
+                </TouchableOpacity>
             )}
             <View style={styles.adopterInfo}>
                 <View style={styles.adopterDetails}>
@@ -441,7 +486,9 @@ const InterestedAdoptersPage = ({ route }) => {
                             </Text>
                         </View>
                     ) : (
-                        <Text style={styles.adopterMessage}>{item.adoptionMessage || "Loading message..."}</Text>
+                        <Text style={styles.adopterMessage}>
+                            {item.adoptionMessage || "Loading message..."}
+                        </Text>
                     )}
                 </View>
             </View>
@@ -453,7 +500,7 @@ const InterestedAdoptersPage = ({ route }) => {
         return (
             <SafeAreaWrapper>
                 <View style={styles.loadingContainer}>
-                    <Text style={styles.loadingText}>Loading...</Text>
+                    <Text>Loading...</Text>
                     <ActivityIndicator size="large" color="#d9cb94" />
                 </View>
             </SafeAreaWrapper>
@@ -482,6 +529,10 @@ const InterestedAdoptersPage = ({ route }) => {
                     renderItem={renderAdopter}
                     keyExtractor={(item) => item.id}
                     contentContainerStyle={styles.listContainer}
+                />
+                <FullScreenImageView
+                    imageUri={fullScreenImage}
+                    onClose={closeFullScreenImage}
                 />
             </View>
         </SafeAreaWrapper>
