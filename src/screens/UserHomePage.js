@@ -20,9 +20,24 @@ import colors from "../styles/colors";
 import styles from '../styles/UserHomePageStyles';
 import Header from '../components/Header';
 import NavbarWrapper from "../components/NavbarWrapper";
-import {arrayUnion, collection, doc, getDoc, getDocs, limit, query, updateDoc, where} from "firebase/firestore";
+import {
+    arrayUnion,
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    limit,
+    query,
+    updateDoc,
+    where,
+    startAfter
+} from "firebase/firestore";
 import {auth, db} from "../services/firebaseConfig";
-import {getDownloadURL, getStorage, ref} from "firebase/storage";
+import {
+    getDownloadURL,
+    getStorage,
+    ref
+} from "firebase/storage";
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useFocusEffect} from "@react-navigation/native";
@@ -51,7 +66,11 @@ const UserHomeScreen = () => {
     const swipeDataRef = useRef({
         swipeDirection: ''
     });
+    const errorStateRef = useRef({
+        errorState: false
+    });
     const swipePromisesRef = useRef([]);
+    const [lastVisibleAnimal, setLastVisibleAnimal] = useState(null);
 
     // like and dislike coloring:
     const [noButtonColor, setNoButtonColor] = useState(colors.white);
@@ -65,7 +84,7 @@ const UserHomeScreen = () => {
 
     useFocusEffect(
         useCallback(() => {
-            fetchAnimals();
+            fetchAnimals(true);
             resetButtonColors();
         }, [])
     );
@@ -97,10 +116,11 @@ const UserHomeScreen = () => {
         setNoButtonIconColor(colors.inactiveNoButton);
     };
 
-    const fetchAnimals = async () => {
+    const fetchAnimals = async (isInitialLoad = false) => {
         try {
             setLoading(true);
             setError(null);
+            errorStateRef.current.errorState = false;
 
             const userData = JSON.parse(await AsyncStorage.getItem('userData'));
             const userPreferences = userData.preferences;
@@ -110,28 +130,48 @@ const UserHomeScreen = () => {
 
             console.log('User preferences: ', userPreferences);
 
-            const q = buildQuery(userPreferences);
+            let q = buildQuery(userPreferences);
+
+            if (lastVisibleAnimal && !isInitialLoad) {
+                q = query(q, startAfter(lastVisibleAnimal), limit(10));
+            } else {
+                q = query(q, limit(10));
+            }
 
             const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                errorStateRef.current.errorState = true;
+                setError('No more animals available based on your preferences.');
+                return;
+            }
 
             const fetchedAnimals = await processQuerySnapshot(querySnapshot);
 
             console.log('Fetched animals: ', fetchedAnimals);
 
-            const filteredAnimals = filterLikedAnimals(fetchedAnimals, likedAnimals);
+            // Perform client-side filtering to exclude liked animals.
+            const filteredAnimals = fetchedAnimals.filter(
+                (animal) => animal && animal.id && !likedAnimals.includes(animal.uid)
+            );
 
             console.log('Filtered animals: ', filteredAnimals);
 
-            if (filteredAnimals .length === 0) {
-                setError('No animals found. Update your filters and try again.');
+            if (!filteredAnimals.length > 0) {
+                errorStateRef.current.errorState = true;
+                setError('No more animals available based on your preferences.');
+                return;
             }
 
-            setAnimals(filteredAnimals );
+            setLastVisibleAnimal(querySnapshot.docs[querySnapshot.docs.length - 1]);
+
+            setAnimals(filteredAnimals);
             setImageIndexes(filteredAnimals .map(() => 0)); // Initialize image indexes for each animal
             console.log('Card index: ',cardIndex);
             console.log('Image index: ',imageIndexes);
         } catch (error) {
             console.error('Error fetching animals:', error);
+            errorStateRef.current.errorState = true;
             setError('Failed to load animals. Please check your network connection.');
         } finally {
             setLoading(false);
@@ -151,30 +191,15 @@ const UserHomeScreen = () => {
             size,
         } = preferences;
 
-        if (activityLevel !== undefined) {
-            q = query(q, where('activityLevel', '==', activityLevel));
-        }
-        if (ageRange) {
-            q = query(q, where('age', '>=', ageRange[0]), where('age', '<=', ageRange[1]));
-        }
-        if (animalType) {
-            q = query(q, where('species', '==', animalType));
-        }
-        if (breed && breed !== 'Any') {
-            q = query(q, where('breed', '==', breed));
-        }
-        if (furColors && furColors.length > 0) {
-            q = query(q, where('furColors', 'array-contains-any', furColors));
-        }
-        if (gender && gender !== 'Any') {
-            q = query(q, where('gender', '==', gender));
-        }
-        if (province) {
-            q = query(q, where('province', '==', province));
-        }
-        if (size !== undefined) {
-            q = query(q, where('size', '==', size));
-        }
+        if (activityLevel) q = query(q, where('activityLevel', '==', activityLevel));
+        if (ageRange) q = query(q, where('age', '>=', ageRange[0]), where('age', '<=', ageRange[1]));
+        if (animalType) q = query(q, where('species', '==', animalType));
+        if (breed && breed !== 'Any') q = query(q, where('breed', '==', breed));
+        if (furColors?.length > 0) q = query(q, where('furColors', 'array-contains-any', furColors));
+        if (gender && gender !== 'Any') q = query(q, where('gender', '==', gender));
+        if (province) q = query(q, where('province', '==', province));
+        if (size) q = query(q, where('size', '==', size));
+
         return q;
     };
 
@@ -185,7 +210,7 @@ const UserHomeScreen = () => {
             animalData.id = doc.id;
             animalData.images = await preloadImages(animalData.imageUrls  || []);
 
-            console.log('Captured animal: ${animalData.name} (ID: ${animalData.id})');
+            console.log('Captured animal:', animalData);
 
             // Only add animals with successfully preloaded images
             if (animalData.images.length > 0) {
@@ -197,9 +222,9 @@ const UserHomeScreen = () => {
         return animals;
     };
 
-    const filterLikedAnimals = (fetchedAnimals, likedAnimals) => {
+    /*const filterLikedAnimals = (fetchedAnimals, likedAnimals) => {
         return fetchedAnimals.filter((animal) => !likedAnimals.includes(animal.id));
-    };
+    };*/
 
     const preloadImages = async (imageUrls) => {
         const storage = getStorage();
@@ -297,8 +322,6 @@ const UserHomeScreen = () => {
 
         moveToNextCard();
     };
-
-
 
     const onSwipedRight = async () => {
         swipeDataRef.current.swipeDirection = 'right';
@@ -436,14 +459,9 @@ const UserHomeScreen = () => {
             await fetchAnimals();
         } catch (error) {
             console.error('Error in onSwipedAll:', error);
+            errorStateRef.current.errorState = true;
             setError('Failed to process swipes. Please try again.');
         }
-    };
-
-    const wait = (duration) => {
-        return new Promise((resolve) => {
-            setTimeout(resolve, duration);
-        });
     };
 
     const resetOpacity = (currentIndex) => {
@@ -573,14 +591,6 @@ const UserHomeScreen = () => {
         );
     };
 
-    const LoadingDialog = ({ visible }) => (
-        <Modal transparent={true} visible={visible} animationType="fade">
-            <View style={styles.loadingLikeContainer}>
-                <ActivityIndicator size="large" color={'#d9cb94'} />
-            </View>
-        </Modal>
-    );
-
     const AnimalInfoOverlay = ({ animal, onClose }) => (
         <View style={styles.overlayContainer}>
             <View style={styles.overlayContent}>
@@ -678,7 +688,7 @@ const UserHomeScreen = () => {
                 </View>
             )}
             <NavbarWrapper noShadow={true} />
-            {!loadingLike && !loading && animals.length > 0 && (
+            {!loadingLike && !loading && !errorStateRef.current.errorState && animals.length > 0 && (
                 <View style={styles.buttonsContainer}>
                     <TouchableOpacity
                         style={ [styles.button,
