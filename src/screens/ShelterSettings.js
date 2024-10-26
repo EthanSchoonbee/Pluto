@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     View,
     Text,
@@ -51,13 +51,16 @@ const ShelterSettingsScreen = () => {
     const [newPassword, setNewPassword] = useState(defaultValues.newPassword);
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [profileImage, setProfileImage] = useState(null);
+    const [profileImageLocal, setprofileImageLocal] = useState(null);
     const storage = getStorage();
     const auth = getAuth();
     const [isUpdating, setIsUpdating] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const navigation = useNavigation();
     const [imageChanged, setImageChanged] = useState(false);
+    const profileImageRef = useRef({
+        profilesImage: null
+    });
 
     const togglePushNotifications = () => {
         setIsPushNotificationsEnabled(previousState => !previousState);
