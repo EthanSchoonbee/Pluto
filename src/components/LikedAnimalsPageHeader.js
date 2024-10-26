@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/HeaderStyles';
 import { useNavigation } from '@react-navigation/native';
 
-const PetPageHeader = () => {
+const LikedAnimalsPageHeader = () => {
     const navigation = useNavigation();
 
     return (
@@ -14,4 +14,4 @@ const PetPageHeader = () => {
     );
 };
 
-export default PetPageHeader;
+export default LikedAnimalsPageHeader;
