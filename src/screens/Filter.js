@@ -131,7 +131,7 @@ const Filter = ({navigation}) => {
     if (loading) {
         return (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color="#FFD700" />
+                <ActivityIndicator size="large" color="#d9cb94" />
                 <Text>Loading filters...</Text>
             </View>
         );
@@ -310,7 +310,7 @@ const Filter = ({navigation}) => {
                                         style={styles.colorOption}
                                         onPress={() => toggleFurColor(color)}
                                     >
-                                        <View style={[styles.colorIndicator, { backgroundColor: furColors.includes(color) ? 'gold' : 'gray' }]} />
+                                        <View style={[styles.colorIndicator, { backgroundColor: furColors.includes(color) ? '#d9cb94' : 'gray' }]} />
                                         <Text style={styles.checkboxLabel}>{color}</Text>
                                     </TouchableOpacity>
                                 ))}
@@ -334,9 +334,9 @@ const Filter = ({navigation}) => {
                             min={0}
                             max={20}
                             step={1}
-                            selectedStyle={{ backgroundColor: 'gold' }}
+                            selectedStyle={{ backgroundColor: '#d9cb94' }}
                             unselectedStyle={{ backgroundColor: 'gray' }}
-                            markerStyle={{ backgroundColor: 'gold' }}
+                            markerStyle={{ backgroundColor: 'white' }}
                             containerStyle={styles.slider}
                             sliderLength={screenWidth - 45}
                             trackStyle={{ height: 4 }}
@@ -352,7 +352,7 @@ const Filter = ({navigation}) => {
                         minimumValue={0}
                         maximumValue={3}
                         step={1}
-                        minimumTrackTintColor="gold"
+                        minimumTrackTintColor="#d9cb94"
                         maximumTrackTintColor="gray"
                         onValueChange={setActivityLevel}
                         value={activityLevel}
@@ -367,7 +367,7 @@ const Filter = ({navigation}) => {
                         minimumValue={0}
                         maximumValue={2}
                         step={1}
-                        minimumTrackTintColor="gold"
+                        minimumTrackTintColor="#d9cb94"
                         maximumTrackTintColor="gray"
                         onValueChange={setSize}
                         value={size}
