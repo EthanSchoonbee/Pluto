@@ -100,7 +100,6 @@ const UserSettingsScreen = () => {
         const uploadTask = uploadBytesResumable(imageRef, blob);
 
 
-
         try {
             await new Promise((resolve, reject) => {
                 uploadTask.on(
@@ -122,9 +121,6 @@ const UserSettingsScreen = () => {
 
         }
     };
-
-
-
 
 
     // Delete the old profile image from Firebase Storage
@@ -161,8 +157,6 @@ const UserSettingsScreen = () => {
             return;
         }
 
-
-
         Alert.alert(
             "Attention",
             'Are you sure you want to update your details?',
@@ -181,7 +175,7 @@ const UserSettingsScreen = () => {
                                     imageUrl = await uploadProfileImage(profileImageLocal);
                                 }
                             }
-                            const profileImage = profileImageRef.current.profilesImage;
+                            const profileImage = await checkImageChangeForAsyncStorage()
 
                             const updatedUserDetails = {
                                 fullName,
@@ -215,6 +209,20 @@ const UserSettingsScreen = () => {
             ]
         );
     };
+
+    const checkImageChangeForAsyncStorage = async() =>{
+        if(imageChanged){
+            return profileImageRef.current.profilesImage;
+        }else{
+            const data = await AsyncStorage.getItem('userData');
+            if (data !== null) {
+                const userData = JSON.parse(data); // Parse the data into an object
+                if (userData) {
+                    return userData.profileImage;
+                }
+            }
+        }
+    }
 
     // Check if details inputs are valid
     const checkDetailsInputs = () => {

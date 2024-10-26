@@ -42,7 +42,7 @@ const ShelterSettingsScreen = () => {
         newPassword: ""
     };
 
-    const [isPushNotificationsEnabled, setIsPushNotificationsEnabled] = useState(false);
+
     const [shelterName, setShelterName] = useState(defaultValues.shelterName);
     const [location, setLocation] = useState(defaultValues.location);
     const [email, setEmail] = useState(defaultValues.email);
@@ -189,7 +189,8 @@ const ShelterSettingsScreen = () => {
                                 }
                             }
 
-                            const profileImage = profileImageRef.current.profilesImage;
+                            const profileImage = await checkImageChangeForAsyncStorage();
+
 
                             const updatedUserDetails = {
                                 shelterName,
@@ -197,7 +198,6 @@ const ShelterSettingsScreen = () => {
                                 email,
                                 phoneNumber,
                                 profileImage,
-                                isPushNotificationsEnabled
                             };
 
                             // Then update the user details, including the image URL if uploaded
@@ -224,6 +224,22 @@ const ShelterSettingsScreen = () => {
             ]
         );
     };
+
+
+    const checkImageChangeForAsyncStorage = async() =>{
+        if(imageChanged){
+            return profileImageRef.current.profilesImage;
+        }else{
+            const data = await AsyncStorage.getItem('userData');
+            if (data !== null) {
+                const userData = JSON.parse(data); // Parse the data into an object
+                if (userData) {
+                    return userData.profileImage;
+                }
+            }
+        }
+    }
+
 
     const checkDetailsInputs = () => {
 
@@ -305,7 +321,6 @@ const ShelterSettingsScreen = () => {
             if (data !== null) {
                 const userData = JSON.parse(data); // Parse the data into an object
                 if (userData) {
-                    setIsPushNotificationsEnabled(userData.isPushNotificationsEnabled);
                     setShelterName(userData.shelterName);
                     setLocation(userData.location);
                     setEmail(userData.email);
@@ -327,7 +342,6 @@ const ShelterSettingsScreen = () => {
         React.useCallback(() => {
             fetchUserDataFromAsyncStorage();
             return () => {
-                setIsPushNotificationsEnabled(false);
                 setShelterName('');
                 setEmail('');
                 setPassword('');
@@ -428,7 +442,7 @@ const ShelterSettingsScreen = () => {
                                 onChangeText={setPassword}
                                 placeholder={strings.shelter_settings.shelter_password_placeholder}
                                 secureTextEntry={true}
-                                editable={isEditable}
+                                editable={false}
                                 selectTextOnFocus={isEditable}
                             />
                         </TouchableOpacity>
@@ -448,22 +462,6 @@ const ShelterSettingsScreen = () => {
                         </TouchableOpacity>
                     </View>
                 </View>
-
-                {/* Privacy Section */}
-                <Text style={ShelterSettingsStyles.privacyTitle}>{strings.shelter_settings.shelter_privacy_title}</Text>
-                <View style={ShelterSettingsStyles.privacyContainer}>
-                    <View style={ShelterSettingsStyles.notificationRow}>
-                        <Text style={ShelterSettingsStyles.notificationText}>{strings.shelter_settings.shelter_push_notifications}</Text>
-                        <Switch
-                            trackColor={{ false: "#767577", true: "#81b0ff" }}
-                            thumbColor={isPushNotificationsEnabled ? '#00C853' : "#f4f3f4"}
-                            onValueChange={togglePushNotifications}
-                            value={isPushNotificationsEnabled}
-                        />
-                    </View>
-                </View>
-
-
 
                 {/* Buttons Section */}
                 <View style={ShelterSettingsStyles.buttonContainer}>

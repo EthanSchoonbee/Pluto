@@ -24,10 +24,10 @@ const ShelterSettingsStyles = StyleSheet.create({
         padding: 20,
         backgroundColor: colors.userSettingsLightGray, // Light gray background
         borderRadius: 10,
-        marginTop: 5,
+        marginTop: 10,
     },
     detailsTitle: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: '600',
         color: colors.userSettingsDarkGrayText, // Dark gray text
         paddingVertical: 5,
@@ -40,15 +40,15 @@ const ShelterSettingsStyles = StyleSheet.create({
         marginBottom: 5,
         borderBottomWidth: 1,
         borderBottomColor: colors.userSettingsLightGrayBorder, // Light gray border
-        paddingBottom: 7,
+        paddingBottom: 10,
     },
     detailsLabel: {
-        fontSize: 14,
+        fontSize: 16,
         color: colors.userSettingsMediumGrayText, // Medium gray text
         fontWeight: '500',
     },
     detailsValue: {
-        fontSize: 14,
+        fontSize: 16,
         color: colors.userSettingsDarkGrayText, // Dark gray text
     },
     // Privacy Section Styles
