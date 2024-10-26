@@ -3,32 +3,25 @@ import {
     View,
     Text,
     ScrollView,
-    Switch,
     TouchableOpacity,
     TextInput,
     SafeAreaView,
     ActivityIndicator,
-    Image, Modal
+    Image
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import UserSettingsStyles from "../styles/UserSettingsStyles";
 import strings from '../strings/en.js';
-import Navbar from "../components/ShelterNavbar";
 import SettingsInputValidations from "../services/SettingsInputValidations";
 import { Alert } from 'react-native';
 import NavbarWrapper from "../components/NavbarWrapper";
-import { db, auth } from '../services/firebaseConfig';
+import { auth } from '../services/firebaseConfig';
 import firebaseService from "../services/firebaseService";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import defaultProfileImage from "../../assets/handsome_squidward.jpg";
-import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
 import * as ImagePicker from "expo-image-picker";
 import {getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject} from "firebase/storage";
 import { getAuth } from "firebase/auth";
-import {onAuthStateChanged} from "firebase/auth";
 import { signOut } from 'firebase/auth';
-
-const defaultprofileImageLocal = require('../../assets/handsome_squidward.jpg');
 
 const UserSettingsScreen = () => {
     const defaultValues = {
@@ -47,14 +40,11 @@ const UserSettingsScreen = () => {
     const [location, setLocation] = useState(defaultValues.location);
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);  // Add loading state
-    const [userData,setUserData] = useState(null);
     const [profileImageLocal, setprofileImageLocal] = useState(null);
     const storage = getStorage();
     const [imageChanged, setImageChanged] = useState(false);
-    const [modalVisible, setModalVisible] = useState(false);
     const navigation = useNavigation();
     const defaultprofileImageLocal = require('../../assets/pluto_logo.png');
-    const [firebaseURL, setFirebaseURL] = useState(null);
     const profileImageRef = useRef({
         profilesImage: null
     });
@@ -169,10 +159,9 @@ const UserSettingsScreen = () => {
                         try {
 
                             if(imageChanged){
-                                // First upload the image if a new one is selected
-                                let imageUrl = null;
+
                                 if (profileImageLocal) {
-                                    imageUrl = await uploadProfileImage(profileImageLocal);
+                                    await uploadProfileImage(profileImageLocal);
                                 }
                             }
                             const profileImage = await checkImageChangeForAsyncStorage()
@@ -190,7 +179,7 @@ const UserSettingsScreen = () => {
                                 ...updatedUserDetails,
                             };
 
-                            if(!newPassword == password){
+                            if(newPassword !== password){
                                 await firebaseService.changePassword(newPassword);
                             }
 
@@ -202,6 +191,7 @@ const UserSettingsScreen = () => {
                         } catch (error) {
                             Alert.alert("Error", "There was an issue updating your profile. Please try again.");
                         } finally {
+                            setImageChanged(false);
                             setLoading(false);
                         }
                     }
@@ -227,7 +217,7 @@ const UserSettingsScreen = () => {
     // Check if details inputs are valid
     const checkDetailsInputs = () => {
 
-        if(!newPassword == password){
+        if(newPassword !== password){
             if(!SettingsInputValidations.isLongerThanFive(newPassword)){
                 Alert.alert(strings.user_settings.validation_error, strings.user_settings.confirm_required);
                 return false;
@@ -306,7 +296,6 @@ const UserSettingsScreen = () => {
             const data = await AsyncStorage.getItem('userData');
             if (data !== null) {
                 const parsedData = JSON.parse(data);
-                setUserData(parsedData);
                 setfullName(parsedData.fullName || defaultValues.name);
                 setEmail(parsedData.email || defaultValues.email);
                 setLocation(parsedData.location || defaultValues.location);

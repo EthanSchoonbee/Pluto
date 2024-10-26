@@ -131,6 +131,8 @@ export default {
         shelter_sample_text: "Sample Shelter Info",
         shelter_password_placeholder: "********",
         shelter_confirm_password_placeholder: "********",
+        shelter_email_placeholder: 'youremail@email.com',
+        shelter_tel_placeholder: '1238946572',
         shelter_image: "Shelter Image:",
         shelter_privacy_title: "Privacy:",
         shelter_push_notifications: "Push Notifications",
