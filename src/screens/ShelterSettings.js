@@ -178,7 +178,7 @@ const ShelterSettingsScreen = () => {
                 {
                     text: "Confirm",
                     onPress: async () => {
-                        setModalVisible(true);
+                        setLoading(true);
                         try {
 
                             if(imageChanged){
@@ -217,7 +217,7 @@ const ShelterSettingsScreen = () => {
                         } catch (error) {
                             Alert.alert("Error", "There was an issue updating your profile. Please try again.");
                         } finally {
-                            setModalVisible(false);
+                            setLoading(false);
                         }
                     }
                 }
@@ -279,7 +279,6 @@ const ShelterSettingsScreen = () => {
     };
 
 
-
     const handleLogout = async () => {
         try {
             await signOut(auth);
@@ -292,7 +291,7 @@ const ShelterSettingsScreen = () => {
 
 
     const handleDoubleClick = () => {
-        setIsEditable(prev => !prev);
+        setIsEditable(true);
     };
 
 
@@ -381,86 +380,88 @@ const ShelterSettingsScreen = () => {
                 {/* Shelter Details Section */}
                 <Text style={ShelterSettingsStyles.detailsTitle}>{strings.shelter_settings.shelter_details_title}</Text>
                 <View style={ShelterSettingsStyles.detailsContainer}>
-                    <View style={ShelterSettingsStyles.detailsRow}>
-                        <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_name}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={ShelterSettingsStyles.detailsValue}
-                                value={shelterName}
-                                onChangeText={setShelterName}
-                                placeholder={strings.shelter_settings.shelter_sample_text}
-                                editable={isEditable}
-                                selectTextOnFocus={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={ShelterSettingsStyles.detailsRow}>
-                        <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_location}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={ShelterSettingsStyles.detailsValue}
-                                value={location}
-                                onChangeText={setLocation}
-                                placeholder={strings.shelter_settings.shelter_sample_text}
-                                editable={isEditable}
-                                selectTextOnFocus={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={ShelterSettingsStyles.detailsRow}>
-                        <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_email}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={ShelterSettingsStyles.detailsValue}
-                                value={email}
-                                onChangeText={setEmail}
-                                placeholder={strings.shelter_settings.shelter_email_placeholder}
-                                editable={isEditable}
-                                selectTextOnFocus={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={ShelterSettingsStyles.detailsRow}>
-                        <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_tel}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={ShelterSettingsStyles.detailsValue}
-                                value={phoneNumber}
-                                onChangeText={setphoneNumber}
-                                placeholder={strings.shelter_settings.shelter_tel_placeholder}
-                                editable={isEditable}
-                                selectTextOnFocus={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={ShelterSettingsStyles.detailsRow}>
-                        <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_password}</Text>
-                        <TouchableOpacity >
-                            <TextInput
-                                style={ShelterSettingsStyles.detailsValue}
-                                value={password}
-                                onChangeText={setPassword}
-                                placeholder={strings.shelter_settings.shelter_password_placeholder}
-                                secureTextEntry={true}
-                                editable={false}
-                                selectTextOnFocus={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={ShelterSettingsStyles.detailsRow}>
-                        <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_renew_password}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={ShelterSettingsStyles.detailsValue}
-                                value={newPassword}
-                                onChangeText={setNewPassword}
-                                placeholder={strings.shelter_settings.shelter_confirm_password_placeholder}
-                                secureTextEntry={true}
-                                editable={isEditable}
-                                selectTextOnFocus={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity onPress={handleDoubleClick}>
+                        <View style={ShelterSettingsStyles.detailsRow}>
+                            <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_name}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={ShelterSettingsStyles.detailsValue}
+                                    value={shelterName}
+                                    onChangeText={setShelterName}
+                                    placeholder={strings.shelter_settings.shelter_sample_text}
+                                    editable={isEditable}
+                                    selectTextOnFocus={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={ShelterSettingsStyles.detailsRow}>
+                            <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_location}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={ShelterSettingsStyles.detailsValue}
+                                    value={location}
+                                    onChangeText={setLocation}
+                                    placeholder={strings.shelter_settings.shelter_sample_text}
+                                    editable={isEditable}
+                                    selectTextOnFocus={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={ShelterSettingsStyles.detailsRow}>
+                            <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_email}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={ShelterSettingsStyles.detailsValue}
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    placeholder={strings.shelter_settings.shelter_email_placeholder}
+                                    editable={isEditable}
+                                    selectTextOnFocus={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={ShelterSettingsStyles.detailsRow}>
+                            <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_tel}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={ShelterSettingsStyles.detailsValue}
+                                    value={phoneNumber}
+                                    onChangeText={setphoneNumber}
+                                    placeholder={strings.shelter_settings.shelter_tel_placeholder}
+                                    editable={isEditable}
+                                    selectTextOnFocus={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={ShelterSettingsStyles.detailsRow}>
+                            <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_password}</Text>
+                            <TouchableOpacity >
+                                <TextInput
+                                    style={ShelterSettingsStyles.detailsValue}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    placeholder={strings.shelter_settings.shelter_password_placeholder}
+                                    secureTextEntry={true}
+                                    editable={false}
+                                    selectTextOnFocus={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={ShelterSettingsStyles.detailsRow}>
+                            <Text style={ShelterSettingsStyles.detailsLabel}>{strings.shelter_settings.shelter_renew_password}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={ShelterSettingsStyles.detailsValue}
+                                    value={newPassword}
+                                    onChangeText={setNewPassword}
+                                    placeholder={strings.shelter_settings.shelter_confirm_password_placeholder}
+                                    secureTextEntry={true}
+                                    editable={isEditable}
+                                    selectTextOnFocus={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Buttons Section */}
@@ -475,36 +476,6 @@ const ShelterSettingsScreen = () => {
                         <Text style={[ShelterSettingsStyles.customButtonText, ShelterSettingsStyles.logoutButtonText]}>{strings.shelter_settings.shelter_logout_button}</Text>
                     </TouchableOpacity>
                 </View>
-
-                {/* Modal component */}
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalVisible}
-                    onRequestClose={() => {
-                        Alert.alert("Modal has been closed.");
-                        setModalVisible(!modalVisible);
-                    }}>
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <View style={{
-                            width: '80%',
-                            backgroundColor: 'white',
-                            borderRadius: 20,
-                            padding: 20,
-                            alignItems: 'center',
-                            shadowColor: '#000',
-                            shadowOffset: {
-                                width: 0,
-                                height: 2
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 4,
-                            elevation: 5
-                        }}>
-                            <Text>Updating your settings!</Text>
-                        </View>
-                    </View>
-                </Modal>
 
             </ScrollView>
             <NavbarWrapper />
