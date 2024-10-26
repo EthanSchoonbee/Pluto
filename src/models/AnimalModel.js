@@ -5,8 +5,8 @@ export const Animal = {
     age: 0, // Age in years
     gender: "",
     activityLevel: 0,
-    size: "Large",
-    furColor: "",
+    size: 0,
+    furColors: [],
     description: "",
     shelterId: "", // ID of the shelter that uploaded this animal
     province: "", // Used for filtering by user's location
