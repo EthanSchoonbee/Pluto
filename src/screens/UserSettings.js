@@ -7,7 +7,7 @@ import {
     TextInput,
     SafeAreaView,
     ActivityIndicator,
-    Image
+    Image, Modal, FlatList
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
 import UserSettingsStyles from "../styles/UserSettingsStyles";
@@ -22,6 +22,7 @@ import * as ImagePicker from "expo-image-picker";
 import {getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject} from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { signOut } from 'firebase/auth';
+import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
 
 const UserSettingsScreen = () => {
     const defaultValues = {
@@ -48,8 +49,28 @@ const UserSettingsScreen = () => {
     const profileImageRef = useRef({
         profilesImage: null
     });
+    const [isModalVisible, setModalVisible] = useState(false);
 
+    // Function to handle selecting a location
+    const handlePickedLocation = (selectedLocation) => {
+        if (isEditable) {
+            setLocation(selectedLocation);
+            setModalVisible(false);
+        }
+    };
 
+    // Function to open the modal
+    const openModal = () => {
+        if (isEditable) {
+            setModalVisible(true);
+        }
+    };
+
+    // Province list
+    const provinces = [
+        'Western Cape', 'Eastern Cape', 'Free State', 'Gauteng',
+        'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West'
+    ];
 
     // Image picker and upload logic
     const handleImageSelect = async () => {
@@ -419,14 +440,8 @@ const UserSettingsScreen = () => {
                         </View>
                         <View style={UserSettingsStyles.detailsRow}>
                             <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
-                            <TouchableOpacity onPress={handleDoubleClick}>
-                                <TextInput
-                                    style={UserSettingsStyles.detailsValue}
-                                    value={location}
-                                    onChangeText={setLocation}
-                                    placeholder={strings.user_settings.sample_text}
-                                    editable={isEditable}
-                                />
+                            <TouchableOpacity onPress={() => { openModal(); handleDoubleClick(); }}>
+                                <Text style={UserSettingsStyles.detailsValue}>{location}</Text>
                             </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
@@ -448,6 +463,39 @@ const UserSettingsScreen = () => {
                     </TouchableOpacity>
                 </View>
 
+
+
+                {/* Location Picker Modal */}
+                <Modal
+                    transparent={true}
+                    visible={isModalVisible}
+                    animationType="slide"
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View style={ShelterSettingsStyles.modalOverlay}>
+                        <View style={ShelterSettingsStyles.modalContainer}>
+                            <Text style={ShelterSettingsStyles.modalTitle}>Select Location</Text>
+                            <FlatList
+                                data={provinces}
+                                keyExtractor={(item) => item}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={ShelterSettingsStyles.locationOption}
+                                        onPress={() => handlePickedLocation(item)}
+                                    >
+                                        <Text style={ShelterSettingsStyles.locationText}>{item}</Text>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                            <TouchableOpacity
+                                style={ShelterSettingsStyles.closeButton}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text style={ShelterSettingsStyles.closeButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
             </ScrollView>
 
 
