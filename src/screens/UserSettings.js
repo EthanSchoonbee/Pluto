@@ -165,7 +165,7 @@ const UserSettingsScreen = () => {
                 {
                     text: "Confirm",
                     onPress: async () => {
-                        setModalVisible(true);
+                        setLoading(true);
                         try {
 
                             if(imageChanged){
@@ -202,7 +202,7 @@ const UserSettingsScreen = () => {
                         } catch (error) {
                             Alert.alert("Error", "There was an issue updating your profile. Please try again.");
                         } finally {
-                            setModalVisible(false);
+                            setLoading(false);
                         }
                     }
                 }
@@ -280,7 +280,7 @@ const UserSettingsScreen = () => {
 
 
     const handleDoubleClick = () => {
-        setIsEditable(prev => !prev);
+        setIsEditable(true);
     };
 
     const updateUserDataToAsyncStorage = async (newData) =>{
@@ -376,69 +376,72 @@ const UserSettingsScreen = () => {
                 {/* Your Details Section */}
                 <Text style={UserSettingsStyles.detailsTitle}>{strings.user_settings.your_details_title}</Text>
                 <View style={UserSettingsStyles.detailsContainer}>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.name_label}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={fullName}
-                                onChangeText={setfullName}
-                                placeholder={strings.user_settings.sample_text}
-                                editable={isEditable}
-                                selectTextOnFocus={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.email_label}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={email}
-                                onChangeText={setEmail}
-                                placeholder="sample@example.com"
-                                editable={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.password_label}</Text>
-                        <TouchableOpacity>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={password}
-                                onChangeText={setPassword}
-                                placeholder={strings.user_settings.password_placeholder}
-                                secureTextEntry={true}
-                                editable={false}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.renew_password_label}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={newPassword}
-                                onChangeText={setNewPassword}
-                                placeholder={strings.user_settings.confirm_password_placeholder}
-                                secureTextEntry={true}
-                                editable={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View style={UserSettingsStyles.detailsRow}>
-                        <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
-                        <TouchableOpacity onPress={handleDoubleClick}>
-                            <TextInput
-                                style={UserSettingsStyles.detailsValue}
-                                value={location}
-                                onChangeText={setLocation}
-                                placeholder={strings.user_settings.sample_text}
-                                editable={isEditable}
-                            />
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity onPress={handleDoubleClick}>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.name_label}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={fullName}
+                                    onChangeText={setfullName}
+                                    placeholder={strings.user_settings.sample_text}
+                                    editable={isEditable}
+                                    selectTextOnFocus={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.email_label}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={email}
+                                    onChangeText={setEmail}
+                                    placeholder="sample@example.com"
+                                    editable={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.password_label}</Text>
+                            <TouchableOpacity>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    placeholder={strings.user_settings.password_placeholder}
+                                    secureTextEntry={true}
+                                    editable={false}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.renew_password_label}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={newPassword}
+                                    onChangeText={setNewPassword}
+                                    placeholder={strings.user_settings.confirm_password_placeholder}
+                                    secureTextEntry={true}
+                                    editable={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={location}
+                                    onChangeText={setLocation}
+                                    placeholder={strings.user_settings.sample_text}
+                                    editable={isEditable}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </TouchableOpacity>
+
                 </View>
 
 
@@ -456,35 +459,6 @@ const UserSettingsScreen = () => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Modal component */}
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalVisible}
-                    onRequestClose={() => {
-                        Alert.alert("Modal has been closed.");
-                        setModalVisible(!modalVisible);
-                    }}>
-                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                        <View style={{
-                            width: '80%',
-                            backgroundColor: 'white',
-                            borderRadius: 20,
-                            padding: 20,
-                            alignItems: 'center',
-                            shadowColor: '#ffffff',
-                            shadowOffset: {
-                                width: 0,
-                                height: 2
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 4,
-                            elevation: 5
-                        }}>
-                            <Text>Updating your settings!</Text>
-                        </View>
-                    </View>
-                </Modal>
             </ScrollView>
 
 
