@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useRef, useState} from 'react';
 import {
     View,
     Text,
@@ -28,6 +28,7 @@ import { getAuth } from "firebase/auth";
 import {onAuthStateChanged} from "firebase/auth";
 import { signOut } from 'firebase/auth';
 
+const defaultprofileImageLocal = require('../../assets/handsome_squidward.jpg');
 
 const UserSettingsScreen = () => {
     const defaultValues = {
@@ -47,12 +48,16 @@ const UserSettingsScreen = () => {
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);  // Add loading state
     const [userData,setUserData] = useState(null);
-    const [profileImage, setProfileImage] = useState(null);
+    const [profileImageLocal, setprofileImageLocal] = useState(null);
     const storage = getStorage();
     const [imageChanged, setImageChanged] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
     const navigation = useNavigation();
-    const defaultProfileImage = require('../../assets/pluto_logo.png');
+    const defaultprofileImageLocal = require('../../assets/pluto_logo.png');
+    const [firebaseURL, setFirebaseURL] = useState(null);
+    const profileImageRef = useRef({
+        profilesImage: null
+    });
 
 
 
@@ -72,7 +77,7 @@ const UserSettingsScreen = () => {
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
             const selectedImageUri = result.assets[0].uri;
-            setProfileImage(selectedImageUri); // Just set the image URI in the state
+            setprofileImageLocal(selectedImageUri); // Just set the image URI in the state
             setIsEditable(true);
             setImageChanged(true);
         }
@@ -104,8 +109,8 @@ const UserSettingsScreen = () => {
                     (error) => reject(error),
                     async () => {
                         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                        //await firebaseService.updateUserSettings("shelters", { profileImage: downloadURL });
-                        setProfileImage(downloadURL); // Update local state
+                        setprofileImageLocal(downloadURL); // Update local state
+                        profileImageRef.current.profilesImage = downloadURL;
                         resolve();
                     }
                 );
@@ -156,12 +161,7 @@ const UserSettingsScreen = () => {
             return;
         }
 
-        const updatedUserDetails = {
-            fullName,
-            location,
-            email,
-            profileImage
-        };
+
 
         Alert.alert(
             "Attention",
@@ -177,10 +177,19 @@ const UserSettingsScreen = () => {
                             if(imageChanged){
                                 // First upload the image if a new one is selected
                                 let imageUrl = null;
-                                if (profileImage) {
-                                    imageUrl = await uploadProfileImage(profileImage);
+                                if (profileImageLocal) {
+                                    imageUrl = await uploadProfileImage(profileImageLocal);
                                 }
                             }
+                            const profileImage = profileImageRef.current.profilesImage;
+
+                            const updatedUserDetails = {
+                                fullName,
+                                location,
+                                email,
+                                profileImage
+                            };
+
 
                             // Then update the user details, including the image URL if uploaded
                             const finalDetails = {
@@ -293,7 +302,7 @@ const UserSettingsScreen = () => {
                 setfullName(parsedData.fullName || defaultValues.name);
                 setEmail(parsedData.email || defaultValues.email);
                 setLocation(parsedData.location || defaultValues.location);
-                setProfileImage(parsedData.profileImage);
+                setprofileImageLocal(parsedData.profileImage);
                 console.log('User data has been fetched');
             }
         } catch (error) {
@@ -338,12 +347,12 @@ const UserSettingsScreen = () => {
                     <TouchableOpacity onPress={handleImageSelect}>
                     <Image
                         source={
-                            profileImage
-                                ? { uri: profileImage }  // Ensure profileImage is treated as a URI
-                                : defaultProfileImage     // Fallback to default image
+                            profileImageLocal
+                                ? { uri: profileImageLocal }  // Ensure profileImageLocal is treated as a URI
+                                : defaultprofileImageLocal     // Fallback to default image
                         }
                         style={UserSettingsStyles.centerImage}
-                        onError={() => setProfileImage(null)} // If loading fails, fallback to default
+                        onError={() => setprofileImageLocal(null)} // If loading fails, fallback to default
                         resizeMode="cover" // Ensures the image scales properly within the view
                     />
                     </TouchableOpacity>
