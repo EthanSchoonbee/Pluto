@@ -7,7 +7,8 @@ import {
     TouchableOpacity,
     ScrollView,
     ActivityIndicator,
-    Modal, Pressable,
+    Modal,
+    Pressable,
 } from "react-native";
 import LikedAnimalsPageHeader from "../components/LikedAnimalsPageHeader";
 import SafeAreaWrapper from "../components/SafeAreaWrapper";
@@ -31,7 +32,6 @@ const activityLevelMapping = {
 };
 
 const LikedAnimalsPage = ({ navigation }) => {
-
     //all asynchronous states
     const [animals, setAnimals] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -117,16 +117,18 @@ const LikedAnimalsPage = ({ navigation }) => {
                                 gender: animalData.gender,
                                 breed: animalData.breed,
                                 adoptionStatus: animalData.adoptionStatus,
+                                //the animal preferences
+                                activityLevel: animalData.activityLevel,
+                                furColors: animalData.furColors || [],
+                                province: animalData.province,
+                                description: animalData.description,
                             };
                         }
                         //else will return null
                         return null;
                     });
-                    //this will return and filter out the array of all liked animals. (will filter out the null values)
-                    const animalsList = (await Promise.all(animalPromises)).filter(
-                        Boolean
-                    );
-                    //setting the animals state to the animals list
+
+                    const animalsList = (await Promise.all(animalPromises)).filter(Boolean);
                     setAnimals(animalsList);
                 }
                 //will stop loading the page
@@ -226,16 +228,18 @@ const LikedAnimalsPage = ({ navigation }) => {
                         </View>
                         <View style={styles.fieldContainer}>
                             <Text style={styles.fieldTitle}>Fur Color</Text>
-                            <Text style={styles.overlayDetails}>{animal.furColor}</Text>
+                            <Text style={styles.overlayDetails}>
+                                {animal.furColors?.join(", ") || "Unknown"}
+                            </Text>
                         </View>
                         <View style={styles.fieldContainer}>
                             <Text style={styles.fieldTitle}>Location</Text>
-                            <Text style={styles.overlayDetails}>{animal.location}</Text>
+                            <Text style={styles.overlayDetails}>{animal.province || "Unknown"}</Text>
                         </View>
                         <View style={styles.fieldContainer}>
                             <Text style={styles.fieldTitle}>Description</Text>
                             <Text style={styles.overlayDetailsDescription}>
-                                {animal.description}
+                                {animal.description || "No description available"}
                             </Text>
                         </View>
                     </ScrollView>
@@ -260,9 +264,9 @@ const LikedAnimalsPage = ({ navigation }) => {
             }}
         >
             {item.imageUrl ? (
-                    <TouchableOpacity onPress={() => openFullScreenImage(item.imageUrl)}>
-                        <Image source={{ uri: item.imageUrl }} style={styles.petImage} />
-                    </TouchableOpacity>
+                <TouchableOpacity onPress={() => openFullScreenImage(item.imageUrl)}>
+                    <Image source={{ uri: item.imageUrl }} style={styles.petImage} />
+                </TouchableOpacity>
             ) : (
                 <View style={[styles.petImage, styles.placeholderImage]}>
                     <Text>No Image</Text>
@@ -304,7 +308,7 @@ const LikedAnimalsPage = ({ navigation }) => {
             </SafeAreaWrapper>
         );
     }
-//******************************************************************************************************************
+    //******************************************************************************************************************
     //full screen image handling
 
     /**
@@ -336,11 +340,14 @@ const LikedAnimalsPage = ({ navigation }) => {
                 <Pressable style={fullScreenStyles.closeFullScreen} onPress={onClose}>
                     <Ionicons name="close" size={30} color="#fff" />
                 </Pressable>
-                <Image source={{ uri: imageUri }} style={fullScreenStyles.fullScreenImage} />
+                <Image
+                    source={{ uri: imageUri }}
+                    style={fullScreenStyles.fullScreenImage}
+                />
             </View>
         </Modal>
     );
-//******************************************************************************************************************
+    //******************************************************************************************************************
     return (
         <SafeAreaWrapper>
             <LikedAnimalsPageHeader />
