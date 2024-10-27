@@ -27,7 +27,7 @@ import {
 } from "../utils/notificationMessages";
 import { useRoute } from "@react-navigation/native";
 import { getDoc, doc, onSnapshot } from "firebase/firestore";
-import { db, storage } from "../services/firebaseConfig";
+import { db,auth } from "../services/firebaseConfig";
 import * as FileSystem from "expo-file-system";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
@@ -45,8 +45,37 @@ const UserDetailForm = ({ route, navigation }) => {
     //state to handle the loading of the data
     const [loading, setLoading] = useState(true);
 
+    const[shelterName, setShelterName] = useState("");
+
     //state to hold and set the full screen image
     const [fullScreenImage, setFullScreenImage] = useState(null);
+
+    /**
+     * Fetches the shelter name from the database based on the current user logged in
+     */
+    useEffect(() => {
+        const fetchShelterDetails = async () => {
+            try {
+                //Get the current user from the auth service
+                const currentUser = auth.currentUser;
+                //If the current user exists
+                if (currentUser) {
+                    //extracting the name
+                    const shelterDoc = await getDoc(doc(db, "shelters", currentUser.uid));
+                    if (shelterDoc.exists()) {
+                        //getting the shelter names field value from the document
+                        setShelterName(shelterDoc.data().shelterName);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching shelter details:", error);
+            }
+        };
+
+        //fetching the shelter details
+        fetchShelterDetails();
+    }, []);
+
 
     //fetching the user details and the animal details
     useEffect(() => {
@@ -61,6 +90,7 @@ const UserDetailForm = ({ route, navigation }) => {
                             userData.profileImage,
                             "user"
                         );
+                        console.log("Shelter name fetched")
                         setUserDetails({ ...userData, image: userImage });
                     } else {
                         console.warn("User document does not exist");
@@ -234,7 +264,8 @@ const UserDetailForm = ({ route, navigation }) => {
             const body = getRandomEmailBody(
                 status.id,
                 userDetails.fullName,
-                animalDetails.name
+                animalDetails.name,
+                shelterName
             );
 
             // Compose the email

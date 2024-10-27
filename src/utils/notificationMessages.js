@@ -43,8 +43,7 @@ const emailBodies = {
 Wonderful news! Your application to adopt {petName} has been approved. We're thrilled that {petName} will be joining your family. Please contact us to arrange the final adoption procedures and bring your new family member home.
 
 Best wishes,
-Pet Shelter Team`,
-        // Add more approved message templates...
+{shelterName}`,
     ],
     inProcess: [
         `Hello {userName},
@@ -60,7 +59,7 @@ Pet Shelter Team`,
 Thank you for your interest in adopting {petName}. We need some additional information to proceed with your application. Could you please provide [specific information needed]? This will help us ensure the best match for both you and {petName}.
 
 We appreciate your cooperation,
-Pet Shelter Team`,
+{shelterName}`,
     ],
     notSuitable: [
         `Dear {userName},
@@ -68,7 +67,7 @@ Pet Shelter Team`,
 We appreciate your interest in adopting {petName}. After careful consideration, we've determined that this might not be the best match at this time. We encourage you to consider other pets that might be a better fit for your situation.
 
 Thank you for understanding,
-Pet Shelter Team`,
+{shelterName}`,
     ],
     waitlist: [
         `Hello {userName},
@@ -76,7 +75,7 @@ Pet Shelter Team`,
 Thank you for your interest in adopting {petName}. We've added you to our waitlist for this pet. We'll contact you if an opportunity becomes available. In the meantime, feel free to check our other available pets.
 
 Best regards,
-Pet Shelter Team`,
+{shelterName}`,
     ],
 };
 
@@ -94,10 +93,11 @@ export function getRandomEmailSubject(status, petName) {
 }
 
 //Getting the random email body based on the adoption status, user name, and pet name
-export function getRandomEmailBody(status, userName, petName) {
+export function getRandomEmailBody(status, userName, petName,shelterName) {
     const bodies = emailBodies[status]; //declaring a constant variable that will use get the email bodies based on the status
     const randomIndex = Math.floor(Math.random() * bodies.length); //declaring a constant variable that will get a random index from the bodies array
     return bodies[randomIndex] //returning the random body with the user name and pet name replaced
         .replace(/{userName}/g, userName) //replacing the user name placeholder with the actual user name
-        .replace(/{petName}/g, petName); //replacing the pet name placeholder with the actual pet name
+        .replace(/{petName}/g, petName) //replacing the pet name placeholder with the actual pet name
+        .replace(/{shelterName}/g,shelterName); //replacing the shelter name with the actual shelters name
 }
