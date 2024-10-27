@@ -625,11 +625,11 @@ const UserHomeScreen = () => {
                     </View>
                     <View style={styles.fieldContainer}>
                         <Text style={styles.fieldTitle}>Fur Color</Text>
-                        <Text style={styles.overlayDetails}>{animal.furColor}</Text>
+                        <Text style={styles.overlayDetails}>{animal.furColors.join(', ')}</Text>
                     </View>
                     <View style={styles.fieldContainer}>
                         <Text style={styles.fieldTitle}>Location</Text>
-                        <Text style={styles.overlayDetails}>{animal.location}</Text>
+                        <Text style={styles.overlayDetails}>{animal.province}</Text>
                     </View>
                     <View style={styles.fieldContainer}>
                         <Text style={styles.fieldTitle}>Description</Text>
