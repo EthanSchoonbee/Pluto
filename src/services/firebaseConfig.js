@@ -1,7 +1,8 @@
-// Import the functions
+// Import the necessary functions
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import {getAuth, initializeAuth} from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Make sure AsyncStorage is imported
 
 // Firebase configuration
 const firebaseConfig = {
@@ -14,12 +15,8 @@ const firebaseConfig = {
     measurementId: "G-S70EJV7C1C"
 };
 
-// Initialize Firebase:
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// Cloud Storage
 const db = getFirestore(app);
-// Authentication API
 const auth = getAuth(app);
-
 export { db, auth };
