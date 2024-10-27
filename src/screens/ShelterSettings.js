@@ -362,7 +362,7 @@ const ShelterSettingsScreen = () => {
         // Display a loading spinner or text while data is being fetched
         return (
             <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" color="#00C853" />
+                <ActivityIndicator size="large" color="#d9cb94" />
                 <Text>Loading shelter settings...</Text>
             </SafeAreaView>
         );
