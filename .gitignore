@@ -66,6 +66,3 @@ build/
 *.tmp
 *.orig
 *~
-
-# yarn
-yarn.lock
