@@ -160,4 +160,9 @@ export default StyleSheet.create({
         textAlign: "center",
         fontWeight: '600', // Make the text slightly bolder
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
 });
