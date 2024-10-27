@@ -47,12 +47,18 @@ const LoginScreen = ({ navigation }) => {
                         console.log('Fetched user data:', userData);
                         setLoading(false);
                         navigation.navigate('UserHome');
+                        //setting the values to empty
+                        setEmail('');
+                        setPassword('');
                     } else {
                         const shelterData = await firebaseService.getUserData('shelters', user.uid);
                         if (shelterData) {
                             console.log('Fetched shelter data:', shelterData);
                             setLoading(false);
                             navigation.navigate('ShelterHome');
+                            //setting the values to empty
+                            setEmail('');
+                            setPassword('');
                         } else {
                             console.log('No user or shelter data found in Firestore');
                             setLoading(false);
