@@ -2,7 +2,18 @@ import {useEffect, useState} from "react";
 import {collection, addDoc, doc, getDoc, updateDoc} from "firebase/firestore";
 import Slider from '@react-native-community/slider';
 import React from "react";
-import { View, Text, TextInput, SafeAreaView, Button, ScrollView, Modal, TouchableOpacity, Alert } from 'react-native';
+import {
+    View,
+    Text,
+    TextInput,
+    SafeAreaView,
+    Button,
+    ScrollView,
+    Modal,
+    TouchableOpacity,
+    Alert,
+    ActivityIndicator
+} from 'react-native';
 import strings from "../strings/en";
 import styles from '../styles/AddAnimalPageStyles';
 import { Picker } from "@react-native-picker/picker"; // Import the stylesheet
@@ -45,6 +56,7 @@ const AddAnimal = ({ navigation }) => {
     const [furColors, setFurColors] = useState([]);
     const newAnimal = { ...Animal };
     const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
     //state for local images as the user is selecting them. It will first be all the images that the user is selecting on their device
     const [localImages, setLocalImages] = useState([]);
 
@@ -80,6 +92,10 @@ const AddAnimal = ({ navigation }) => {
             formErrors.age = 'Age must be a valid number';
         }
 
+        if(!newAnimal.description){
+            formErrors.description = 'Please enter a description of the animal';
+        }
+
         // Fur color validation: Required field
         if (!newAnimal.furColors) {
             console.log("Fur error")
@@ -87,13 +103,13 @@ const AddAnimal = ({ navigation }) => {
         }
 
         // Breed validation: Required field
-        if (selectedBreed === strings.anyBreed) {
+        if (selectedBreed === strings.anyBreed || selectedBreed === "") {
             console.log("Breed error")
             formErrors.breed = 'Breed is required';
         }
 
         // Gender validation: Required field
-        if (!selectedGender) {
+        if (!selectedGender || selectedGender==="") {
             console.log("Gender error")
             formErrors.gender = 'Gender is required';
         }
@@ -188,30 +204,37 @@ const AddAnimal = ({ navigation }) => {
             newAnimal.breed = selectedBreed;
             newAnimal.age = Number(age);
             newAnimal.gender = selectedGender;
-            newAnimal.province = shelterProvince;
             newAnimal.activityLevel = activityLevel;
             newAnimal.size = size;
-            newAnimal.adoptionStatus = false;
             newAnimal.furColors = furColors.length > 0 ? furColors : []; // Stores the array directly
             newAnimal.description = biography;
-            newAnimal.shelterId = user.uid;
-            newAnimal.imageUrls = await uploadImagesToFirebase(); // Store the array of image URLs
-            newAnimal.likedByUsers = [];
-            newAnimal.createdAt = new Date();
-            newAnimal.updatedAt = new Date();
 
+            //Check user entries are correct before uploading
             if (!validateForm()){
                 alert("Error Creating animal. Check all data fields have valid entries" )
                 return;
             }
+
+            //Continue creating animal attributes not defined by user
+            setLoading(true);
+            newAnimal.province = shelterProvince;
+            newAnimal.adoptionStatus = false;
+            newAnimal.imageUrls = await uploadImagesToFirebase(); // Store the array of image URLs
+            newAnimal.shelterId = user.uid;
+            newAnimal.likedByUsers = [];
+            newAnimal.createdAt = new Date();
+            newAnimal.updatedAt = new Date();
+
 
             // Add the animal data to Firestore under the "animals" collection
             const animalRef = await addDoc(collection(db, "animals"), newAnimal);
 
             await updateDoc(animalRef,{
                 uid: animalRef.id,
+
             })
 
+            setLoading(false);
             alert(strings.animalUploadSuccessful);
             navigation.navigate("ShelterHome");
         } catch (error) {
@@ -316,7 +339,7 @@ const AddAnimal = ({ navigation }) => {
                             onChangeText={setBiography}
                             multiline
                         />
-                        {errors.biography && <Text style={styles.errorText}>{errors.biography}</Text>}
+                        {errors.description && <Text style={styles.errorText}>{errors.description}</Text>}
                     </View>
                 </View>
 
@@ -353,6 +376,7 @@ const AddAnimal = ({ navigation }) => {
                             </View>
                         </View>
                     </Modal>
+                    {errors.breed && <Text style={styles.errorText}>{errors.breed}</Text>}
                 </View>
 
                 {/* Fur Color Selection */}
@@ -384,8 +408,10 @@ const AddAnimal = ({ navigation }) => {
                                 ))}
                                 <Button title={strings.closeButton} onPress={() => setIsColorPickerVisible(false)} />
                             </View>
+
                         </View>
                     </Modal>
+                    {errors.furColors && <Text style={styles.errorText}>{errors.furColors}</Text>}
                 </View>
 
 
@@ -420,6 +446,7 @@ const AddAnimal = ({ navigation }) => {
                             </View>
                         </View>
                     </Modal>
+                    {errors.gender && <Text style={styles.errorText}>{errors.gender}</Text>}
                 </View>
 
                 {/* Activity Level Slider */}
@@ -452,12 +479,21 @@ const AddAnimal = ({ navigation }) => {
                     />
                 </View>
 
+                {loading && (  // Display loading indicator when loading state is true
+                    <View style={styles.animalLoadingContainer}>
+                        <ActivityIndicator size="large" color="#FFD700" />
+                        <Text>Saving Animal data...</Text>
+                    </View>
+                )}
+
                 {/* Done Button */}
                 <View style={styles.buttonWrapper}>
                     <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                         <Text style={styles.buttonText}>{strings.doneButton}</Text>
                     </TouchableOpacity>
                 </View>
+
+
             </ScrollView>
         </SafeAreaView>
     );
