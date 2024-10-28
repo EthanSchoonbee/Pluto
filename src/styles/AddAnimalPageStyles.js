@@ -230,6 +230,12 @@ const styles = StyleSheet.create({
         fontSize: 12,
         marginTop: 5,
     },
+    animalLoadingContainer:{
+        marginTop: 5,
+        marginBottom: 5,
+        alignItems: "center",
+        justifyContent: "center",
+    }
 });
 
 export default styles;
