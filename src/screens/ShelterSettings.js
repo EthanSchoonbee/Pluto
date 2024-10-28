@@ -40,7 +40,7 @@ const ShelterSettingsScreen = () => {
 
 
     const [shelterName, setShelterName] = useState(defaultValues.shelterName);
-    const [location, setLocation] = useState(defaultValues.location);
+    const [selectedProvince, setselectedProvince] = useState(defaultValues.location);
     const [email, setEmail] = useState(defaultValues.email);
     const [phoneNumber, setphoneNumber] = useState(defaultValues.phoneNumber);
     const [password, setPassword] = useState(defaultValues.password);
@@ -58,9 +58,9 @@ const ShelterSettingsScreen = () => {
     const provinces= ['Western Cape', 'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West'];
 
     // Function to handle selecting a location
-    const handlePickedLocation = (selectedLocation) => {
+    const handlePickedLocation = (selectedselectedProvince) => {
         if (isEditable) {
-            setLocation(selectedLocation);
+            setselectedProvince(selectedselectedProvince);
             setModalVisible(false);
         }
     };
@@ -197,7 +197,7 @@ const ShelterSettingsScreen = () => {
 
                             const updatedUserDetails = {
                                 shelterName,
-                                location,
+                                selectedProvince,
                                 email,
                                 phoneNumber,
                                 profileImage,
@@ -260,7 +260,7 @@ const ShelterSettingsScreen = () => {
             return false;
         }
         if (SettingsInputValidations.isEmptyOrWhitespace(location)) {
-            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.location_required);
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.selectedProvince_required);
             return false;
         }
         if (SettingsInputValidations.isEmptyOrWhitespace(email)) {
@@ -325,7 +325,7 @@ const ShelterSettingsScreen = () => {
                 const userData = JSON.parse(data); // Parse the data into an object
                 if (userData) {
                     setShelterName(userData.shelterName);
-                    setLocation(userData.location);
+                    setselectedProvince(userData.selectedProvince);
                     setEmail(userData.email);
                     setphoneNumber(userData.phoneNumber);
                     setprofileImageLocal(userData.profileImage || null);
@@ -349,7 +349,7 @@ const ShelterSettingsScreen = () => {
                 setEmail('');
                 setPassword('');
                 setNewPassword('');
-                setLocation('');
+                setselectedProvince('');
                 setprofileImageLocal(null);
                 setIsEditable(false);
             };
@@ -400,9 +400,9 @@ const ShelterSettingsScreen = () => {
                         </View>
                         {/* Shelter Location */}
                         <View style={ShelterSettingsStyles.detailsRow}>
-                            <Text style={ShelterSettingsStyles.detailsLabel}>Location</Text>
+                            <Text style={ShelterSettingsStyles.detailsLabel}>Province</Text>
                             <TouchableOpacity onPress={() => { openModal(); handleDoubleClick(); }}>
-                                <Text style={ShelterSettingsStyles.detailsValue}>{location}</Text>
+                                <Text style={ShelterSettingsStyles.detailsValue}>{selectedProvince}</Text>
                             </TouchableOpacity>
                         </View>
                         <View style={ShelterSettingsStyles.detailsRow}>
@@ -485,7 +485,7 @@ const ShelterSettingsScreen = () => {
                 >
                     <View style={ShelterSettingsStyles.modalOverlay}>
                         <View style={ShelterSettingsStyles.modalContainer}>
-                            <Text style={ShelterSettingsStyles.modalTitle}>Select Location</Text>
+                            <Text style={ShelterSettingsStyles.modalTitle}>Select Province</Text>
                             <FlatList
                                 data={provinces}
                                 keyExtractor={(item) => item}

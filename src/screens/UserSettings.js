@@ -38,7 +38,7 @@ const UserSettingsScreen = () => {
     const [email, setEmail] = useState(defaultValues.email);
     const [password, setPassword] = useState(defaultValues.password);
     const [newPassword, setNewPassword] = useState(defaultValues.newPassword);
-    const [location, setLocation] = useState(defaultValues.location);
+    const [selectedProvince, setselectedProvince] = useState(defaultValues.location);
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);  // Add loading state
     const [profileImageLocal, setprofileImageLocal] = useState(null);
@@ -52,9 +52,9 @@ const UserSettingsScreen = () => {
     const [isModalVisible, setModalVisible] = useState(false);
 
     // Function to handle selecting a location
-    const handlePickedLocation = (selectedLocation) => {
+    const handlePickedLocation = (selectedselectedProvince) => {
         if (isEditable) {
-            setLocation(selectedLocation);
+            setselectedProvince(selectedselectedProvince);
             setModalVisible(false);
         }
     };
@@ -189,7 +189,7 @@ const UserSettingsScreen = () => {
 
                             const updatedUserDetails = {
                                 fullName,
-                                location,
+                                selectedProvince,
                                 email,
                                 profileImage
                             };
@@ -256,7 +256,7 @@ const UserSettingsScreen = () => {
             return false;
         }
 
-        if (SettingsInputValidations.isEmptyOrWhitespace(location)) {
+        if (SettingsInputValidations.isEmptyOrWhitespace(selectedProvince)) {
             Alert.alert(strings.user_settings.validation_error, strings.user_settings.location_required);
             return false;
         }
@@ -268,7 +268,7 @@ const UserSettingsScreen = () => {
             return false;
         }
 
-        if(SettingsInputValidations.containsNumber(location)){
+        if(SettingsInputValidations.containsNumber(selectedProvince)){
             Alert.alert(strings.user_settings.validation_error,strings.user_settings.location_number)
             return false;
         }
@@ -319,7 +319,7 @@ const UserSettingsScreen = () => {
                 const parsedData = JSON.parse(data);
                 setfullName(parsedData.fullName || defaultValues.name);
                 setEmail(parsedData.email || defaultValues.email);
-                setLocation(parsedData.location || defaultValues.location);
+                setselectedProvince(parsedData.selectedProvince || defaultValues.selectedProvince);
                 setprofileImageLocal(parsedData.profileImage);
                 console.log('User data has been fetched');
             }
@@ -339,7 +339,7 @@ const UserSettingsScreen = () => {
                 setEmail('');
                 setPassword('');
                 setNewPassword('');
-                setLocation('');
+                setselectedProvince('');
                 setIsEditable(false);
             };
         }, [])
@@ -380,7 +380,7 @@ const UserSettingsScreen = () => {
                 {/* Username and Location */}
                 <View style={UserSettingsStyles.headerSection}>
                     <Text style={UserSettingsStyles.headerText}>{fullName}</Text>
-                    <Text style={UserSettingsStyles.headerText}>{location}</Text>
+                    <Text style={UserSettingsStyles.headerText}>{selectedProvince}</Text>
                 </View>
 
                 {/* Your Details Section */}
@@ -441,7 +441,7 @@ const UserSettingsScreen = () => {
                         <View style={UserSettingsStyles.detailsRow}>
                             <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.location}</Text>
                             <TouchableOpacity onPress={() => { openModal(); handleDoubleClick(); }}>
-                                <Text style={UserSettingsStyles.detailsValue}>{location}</Text>
+                                <Text style={UserSettingsStyles.detailsValue}>{selectedProvince}</Text>
                             </TouchableOpacity>
                         </View>
                     </TouchableOpacity>
@@ -474,7 +474,7 @@ const UserSettingsScreen = () => {
                 >
                     <View style={ShelterSettingsStyles.modalOverlay}>
                         <View style={ShelterSettingsStyles.modalContainer}>
-                            <Text style={ShelterSettingsStyles.modalTitle}>Select Location</Text>
+                            <Text style={ShelterSettingsStyles.modalTitle}>Select Province</Text>
                             <FlatList
                                 data={provinces}
                                 keyExtractor={(item) => item}
