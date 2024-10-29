@@ -2,6 +2,7 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+    //header
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -21,6 +22,7 @@ const styles = StyleSheet.create({
         // Shadow for Android
         elevation: 3, // Keep this lower for a more subtle shadow
     },
+        //logo
         leftContainer: {
             flexDirection: 'row',
             alignItems: 'center'

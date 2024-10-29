@@ -5,7 +5,6 @@ import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StyleSheet } from "react-native";
 import React, {useEffect, useState} from "react";
-import { SafeAreaView } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Login from "./src/screens/Login";
@@ -28,7 +27,7 @@ const Stack = createNativeStackNavigator();
 
 const App = () => {
     const [isLoading, setIsLoading] = useState(true); // Manage loading state
-    const [initialRoute, setInitialRoute] = useState('Login'); // Default route
+    const [, setInitialRoute] = useState('Login'); // Default route
 
     useEffect(() => {
         const checkUserSession = () => {
