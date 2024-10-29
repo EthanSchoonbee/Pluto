@@ -47,12 +47,18 @@ export const downloadImage = async (url, fileUri) => {
     }
 };
 
-export const deleteLocalImage = async (fileName) => {
-    const fileUri = `${FileSystem.documentDirectory}animals/${fileName}`; // Corrected the path here
+
+export const deleteLocalImage = async (id) => {
+    const fileUri = `${FileSystem.cacheDirectory}${id}.jpg`;
     try {
-        await FileSystem.deleteAsync(fileUri);
-        console.log('Image deleted successfully:', fileUri);
+        const fileInfo = await FileSystem.getInfoAsync(fileUri);
+        if (fileInfo.exists) {
+            await FileSystem.deleteAsync(fileUri);
+            console.log(`Local image for animal ${id} deleted from cache.`);
+        } else {
+            console.log(`No cached image found for animal ${id}.`);
+        }
     } catch (error) {
-        console.error('Error deleting image:', error);
+        console.error('Error deleting local image:', error);
     }
 };

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
     View,
     Text,
@@ -19,7 +19,7 @@ import {
     where,
 } from 'firebase/firestore';
 import AnimalCard from '../components/AnimalCard';
-import { handleAdopt, handleDelete } from '../services/databaseService';
+import {handleAnimalAdopt, handleAnimalDelete} from '../services/databaseService';
 import NavbarWrapper from "../components/NavbarWrapper";
 
 const ShelterHomeScreen = () => {
@@ -101,8 +101,8 @@ const ShelterHomeScreen = () => {
                     {animals.map((animal) => (
                         <AnimalCard
                             key={animal.id} {...animal}
-                            onAdopt={handleAdopt}
-                            onDelete={handleDelete}
+                            onAdopt={handleAnimalAdopt}
+                            onDelete={handleAnimalDelete}
                             onViewLikes={handleViewLikes}
                         />
                     ))}
