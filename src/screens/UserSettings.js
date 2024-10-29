@@ -20,7 +20,6 @@ import firebaseService from "../services/firebaseService";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from "expo-image-picker";
 import {getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject} from "firebase/storage";
-import { getAuth } from "firebase/auth";
 import { signOut } from 'firebase/auth';
 import ShelterSettingsStyles from "../styles/ShelterSettingsStyles";
 
@@ -52,9 +51,9 @@ const UserSettingsScreen = () => {
     const [isModalVisible, setModalVisible] = useState(false);
 
     // Function to handle selecting a location
-    const handlePickedLocation = (selectedselectedProvince) => {
+    const handlePickedLocation = (selectedProvince) => {
         if (isEditable) {
-            setselectedProvince(selectedselectedProvince);
+            setselectedProvince(selectedProvince);
             setModalVisible(false);
         }
     };
@@ -189,7 +188,7 @@ const UserSettingsScreen = () => {
 
                             const updatedUserDetails = {
                                 fullName,
-                                selectedProvince,
+                                location: selectedProvince,
                                 email,
                                 profileImage
                             };
@@ -319,7 +318,7 @@ const UserSettingsScreen = () => {
                 const parsedData = JSON.parse(data);
                 setfullName(parsedData.fullName || defaultValues.name);
                 setEmail(parsedData.email || defaultValues.email);
-                setselectedProvince(parsedData.selectedProvince || defaultValues.selectedProvince);
+                setselectedProvince(parsedData.location || defaultValues.location);
                 setprofileImageLocal(parsedData.profileImage);
                 console.log('User data has been fetched');
             }
