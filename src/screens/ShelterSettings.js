@@ -31,7 +31,7 @@ const defaultprofileImageLocal = require('../../assets/handsome_squidward.jpg');
 const ShelterSettingsScreen = () => {
     const defaultValues = {
         shelterName: "Sample Shelter",
-        location: "Sample Location",
+        province: "Sample Location",
         email: "shelter@example.com",
         tel: "+1234567890",
         password: "",
@@ -40,7 +40,7 @@ const ShelterSettingsScreen = () => {
 
 
     const [shelterName, setShelterName] = useState(defaultValues.shelterName);
-    const [selectedProvince, setselectedProvince] = useState(defaultValues.location);
+    const [selectedProvince, setselectedProvince] = useState(defaultValues.province); // Corrected to use 'province'
     const [email, setEmail] = useState(defaultValues.email);
     const [phoneNumber, setphoneNumber] = useState(defaultValues.phoneNumber);
     const [password, setPassword] = useState(defaultValues.password);
@@ -58,9 +58,9 @@ const ShelterSettingsScreen = () => {
     const provinces= ['Western Cape', 'Eastern Cape', 'Free State', 'Gauteng', 'KwaZulu-Natal', 'Limpopo', 'Mpumalanga', 'Northern Cape', 'North West'];
 
     // Function to handle selecting a location
-    const handlePickedLocation = (selectedselectedProvince) => {
+    const handlePickedLocation = (province) => {
         if (isEditable) {
-            setselectedProvince(selectedselectedProvince);
+            setselectedProvince(province);
             setModalVisible(false);
         }
     };
@@ -161,9 +161,6 @@ const ShelterSettingsScreen = () => {
     };
 
 
-
-
-
 // Handle update button press
     const handleUpdate = async () => {
         if (!isEditable) {
@@ -197,7 +194,7 @@ const ShelterSettingsScreen = () => {
 
                             const updatedUserDetails = {
                                 shelterName,
-                                selectedProvince,
+                                province: selectedProvince,
                                 email,
                                 phoneNumber,
                                 profileImage,
@@ -259,8 +256,8 @@ const ShelterSettingsScreen = () => {
             Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.name_required);
             return false;
         }
-        if (SettingsInputValidations.isEmptyOrWhitespace(location)) {
-            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.selectedProvince_required);
+        if (SettingsInputValidations.isEmptyOrWhitespace(selectedProvince)) { // Updated to selectedProvince
+            Alert.alert(strings.shelter_settings.validation_error, strings.shelter_settings.location_required);
             return false;
         }
         if (SettingsInputValidations.isEmptyOrWhitespace(email)) {
@@ -325,7 +322,7 @@ const ShelterSettingsScreen = () => {
                 const userData = JSON.parse(data); // Parse the data into an object
                 if (userData) {
                     setShelterName(userData.shelterName);
-                    setselectedProvince(userData.selectedProvince);
+                    setselectedProvince(userData.province);
                     setEmail(userData.email);
                     setphoneNumber(userData.phoneNumber);
                     setprofileImageLocal(userData.profileImage || null);
@@ -333,7 +330,10 @@ const ShelterSettingsScreen = () => {
                     setNewPassword('');
                     setIsEditable(false);
                 }
+                console.log('user data:', data);
             }
+
+            console.log('data:', data);
         } catch (error) {
             console.log('Error retrieving shelter data:', error);
         } finally {
@@ -402,7 +402,7 @@ const ShelterSettingsScreen = () => {
                         <View style={ShelterSettingsStyles.detailsRow}>
                             <Text style={ShelterSettingsStyles.detailsLabel}>Province</Text>
                             <TouchableOpacity onPress={() => { openModal(); handleDoubleClick(); }}>
-                                <Text style={ShelterSettingsStyles.detailsValue}>{selectedProvince}</Text>
+                                <Text style={ShelterSettingsStyles.detailsValue}>{selectedProvince || "Select Location"}</Text>
                             </TouchableOpacity>
                         </View>
                         <View style={ShelterSettingsStyles.detailsRow}>

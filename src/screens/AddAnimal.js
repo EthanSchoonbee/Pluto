@@ -21,9 +21,8 @@ import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/Ionicons'; // or any other icon set you prefer
 import { db, auth } from '../services/firebaseConfig';
-import {Animal as animalData, Animal} from "../models/AnimalModel";
+import {Animal} from "../models/AnimalModel";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import * as FileSystem from 'expo-file-system';
 
 const AddAnimal = ({ navigation }) => {
 
@@ -38,7 +37,6 @@ const AddAnimal = ({ navigation }) => {
     //Animal Data
     const [isDog, setIsDog] = useState(true);
     const [selectedBreed, setSelectedBreed] = useState("");
-    const [images, setImages] = useState([]);
     const [name, setName] = useState("");
     const [selectedGender, setSelectedGender] = useState([]);
     const [shelterProvince, setShelterProvince] = useState("");
@@ -70,7 +68,7 @@ const AddAnimal = ({ navigation }) => {
 
                 if (shelterDoc.exists()) {
                     const shelterData = shelterDoc.data();
-                    setShelterProvince(shelterData.location);
+                    setShelterProvince(shelterData.province);
                 } else {
                     console.log("No such document!");
                 }
