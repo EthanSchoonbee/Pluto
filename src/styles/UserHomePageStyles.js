@@ -1,29 +1,42 @@
-import { StyleSheet, Dimensions } from 'react-native';
+/*
+AUTHOR: Ethan Schoonbee
+CREATED ON: 02/09/2024
+LAST UPDATED: 29/10/2024
+ */
+
+import {
+    StyleSheet,
+    Dimensions } from 'react-native';
 import colors from '../styles/colors';
 
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+    //loading page
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(255,255,255,0.06)'
     },
+    // processing likes loading page
     loadingLikeContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'transparent', // Semi-transparent background
     },
+    // user home page
     container: {
         flex: 1,
         backgroundColor: '#ffffff',
     },
+        // swiper
         swiperContainer: {
             flex: 1,
             borderRadius: 10
         },
+            // animal cards
             card: {
                 flex: 1,
                 height: '80%',
@@ -35,6 +48,7 @@ const styles = StyleSheet.create({
                 position: 'absolute',
                 overflow: 'hidden'
             },
+                //previous image
                 leftTouchableArea: {
                     position: 'absolute',
                     left: 0,
@@ -44,6 +58,7 @@ const styles = StyleSheet.create({
                     zIndex: 99,
                     //backgroundColor: 'rgba(255, 0, 0, 0.2)',
                 },
+                //next image
                 rightTouchableArea: {
                     position: 'absolute',
                     right: 0,
@@ -53,6 +68,7 @@ const styles = StyleSheet.create({
                     zIndex: 100,
                     //backgroundColor: 'rgba(0, 0, 255, 0.2)'
                 },
+                //dislike overlay image
                 floatingImageLeft: {
                     position: 'absolute',
                     top: '-15%',
@@ -61,6 +77,7 @@ const styles = StyleSheet.create({
                     height: '50%',
                     zIndex: 1
                 },
+                //like overlay image
                 floatingImageRight: {
                     position: 'absolute',
                     top: '-15%',
@@ -69,6 +86,7 @@ const styles = StyleSheet.create({
                     height: '50%',
                     zIndex: 1,
                 },
+                //animal current image to display
                 image: {
                     height: '100%',
                     width: '100%',
@@ -76,6 +94,7 @@ const styles = StyleSheet.create({
                     resizeMode: 'cover',
                     backgroundColor: colors.darkGrey,
                 },
+                //index for which image is being displayed and number of images
                 imageIndexIndicator: {
                     position: 'absolute',
                     top: '2%', // Relative position for better scaling
@@ -86,11 +105,13 @@ const styles = StyleSheet.create({
                     paddingVertical: 5,
                     alignSelf: 'flex-end', // Ensures alignment to the right side
                 },
-                imageIndexText: {
-                    color: '#fff',
-                    fontSize: 12,
-                    fontWeight: 'bold',
-                },
+                    //image being displayed and number of images
+                    imageIndexText: {
+                        color: '#fff',
+                        fontSize: 12,
+                        fontWeight: 'bold',
+                    },
+                // white overlay gradiant
                 gradient: {
                     position: 'absolute',
                     left: 0,
@@ -99,6 +120,7 @@ const styles = StyleSheet.create({
                     height: '35%',
                     zIndex: 1,
                 },
+                //animal information
                 cardInfo: {
                     borderBottomLeftRadius: 10,
                     borderBottomRightRadius: 10,
@@ -111,10 +133,12 @@ const styles = StyleSheet.create({
                     alignItems: 'center',
                     justifyContent: 'space-between'
                 },
+                    //container animal name, age, gender and breed
                     leftContainer: {
                         flex: 2,
                         justifyContent: 'center',
                     },
+                        //name and age
                         nameAgeContainer: {
                             flexDirection: 'row',
                             alignItems: 'baseline',
@@ -128,6 +152,7 @@ const styles = StyleSheet.create({
                                 fontSize: 20,
                                 color: '#2f2f2e',
                             },
+                        //gender and breed
                         genderBreedContainer: {
                             flexDirection: 'row',
                             alignItems: 'center',
@@ -140,11 +165,13 @@ const styles = StyleSheet.create({
                                 fontSize: 18,
                                 color: '#2f2f2e',
                             },
+                    //container animal info button
                     rightContainer: {
                         flex: 1,
                         alignItems: 'flex-end',
                         justifyContent: 'center',
                     },
+                        //info button for current animal
                         arrowButton: {
                             position: 'absolute',
                             bottom: '17%', // Adjust based on your layout
@@ -155,6 +182,7 @@ const styles = StyleSheet.create({
                             opacity: 0.2,
                             zIndex: 150
                         },
+                //container for like and dislike buttons
                 buttonsContainer: {
                     position: 'absolute',
                     bottom: 80,
@@ -164,6 +192,7 @@ const styles = StyleSheet.create({
                     justifyContent: 'space-evenly',
                     paddingVertical: 20,
                 },
+                    //like and dislike buttons
                     button: {
                         width: 70,
                         height: 70,
@@ -188,6 +217,7 @@ const styles = StyleSheet.create({
                         pressed: {
                             opacity: 0.5,
                         },
+        //animal information overlay
         overlayContainer: {
             position: 'absolute',
             top: 0,
@@ -199,78 +229,78 @@ const styles = StyleSheet.create({
             alignItems: 'stretch',
             zIndex: 1000, // Ensures it is above other content
         },
-    scrollView: {
-        width: '100%', // Adjust this width to your desired size
-        maxHeight: '90%', // Limit the height to prevent overflow
-    },
-    overlayContent: {
-        width: '100%',
-        height: '60%', // Increase height to accommodate the scrollable content
-        backgroundColor: 'white',
-        borderRadius: 10,
-        padding: 20,
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-    },
-
-    overlayName: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        alignSelf: 'center', // Center the animal's name
-    },
-
-    fieldContainer: {
-        alignItems: 'center', // Center titles and values
-        marginVertical: 10, // Add vertical spacing between fields
-        width: '100%', // Make sure the field container takes full width
-    },
-
-    fieldTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5, // Space between title and value
-        textAlign: 'center', // Center the title
-    },
-
-    overlayDetails: {
-        fontSize: 18,
-        textAlign: 'center', // Center the details
-    },
-
-    genderOverlayContainer: {
-        flexDirection: 'row', // Aligns text and icon in a row
-        alignItems: 'center', // Centers items vertically
-        marginLeft: 9,
-    },
-    genderOverlay: {
-        marginLeft: 8, // Add space between text and icon
-    },
-
-    overlayDetailsDescription: {
-        fontSize: 18,
-        textAlign: 'center', // Center the description
-        marginTop: 5,
-        textAlignVertical: 'top', // Align text at the top if it's long
-        overflow: 'scroll', // Enable scrolling if the text is long
-        width: '100%', // Make sure the details take full width
-    },
-
-    closeButton: {
-        marginTop: 20,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        backgroundColor: colors.darkGrey,
-        color: colors.darkGrey,
-        alignSelf: 'center',
-        borderRadius: 5,
-    },
-
-    closeButtonText: {
-        color: 'white',
-        fontSize: 16,
-    },
+            scrollView: {
+                width: '100%', // Adjust this width to your desired size
+                maxHeight: '90%', // Limit the height to prevent overflow
+            },
+                overlayContent: {
+                    width: '100%',
+                    height: '60%', // Increase height to accommodate the scrollable content
+                    backgroundColor: 'white',
+                    borderRadius: 10,
+                    padding: 20,
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
+                },
+                    //animal name
+                    overlayName: {
+                        fontSize: 24,
+                        fontWeight: 'bold',
+                        marginBottom: 20,
+                        alignSelf: 'center', // Center the animal's name
+                    },
+                    //animal fields
+                    fieldContainer: {
+                        alignItems: 'center', // Center titles and values
+                        marginVertical: 10, // Add vertical spacing between fields
+                        width: '100%', // Make sure the field container takes full width
+                    },
+                    //animal title
+                    fieldTitle: {
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        marginBottom: 5, // Space between title and value
+                        textAlign: 'center', // Center the title
+                    },
+                    //animal overlay details
+                    overlayDetails: {
+                        fontSize: 18,
+                        textAlign: 'center', // Center the details
+                    },
+                    //animal gender
+                    genderOverlayContainer: {
+                        flexDirection: 'row', // Aligns text and icon in a row
+                        alignItems: 'center', // Centers items vertically
+                        marginLeft: 9,
+                    },
+                        genderOverlay: {
+                            marginLeft: 8, // Add space between text and icon
+                        },
+                    //animal description
+                    overlayDetailsDescription: {
+                        fontSize: 18,
+                        textAlign: 'center', // Center the description
+                        marginTop: 5,
+                        textAlignVertical: 'top', // Align text at the top if it's long
+                        overflow: 'scroll', // Enable scrolling if the text is long
+                        width: '100%', // Make sure the details take full width
+                    },
+        //animal overlay close button
+        closeButton: {
+            marginTop: 20,
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            backgroundColor: colors.darkGrey,
+            color: colors.darkGrey,
+            alignSelf: 'center',
+            borderRadius: 5,
+        },
+            closeButtonText: {
+                color: 'white',
+                fontSize: 16,
+            },
 
 });
 
 export default styles;
+//________________________________....oooOO0_END_OF_FILE_0OOooo....________________________________

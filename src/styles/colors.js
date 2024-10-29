@@ -24,6 +24,7 @@ const colors = {
     genderMaleBlue: '#007AFF',
     genderFemalePink: '#c55fc9',
     darkGrey: '#1a1a1a',
+    plutoCream: '#d9cb94',
 
     // Settings pages colours
     userSettingsWhite: '#fff',       // White background in user settings

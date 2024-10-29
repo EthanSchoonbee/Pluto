@@ -1,16 +1,56 @@
+/*
+AUTHOR: Ethan Schoonbee
+CREATED ON: 02/09/2024
+LAST UPDATED: 29/10/2024
+
+DESCRIPTION:
+This file contains the implementation of the `AnimalCard` component, which represents a card-like UI element for displaying information about an animal available for adoption in a shelter home page.
+
+The component fetches and caches the animal's image locally, displays the animal's details (name, age, breed, gender, adoption status), and provides buttons for adopting the animal, viewing its likes, and deleting the animal.
+
+The component also includes a notification badge to indicate the number of likes the animal has received.
+
+SUMMARY:
+- `AnimalCard`: The main component that renders the animal card UI.
+- `renderGenderIcon`: A helper function that renders the appropriate gender icon (male or female) based on the animal's gender.
+- `ActionButton`: A reusable component for rendering the action buttons (Adopt, View Likes, Delete).
+*/
+
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, Alert } from 'react-native';
+import {
+    View,
+    Text,
+    Image,
+    TouchableOpacity,
+    Alert
+} from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import styles from '../styles/ShelterHomePageStyle';
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../styles/colors";
 
+/**
+ * AnimalCard component
+ * Displays an animal's information and provides actions to adopt, view likes, and delete the animal.
+ * @param {string} name - The name of the animal.
+ * @param {number} age - The age of the animal.
+ * @param {string} breed - The breed of the animal.
+ * @param {string} gender - The gender of the animal ('M' for male, 'F' for female).
+ * @param {boolean} adoptionStatus - The adoption status of the animal.
+ * @param {string} imageUrl - The URL of the animal's image.
+ * @param {number} notificationCount - The number of likes the animal has received.
+ * @param {string} id - The unique identifier of the animal.
+ * @param {function} onAdopt - Callback function to handle the adoption of the animal.
+ * @param {function} onDelete - Callback function to handle the deletion of the animal.
+ * @param {function} onViewLikes - Callback function to handle the viewing of the animal's likes.
+ */
 const AnimalCard = ({
                         name, age, breed, gender, adoptionStatus,
                         imageUrl, notificationCount, id, onAdopt, onDelete, onViewLikes
                     }) => {
     const [localImageUri, setLocalImageUri] = useState(null);
 
+    // Fetch and cache the animal's image locally
     useEffect(() => {
         const downloadImage = async () => {
             try {
@@ -94,6 +134,12 @@ const AnimalCard = ({
     );
 };
 
+/**
+ * renderGenderIcon function
+ * Renders the appropriate gender icon (male or female) based on the animal's gender.
+ * @param {string} gender - The gender of the animal ('M' for male, 'F' for female).
+ * @returns {JSX.Element | null} - The gender icon component or null if the gender is not recognized.
+ */
 const renderGenderIcon = (gender) => {
     const iconName = gender === 'M' ? "male" : gender === 'F' ? "female" : null;
     const iconColor = gender === 'M' ? colors.genderMaleBlue : colors.genderFemalePink;
@@ -103,6 +149,14 @@ const renderGenderIcon = (gender) => {
     ) : null;
 };
 
+/**
+ * ActionButton component
+ * Renders a button with the specified title and style.
+ * @param {string} title - The title of the button.
+ * @param {object} style - The optional custom style for the button.
+ * @param {function} onPress - The callback function to be executed when the button is pressed.
+ * @returns {JSX.Element} - The action button component.
+ */
 const ActionButton = ({ title, style, onPress }) => (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
         <Text style={styles.buttonText}>{title}</Text>
@@ -110,3 +164,4 @@ const ActionButton = ({ title, style, onPress }) => (
 );
 
 export default AnimalCard;
+//________________________________....oooOO0_END_OF_FILE_0OOooo....________________________________
