@@ -38,7 +38,7 @@ class FirebaseService {
                         breed: "Any",
                         gender: "Any",
                         province: selectedProvince,
-                        ageRange: [0, 20],
+                        ageRange: [1, 20],
                         activityLevel: 1,
                         size: 0,
                         furColors: []
@@ -69,7 +69,6 @@ class FirebaseService {
                 }
             });
     }
-
 
     loginUser(email, password, onComplete) {
         console.log("Firebase Authentication Service: Logging In User");
