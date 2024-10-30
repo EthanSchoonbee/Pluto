@@ -31,6 +31,7 @@ const UserSettingsScreen = () => {
         password: "default",
         newPassword: "default",
         location: "Sample Location",
+        phoneNo: "000000000"
     };
 
     const [fullName, setfullName] = useState(defaultValues.name);
@@ -38,6 +39,7 @@ const UserSettingsScreen = () => {
     const [password, setPassword] = useState(defaultValues.password);
     const [newPassword, setNewPassword] = useState(defaultValues.newPassword);
     const [selectedProvince, setselectedProvince] = useState(defaultValues.location);
+    const [phoneNo, setPhoneNo] = useState(defaultValues.phoneNo);
     const [isEditable, setIsEditable] = useState(false);
     const [loading, setLoading] = useState(true);  // Add loading state
     const [profileImageLocal, setprofileImageLocal] = useState(null);
@@ -190,7 +192,8 @@ const UserSettingsScreen = () => {
                                 fullName,
                                 location: selectedProvince,
                                 email,
-                                profileImage
+                                profileImage,
+                                phoneNo
                             };
 
 
@@ -250,6 +253,7 @@ const UserSettingsScreen = () => {
             Alert.alert(strings.user_settings.validation_error, strings.user_settings.name_required);
             return false;
         }
+
         if (SettingsInputValidations.isEmptyOrWhitespace(email)) {
             Alert.alert(strings.user_settings.validation_error, strings.user_settings.email_required);
             return false;
@@ -257,6 +261,11 @@ const UserSettingsScreen = () => {
 
         if (SettingsInputValidations.isEmptyOrWhitespace(selectedProvince)) {
             Alert.alert(strings.user_settings.validation_error, strings.user_settings.location_required);
+            return false;
+        }
+
+        if (SettingsInputValidations.isEmptyOrWhitespace(phoneNo)) {
+            Alert.alert(strings.user_settings.validation_error, strings.user_settings.phone_required);
             return false;
         }
         // End of checking for null inputs
@@ -271,6 +280,8 @@ const UserSettingsScreen = () => {
             Alert.alert(strings.user_settings.validation_error,strings.user_settings.location_number)
             return false;
         }
+
+
 
 
         // If all inputs are valid
@@ -320,6 +331,7 @@ const UserSettingsScreen = () => {
                 setEmail(parsedData.email || defaultValues.email);
                 setselectedProvince(parsedData.location || defaultValues.location);
                 setprofileImageLocal(parsedData.profileImage);
+                setPhoneNo(parsedData.phoneNo);
                 console.log('User data has been fetched');
             }
         } catch (error) {
@@ -435,6 +447,18 @@ const UserSettingsScreen = () => {
                                     secureTextEntry={true}
                                     editable={isEditable}
                                 />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={UserSettingsStyles.detailsRow}>
+                            <Text style={UserSettingsStyles.detailsLabel}>{strings.user_settings.phone_number}</Text>
+                            <TouchableOpacity onPress={handleDoubleClick}>
+                                <TextInput
+                                    style={UserSettingsStyles.detailsValue}
+                                    value={phoneNo}
+                                    onChangeText={setPhoneNo}
+                                    editable={isEditable}
+                                    />
+
                             </TouchableOpacity>
                         </View>
                         <View style={UserSettingsStyles.detailsRow}>
