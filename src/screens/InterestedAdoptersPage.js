@@ -149,7 +149,7 @@ const InterestedAdoptersPage = ({ route }) => {
 
             //cached image key
             const cacheKey = getCacheKey(animalId, userId);
-            const fileName = `user_${imageUrl.split('/').pop().replace(/%2F/g, '_')}`;
+            const fileName = `user_${imageUrl.split("/").pop().replace(/%2F/g, "_")}`;
             const cacheDir = `${POTENTIAL_ADOPTER_CACHE_DIR}${cacheKey}/`;
             //local uri
             const localUri = `${cacheDir}${fileName}`;
@@ -158,7 +158,10 @@ const InterestedAdoptersPage = ({ route }) => {
             await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
 
             //Download the image and save to cache
-            const downloadResult = await FileSystem.downloadAsync(downloadUrl, localUri);
+            const downloadResult = await FileSystem.downloadAsync(
+                downloadUrl,
+                localUri
+            );
             if (downloadResult.status !== 200) {
                 throw new Error(`Download failed with status ${downloadResult.status}`);
             }
@@ -167,7 +170,7 @@ const InterestedAdoptersPage = ({ route }) => {
              * Saving the cache metadata
              */
             await saveToCache(animalId, userId, {
-                userImage: localUri
+                userImage: localUri,
             });
 
             return localUri;
@@ -176,7 +179,7 @@ const InterestedAdoptersPage = ({ route }) => {
             return DEFAULT_ADOPTER_IMAGE;
         }
     };
-//********************************************************************************************************************
+    //********************************************************************************************************************
     /**
      * Function to save the cache metadata
      */
@@ -238,13 +241,16 @@ const InterestedAdoptersPage = ({ route }) => {
                             profileImageVersion: userData.profileImageVersion || 0,
                         };
 
+                        let updatedAdopters;
                         if (existingAdopterIndex !== -1) {
-                            const updatedAdopters = [...prev];
+                            updatedAdopters = [...prev];
                             updatedAdopters[existingAdopterIndex] = newAdopter;
-                            return updatedAdopters;
                         } else {
-                            return [...prev, newAdopter];
+                            updatedAdopters = [...prev, newAdopter];
                         }
+
+                        //sorting the adopters alphabetically by name in the adopters array
+                        return updatedAdopters.sort((a, b) => a.name.localeCompare(b.name));
                     });
 
                     if (!adoptionMessage || adoptionMessage.includes("PetName")) {
