@@ -19,56 +19,51 @@ class FirebaseService {
         this.auth = getAuth();
     }
 
-    registerUser(fullName, email, password, phoneNo, selectedProvince, onComplete) {
+    registerUser(fullName, email, password, phoneNo, selectedProvince) {
         console.log("Firebase Authentication Service: Registering User");
-        createUserWithEmailAndPassword(this.auth, email, password)
-            .then(async (userCredential) => {
-                const firebaseUser = userCredential.user;
-                const userData = {
-                    uid: firebaseUser.uid,
-                    email: firebaseUser.email,
-                    profileImage: "https://firebasestorage.googleapis.com/v0/b/pluto-2b00c.appspot.com/o/default_profile_image.jpg?alt=media&token=76543e99-1803-403a-9d11-eabfe5db5584",
-                    fullName,
-                    phoneNo,
-                    selectedProvince,
-                    role: "user",
-                    likedAnimals: [],
-                    preferences: {
-                        animalType: "Dog",
-                        breed: "Any",
-                        gender: "Any",
-                        province: selectedProvince,
-                        ageRange: [1, 20],
-                        activityLevel: 1,
-                        size: 0,
-                        furColors: []
-                    }
-                };
 
-                try {
-                    await this.addUserData('users', userData);
-                    await AsyncStorage.setItem('userData', JSON.stringify(userData));
-                    console.log("Firebase Authentication Service: Registration Process Successful");
+        return new Promise((resolve, reject) => {
+            createUserWithEmailAndPassword(this.auth, email, password)
+                .then(async (userCredential) => {
+                    const firebaseUser = userCredential.user;
+                    const userData = {
+                        uid: firebaseUser.uid,
+                        email: firebaseUser.email,
+                        profileImage: "https://firebasestorage.googleapis.com/v0/b/pluto-2b00c.appspot.com/o/default_profile_image.jpg?alt=media&token=76543e99-1803-403a-9d11-eabfe5db5584",
+                        fullName,
+                        phoneNo,
+                        location: selectedProvince,
+                        role: "user",
+                        likedAnimals: [],
+                        preferences: {
+                            animalType: "Dog",
+                            breed: "Any",
+                            gender: "Any",
+                            province: selectedProvince,
+                            ageRange: [1, 20],
+                            activityLevel: 1,
+                            size: 0,
+                            furColors: []
+                        }
+                    };
 
-                    // Ensure onComplete is a function before calling it
-                    if (typeof onComplete === "function") {
-                        onComplete(true, null);  // Registration successful
+                    try {
+                        await this.addUserData('users', userData);
+                        await AsyncStorage.setItem('userData', JSON.stringify(userData));
+                        console.log("Firebase Authentication Service: Registration Process Successful");
+                        resolve(userData);  // Resolve with the user data
+                    } catch (error) {
+                        console.log("Error adding user data:", error);
+                        reject(error.message);  // Reject with error message
                     }
-                } catch (error) {
-                    console.log("Error adding user data:", error);
-
-                    if (typeof onComplete === "function") {
-                        onComplete(false, error.message);  // Registration failed
-                    }
-                }
-            })
-            .catch((error) => {
-                console.log("Firebase Authentication Service: Registration Process Failed", error);
-                if (typeof onComplete === "function") {
-                    onComplete(false, error.message);  // Handle Firebase Authentication error
-                }
-            });
+                })
+                .catch((error) => {
+                    console.log("Firebase Authentication Service: Registration Process Failed", error);
+                    reject(error.message);  // Handle Firebase Authentication error
+                });
+        });
     }
+
 
     loginUser(email, password, onComplete) {
         console.log("Firebase Authentication Service: Logging In User");
