@@ -33,6 +33,19 @@ import { getRandomAdoptionMessage } from "../utils/adoptionMessages";
 const DEFAULT_ADOPTER_IMAGE =
     "https://firebasestorage.googleapis.com/v0/b/pluto-2b00c.appspot.com/o/default_animal_image.png?alt=media&token=94dbc329-5848-4dfc-8a93-fe806a48b4bd";
 
+//constant for the adopter cache directory
+const POTENTIAL_ADOPTER_CACHE_DIR = `${FileSystem.cacheDirectory}potential_adopters/`;
+
+/**
+ * Function to get the cache key for the cached images
+ * @param {*} animalId
+ * @param {*} userId
+ * @returns
+ */
+const getCacheKey = (animalId, userId) => {
+    return `${animalId}_${userId}`;
+};
+
 //Entire shelter chats component
 const InterestedAdoptersPage = ({ route }) => {
     //getting the pet name and pet image from the pet page screen
@@ -120,56 +133,69 @@ const InterestedAdoptersPage = ({ route }) => {
      * Function to fetch and cache the adopter's image
      * @param {*} userId
      * @param {*} imageUrl
+     * @param {*} animalId
      * @returns
      */
-    const fetchAndCacheAdopterImage = async (userId, imageUrl) => {
-        //if the image url is null, will return the default adopter image
+    const fetchAndCacheAdopterImage = async (userId, imageUrl, animalId) => {
         if (!imageUrl) {
             return DEFAULT_ADOPTER_IMAGE;
         }
 
-        //reference to the storage
-        const storage = getStorage();
-        //creating the cache directory for the adopter images
-        const cacheDir = `${FileSystem.cacheDirectory}adopter_images/`;
-        //getting the file name of image url.
-        const fileName = imageUrl.split("/").pop().replace(/%2F/g, "_");
-        //creating the cache file path for the adopter image
-        const cacheFilePath = `${cacheDir}${fileName}`;
-
-        if (cacheFilePath != null) {
-            console.log("cache file path: ", cacheFilePath);
-        }
-
         try {
-            //creating the cache directory for the adopter images. will create the directory if it does not exist
-            await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
-            //getting the file info of the cache file path
-            const fileInfo = await FileSystem.getInfoAsync(cacheFilePath);
-
-            if (fileInfo.exists) {
-                console.log("file exists: ", fileInfo.uri);
-                return fileInfo.uri;
-            }
-
-            //creating a reference to the image in the storage
+            //reference to the firebase storage
+            const storage = getStorage();
             const storageRef = ref(storage, imageUrl);
-            //getting the download url for the storage reference
             const downloadUrl = await getDownloadURL(storageRef);
 
-            //downloading the image from the remote url and saving it to the cache file path
-            const downloadResult = await FileSystem.downloadAsync(
-                downloadUrl,
-                cacheFilePath
-            );
-            return downloadResult.uri;
+            //cached image key
+            const cacheKey = getCacheKey(animalId, userId);
+            const fileName = `user_${imageUrl.split('/').pop().replace(/%2F/g, '_')}`;
+            const cacheDir = `${POTENTIAL_ADOPTER_CACHE_DIR}${cacheKey}/`;
+            //local uri
+            const localUri = `${cacheDir}${fileName}`;
+
+            //Create cache directory if it doesn't exist
+            await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
+
+            //Download the image and save to cache
+            const downloadResult = await FileSystem.downloadAsync(downloadUrl, localUri);
+            if (downloadResult.status !== 200) {
+                throw new Error(`Download failed with status ${downloadResult.status}`);
+            }
+
+            /**
+             * Saving the cache metadata
+             */
+            await saveToCache(animalId, userId, {
+                userImage: localUri
+            });
+
+            return localUri;
         } catch (error) {
-            console.warn(
-                `Error caching adopter image for user ${userId}:`,
-                error.message
-            );
-            //will return the default adopter image if there is an error
+            console.warn(`Error fetching image for user ${userId}:`, error.message);
             return DEFAULT_ADOPTER_IMAGE;
+        }
+    };
+//********************************************************************************************************************
+    /**
+     * Function to save the cache metadata
+     */
+    const saveToCache = async (animalId, userId, imageData) => {
+        try {
+            //cached image key
+            const cacheKey = getCacheKey(animalId, userId);
+            //cache directory (the directory that will hold the cached image)
+            const cacheDir = `${POTENTIAL_ADOPTER_CACHE_DIR}${cacheKey}/`;
+            //creating a directory if the directory does not exist
+            await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
+
+            //writing the image data to the cache directory
+            await FileSystem.writeAsStringAsync(
+                `${cacheDir}cache.json`,
+                JSON.stringify(imageData)
+            );
+        } catch (error) {
+            console.warn("Error saving to cache:", error);
         }
     };
 
@@ -178,36 +204,28 @@ const InterestedAdoptersPage = ({ route }) => {
      */
     const fetchAdopterInfo = useCallback(
         async (userId) => {
-            //creating a reference to the users document in the database
             const userDocRef = doc(db, "users", userId);
 
-            // Set up a real-time listener for changes to the user document
             return onSnapshot(userDocRef, async (userDoc) => {
-                // Check if the user document exists
                 if (userDoc.exists()) {
-                    // Extract the user data from the document
                     const userData = userDoc.data();
-
-                    // Initialize the image URL with a default value
                     let imageUrl = DEFAULT_ADOPTER_IMAGE;
 
-                    // If the user has a profile image, fetch and cache it
                     if (userData.profileImage) {
                         imageUrl = await fetchAndCacheAdopterImage(
                             userId,
-                            userData.profileImage
+                            userData.profileImage,
+                            animalId
                         );
                     }
 
                     let adoptionMessage = userData.adoptionMessages?.[animalId];
 
                     setAdopters((prev) => {
-                        //checks to see if the adopter object already exists
                         const existingAdopterIndex = prev.findIndex(
                             (adopter) => adopter.id === userId
                         );
 
-                        //creating a new adoption object
                         const newAdopter = {
                             id: userId,
                             name: userData.fullName || "",
@@ -216,28 +234,26 @@ const InterestedAdoptersPage = ({ route }) => {
                             phoneNo: userData.phoneNo || "",
                             adoptionMessage: adoptionMessage || "",
                             image: imageUrl,
+                            profileImage: userData.profileImage,
+                            profileImageVersion: userData.profileImageVersion || 0,
                         };
 
-                        //if the adopter already exists in the current state, then will update the adopter information
                         if (existingAdopterIndex !== -1) {
-                            // Create a new array with the updated adopter information
                             const updatedAdopters = [...prev];
                             updatedAdopters[existingAdopterIndex] = newAdopter;
                             return updatedAdopters;
                         } else {
-                            // If it's a new adopter, add them to the existing array
                             return [...prev, newAdopter];
                         }
                     });
 
-                    // If the message is missing or contains "PetName", add to pending updates
                     if (!adoptionMessage || adoptionMessage.includes("PetName")) {
                         setPendingUpdates((prev) => [...prev, userId]);
                     }
                 }
             });
         },
-        [animalId, fetchAndCacheAdopterImage]
+        [animalId]
     );
 
     /**
@@ -392,7 +408,7 @@ const InterestedAdoptersPage = ({ route }) => {
         },
         [animalId]
     );
-//********************************************************************************************************************
+    //********************************************************************************************************************
     // functions for full screen view
     /**
      * Function to open full-screen image
@@ -424,11 +440,14 @@ const InterestedAdoptersPage = ({ route }) => {
                 <Pressable style={fullScreenStyles.closeFullScreen} onPress={onClose}>
                     <Ionicons name="close" size={30} color="#fff" />
                 </Pressable>
-                <Image source={{ uri: imageUri }} style={fullScreenStyles.fullScreenImage} />
+                <Image
+                    source={{ uri: imageUri }}
+                    style={fullScreenStyles.fullScreenImage}
+                />
             </View>
         </Modal>
     );
-//********************************************************************************************************************
+    //********************************************************************************************************************
     /**
      * Function to render the pet info
      * @returns {JSX.Element}
