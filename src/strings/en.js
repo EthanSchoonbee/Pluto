@@ -101,6 +101,7 @@ export default {
         sample_text: "Sample Text",
         password_placeholder: "********",
         confirm_password_placeholder: "********",
+        phone_number: "Phone Number:",
 
         name_required: 'Name is required',
         surname_required: "Surname is required",
@@ -109,6 +110,7 @@ export default {
         confirm_required: "Password must be at least 5 characters long.",
         location_required: "Location is required",
         validation_error: "Validation Error",
+        phone_required: "Phone number is required",
 
         valid_email: "Enter a valid email address",
         name_number: "Your name cannot contain a digit.",
