@@ -9,7 +9,8 @@ import {
     TouchableOpacity,
     Modal,
     FlatList,
-    ActivityIndicator, Pressable,
+    ActivityIndicator,
+    Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 //imports the safe area wrapper component
@@ -27,9 +28,124 @@ import {
 } from "../utils/notificationMessages";
 import { useRoute } from "@react-navigation/native";
 import { getDoc, doc, onSnapshot } from "firebase/firestore";
-import { db,auth } from "../services/firebaseConfig";
+import { db, auth } from "../services/firebaseConfig";
 import * as FileSystem from "expo-file-system";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
+
+//directory that will hold the cached images for potential adopters as well as for the animals
+const POTENTIAL_ADOPTER_CACHE_DIR = `${FileSystem.cacheDirectory}potential_adopters/`;
+
+/**
+ * Getting the cache key for the cached images, referencing the animal id and the user id
+ * @param {*} animalId
+ * @param {*} userId
+ * @returns
+ */
+const getCacheKey = (animalId, userId) => {
+    return `${animalId}_${userId}`;
+};
+
+/**
+ * Function to that loads the cached adopter image and animal image
+ * @param animalId
+ * @param userId
+ * @returns {Promise<any|null>}
+ */
+const loadCachedImages = async (animalId, userId) => {
+    try {
+        //creating a cached key using the animal id and the user id
+        const cacheKey = getCacheKey(animalId, userId);
+        //creating the cached file path using the cache key
+        const cacheFile = `${POTENTIAL_ADOPTER_CACHE_DIR}${cacheKey}/cache.json`;
+        const fileInfo = await FileSystem.getInfoAsync(cacheFile);//getting the file info
+
+        //if the file info exists, then the cached data is read and returned
+        if (fileInfo.exists) {
+            const cachedData = JSON.parse(
+                await FileSystem.readAsStringAsync(cacheFile)
+            );
+
+            if(cachedData !== null){
+                console.log("Cached data loaded:", cachedData);
+            }
+
+            return cachedData;
+        }
+    } catch (error) {
+        console.warn("Error loading cached images:", error);
+    }
+    return null;
+};
+
+const saveToCache = async (animalId, userId, imageData) => {
+    try {
+        const cacheKey = getCacheKey(animalId, userId);
+        const cacheDir = `${POTENTIAL_ADOPTER_CACHE_DIR}${cacheKey}/`;
+        await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
+
+        await FileSystem.writeAsStringAsync(
+            `${cacheDir}cache.json`,
+            JSON.stringify(imageData)
+        );
+    } catch (error) {
+        console.warn("Error saving to cache:", error);
+    }
+};
+//******************************************************************************************************************
+/**
+ * Function that will fetch and cache any outstanding un-cached images
+ * @param {*} imageUrl
+ * @param {*} type
+ * @param {*} metadata
+ * @returns
+ */
+const fetchAndCacheImage = async (imageUrl, type, metadata) => {
+    if (!imageUrl) return null;
+
+    try {
+        //referencing the storage
+        const storage = getStorage();
+        const storageRef = ref(storage, imageUrl);
+        const downloadUrl = await getDownloadURL(storageRef);
+
+        //file name for image from the url
+        const fileName = `${type}_${imageUrl
+            .split("/")
+            .pop()
+            .replace(/%2F/g, "_")}`;
+        //directory for the cached images
+        const cacheDir = `${POTENTIAL_ADOPTER_CACHE_DIR}${getCacheKey(
+            metadata.animalId,
+            metadata.userId
+        )}/`;
+        const localUri = `${cacheDir}${fileName}`;
+
+        //creating a directory if it does not exist
+        const dirInfo = await FileSystem.getInfoAsync(cacheDir);
+        if (!dirInfo.exists) {
+            await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
+        }
+
+        //checking if the cached version exists and matches the current version
+        const fileInfo = await FileSystem.getInfoAsync(localUri);
+        if (fileInfo.exists && metadata.version === metadata.cachedVersion) {
+            return localUri;
+        }
+
+        //downloading the new version of the image
+        const downloadResult = await FileSystem.downloadAsync(
+            downloadUrl,
+            localUri
+        );
+        if (downloadResult.status !== 200) {
+            throw new Error(`Download failed with status ${downloadResult.status}`);
+        }
+        return localUri;
+    } catch (error) {
+        console.warn(`Error handling ${type} image:`, error);
+        return null;
+    }
+};
 
 const UserDetailForm = ({ route, navigation }) => {
     //passing the user id and animal id from the interested adopters page through navigation
@@ -45,10 +161,14 @@ const UserDetailForm = ({ route, navigation }) => {
     //state to handle the loading of the data
     const [loading, setLoading] = useState(true);
 
-    const[shelterName, setShelterName] = useState("");
+    const [shelterName, setShelterName] = useState("");
 
     //state to hold and set the full screen image
     const [fullScreenImage, setFullScreenImage] = useState(null);
+
+    const [imageLoading, setImageLoading] = useState(true);
+
+    const [cachedImages, setCachedImages] = useState(null);
 
     /**
      * Fetches the shelter name from the database based on the current user logged in
@@ -76,112 +196,131 @@ const UserDetailForm = ({ route, navigation }) => {
         fetchShelterDetails();
     }, []);
 
-
     //fetching the user details and the animal details
     useEffect(() => {
+        let isMounted = true;
         const fetchData = async () => {
-            setLoading(true); //setting the current loading state to true
-            const userUnsubscribe = onSnapshot(
-                doc(db, "users", userId),
-                async (userDoc) => {
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        const userImage = await fetchAndCacheImage(
-                            userData.profileImage,
-                            "user"
-                        );
-                        console.log("Shelter name fetched")
-                        setUserDetails({ ...userData, image: userImage });
-                    } else {
-                        console.warn("User document does not exist");
-                        setUserDetails(null);
-                    }
-                },
-                (error) => {
-                    console.error("Error fetching user data:", error);
-                    setUserDetails(null);
+            try {
+                //first try to load the cached images
+                const cached = await loadCachedImages(animalId, userId);
+                if (cached && isMounted) {
+                    setCachedImages(cached);
+                    // Pre-populate the UI with cached images
+                    setUserDetails((prev) => ({
+                        ...prev,
+                        image: cached.userImage,
+                    }));
+                    setAnimalDetails((prev) => ({
+                        ...prev,
+                        image: cached.animalImage,
+                    }));
                 }
-            );
 
-            const animalUnsubscribe = onSnapshot(
-                doc(db, "animals", animalId),
-                async (animalDoc) => {
-                    if (animalDoc.exists()) {
-                        const animalData = animalDoc.data();
-                        const animalImage = await fetchAndCacheImage(
-                            animalData.imageUrls && animalData.imageUrls.length > 0
-                                ? animalData.imageUrls[0]
-                                : null,
-                            "animal"
-                        );
-                        setAnimalDetails({ ...animalData, image: animalImage });
-                    } else {
-                        console.warn("Animal document does not exist");
-                        setAnimalDetails(null);
+                //real time listener for the user document in the database for any changes that may occur
+                const userUnsubscribe = onSnapshot(
+                    doc(db, "users", userId),
+                    async (userDoc) => {
+                        if (!isMounted) return;
+
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+                            const updatedUserDetails = {
+                                ...userData,
+                                image: userData.profileImage ? null : cached?.userImage, //Temporarily set to null if new image is coming
+                            };
+                            setUserDetails(updatedUserDetails);
+
+                            //checks to see if it needs to fetch a new image from the database
+                            if (userData.profileImage) {
+                                setImageLoading(true);
+                                const userImage = await fetchAndCacheImage(userData.profileImage, "user", {
+                                    animalId,
+                                    userId,
+                                });
+
+                                if (isMounted) {
+                                    setUserDetails((prev) => ({ ...prev, image: userImage }));
+                                    await saveToCache(animalId, userId, {
+                                        ...cached,
+                                        userImage,
+                                    });
+                                    setImageLoading(false);
+                                }
+                            }
+                        }
                     }
-                },
-                (error) => {
-                    console.error("Error fetching animal data:", error);
-                    setAnimalDetails(null);
-                }
-            );
+                );
 
-            //will stop the loading state
-            setLoading(false);
+                //Listening to the animal document in the database
+                const animalUnsubscribe = onSnapshot(
+                    doc(db, "animals", animalId),
+                    async (animalDoc) => {
+                        if (!isMounted) return;
 
-            //unsubscribing from the user and animal data
-            return () => {
-                userUnsubscribe();
-                animalUnsubscribe();
-                console.log("Unsubscribed from user and animal data");
-            };
+                        if (animalDoc.exists()) {
+                            const animalData = animalDoc.data();
+                            const imageVersion = animalData.imageVersion || 0;
+
+                            //setting the initial animal data
+                            setAnimalDetails({
+                                ...animalData,
+                                image: cached?.animalImage || null,
+                            });
+
+                            //checks if we need to update the image. (if not cached or the version does not match the cached version)
+                            if (
+                                animalData.imageUrls?.[0] &&
+                                (!cached || imageVersion !== cached.animalImageVersion)
+                            ) {
+                                const animalImage = await fetchAndCacheImage(
+                                    animalData.imageUrls[0],
+                                    "animal",
+                                    {
+                                        animalId,
+                                        userId,
+                                        version: imageVersion,
+                                        cachedVersion: cached?.animalImageVersion,
+                                    }
+                                );
+
+                                if (isMounted) {
+                                    setAnimalDetails((prev) => ({ ...prev, image: animalImage }));
+                                    // Update cache
+                                    await saveToCache(animalId, userId, {
+                                        ...cached,
+                                        animalImage,
+                                        animalImageVersion: imageVersion,
+                                    });
+                                }
+                            }
+                        }
+                    }
+                );
+
+                setLoading(false);
+
+                return () => {
+                    isMounted = false;
+                    userUnsubscribe();
+                    animalUnsubscribe();
+                };
+            } catch (error) {
+                console.error("Error in fetchData:", error);
+                setLoading(false);
+            }
         };
 
-        //fetching the data
-        fetchData().then(r => console.log("Data fetched"));
+        fetchData();
     }, [userId, animalId]);
-
-    const fetchAndCacheImage = async (imageUrl, type) => {
-        if (!imageUrl) return null;
-
-        const storage = getStorage();
-        const cacheDir = `${FileSystem.cacheDirectory}${type}_images/`;
-        const fileName = imageUrl.split("/").pop().replace(/%2F/g, "_");
-        const cacheFilePath = `${cacheDir}${fileName}`;
-
-        try {
-            await FileSystem.makeDirectoryAsync(cacheDir, { intermediates: true });
-            const fileInfo = await FileSystem.getInfoAsync(cacheFilePath);
-
-            //if the cached file exists, will return the cached file uri
-            if (fileInfo.exists) {
-                return fileInfo.uri;
-            }
-
-            //referencing the image url in the storage
-            const storageRef = ref(storage, imageUrl);
-            //getting the download url of the image
-            const downloadUrl = await getDownloadURL(storageRef);
-            //downloading the image and caching it
-            const downloadResult = await FileSystem.downloadAsync(
-                downloadUrl,
-                cacheFilePath
-            );
-            return downloadResult.uri;
-        } catch (error) {
-            console.warn(`Error caching ${type} image:`, error.message);
-            return null;
-        }
-    };
 
     /**
      * if the loading state, user details, or animal details are not loaded, will return a loading indicator
      */
-    if (loading || !userDetails || !animalDetails) {
+    if (loading || !userDetails?.fullName || !animalDetails?.name) {
         return (
             <SafeAreaWrapper>
                 <View style={styles.loadingContainer}>
-                    <Text style={styles.loadingText}>Loading...</Text>
+                    <Text style={styles.loadingText}>Loading user details...</Text>
                     <ActivityIndicator size="large" color="#d9cb94" />
                 </View>
             </SafeAreaWrapper>
@@ -220,11 +359,14 @@ const UserDetailForm = ({ route, navigation }) => {
                 <Pressable style={fullScreenStyles.closeFullScreen} onPress={onClose}>
                     <Ionicons name="close" size={30} color="#fff" />
                 </Pressable>
-                <Image source={{ uri: imageUri }} style={fullScreenStyles.fullScreenImage} />
+                <Image
+                    source={{ uri: imageUri }}
+                    style={fullScreenStyles.fullScreenImage}
+                />
             </View>
         </Modal>
     );
-//******************************************************************************************************************
+    //******************************************************************************************************************
 
     /**
      * Function that takes a label and value and returns the user details
@@ -306,7 +448,9 @@ const UserDetailForm = ({ route, navigation }) => {
                     </TouchableOpacity>
                     {/* content of the header showing the pet name and image */}
                     <View style={styles.headerContent}>
-                        <TouchableOpacity onPress={() => openFullScreenImage(animalDetails.image)}>
+                        <TouchableOpacity
+                            onPress={() => openFullScreenImage(animalDetails.image)}
+                        >
                             <Image
                                 source={{ uri: animalDetails.image }}
                                 style={styles.headerPetImage}
@@ -326,7 +470,9 @@ const UserDetailForm = ({ route, navigation }) => {
                         showsVerticalScrollIndicator={false}
                     >
                         <View style={styles.userInfoContainer}>
-                            <TouchableOpacity onPress={() => openFullScreenImage(userDetails.image)}>
+                            <TouchableOpacity
+                                onPress={() => openFullScreenImage(userDetails.image)}
+                            >
                                 <Image
                                     source={{ uri: userDetails.image }}
                                     style={styles.userImage}
