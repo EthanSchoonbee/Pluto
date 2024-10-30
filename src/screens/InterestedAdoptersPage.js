@@ -233,7 +233,6 @@ const InterestedAdoptersPage = ({ route }) => {
                             id: userId,
                             name: userData.fullName || "",
                             email: userData.email || "",
-                            location: userData.selectedProvince || "",
                             phoneNo: userData.phoneNo || "",
                             adoptionMessage: adoptionMessage || "",
                             image: imageUrl,

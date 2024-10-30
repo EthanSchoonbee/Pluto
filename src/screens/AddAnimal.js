@@ -87,29 +87,26 @@ const AddAnimal = ({ navigation }) => {
 
         // Age validation: Must be a number
         if (!newAnimal.age || isNaN(newAnimal.age) || newAnimal.age > 20|| newAnimal.age < 0) {
-            formErrors.age = 'Age must be a valid number';
+            formErrors.age = 'Age must be between 1 and 20';
         }
 
         if(!newAnimal.description){
             formErrors.description = 'Please enter a description of the animal';
         }
 
-        // Fur color validation: Required field
-        if (!newAnimal.furColors) {
-            console.log("Fur error")
-            formErrors.furColors = 'Fur color is required';
+        // Fur color validation: Must select at least one color
+        if (!newAnimal.furColors || newAnimal.furColors.length === 0) {
+            formErrors.furColors = 'Please select at least one fur color';
         }
 
-        // Breed validation: Required field
-        if (selectedBreed === strings.anyBreed || selectedBreed === "") {
-            console.log("Breed error")
-            formErrors.breed = 'Breed is required';
+        // Breed validation: Must select a valid breed
+        if (!selectedBreed || selectedBreed === strings.anyBreed || selectedBreed === "") {
+            formErrors.breed = 'Please select a breed';
         }
 
-        // Gender validation: Required field
-        if (!selectedGender || selectedGender==="") {
-            console.log("Gender error")
-            formErrors.gender = 'Gender is required';
+        // Gender validation: Must be either 'M' or 'F'
+        if (!selectedGender || !['M', 'F'].includes(selectedGender)) {
+            formErrors.gender = 'Please select a gender (Male or Female)';
         }
 
         setErrors(formErrors);
