@@ -56,9 +56,7 @@ const RegisterScreen = ({ navigation }) => {
             return;
         }
 
-        // Password validation regex
         const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
-
         if (!passwordRegex.test(password)) {
             alert('Insufficient password: Password must be at least 8 characters long, include an uppercase letter, a number, and a special character.');
             return;
@@ -66,9 +64,9 @@ const RegisterScreen = ({ navigation }) => {
 
         setLoading(true);
         try {
-            const user = await firebaseService.registerUser(fullName, email, password, phoneNo, selectedProvince);
+            const userData = await firebaseService.registerUser(fullName, email, password, phoneNo, selectedProvince);
             setLoading(false);
-            console.log('User registered:', user);
+            console.log('User registered:', userData);
             navigation.navigate('UserHome');
         } catch (error) {
             console.log('Error during registration:', error);
@@ -76,6 +74,7 @@ const RegisterScreen = ({ navigation }) => {
             alert('Registration failed, please try again');
         }
     };
+
 
     return (
         <KeyboardAvoidingView
