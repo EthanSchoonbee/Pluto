@@ -198,4 +198,5 @@ const RegisterScreen = ({ navigation }) => {
     );
 };
 
+
 export default RegisterScreen;
