@@ -185,7 +185,7 @@ const RegisterScreen = ({ navigation }) => {
                 {loading && (  // Display loading indicator when loading state is true
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator size="large" color="#FFD700" />
-                        <Text>Logging in...</Text>
+                        <Text>Registering your account...</Text>
                     </View>
                 )}
 
