@@ -1,0 +1,54 @@
+name: Comprehensive Testing
+
+on:
+  push:
+    branches: [test/ci-cd-setup]
+  pull_request:
+    branches: [test/ci-cd-setup]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: |
+          npm install
+          npm install -D jest @testing-library/react-native @testing-library/jest-native jest-expo
+
+      - name: Run Linting
+        run: npm run lint
+
+      - name: Run Type Checking
+        run: npm run type-check
+
+      - name: Run Unit Tests
+        run: npm run test:coverage
+
+      - name: Upload Coverage Reports
+        uses: codecov/codecov-action@v3
+
+      - name: Build Test
+        run: |
+          npx expo prebuild
+          npx expo export
+
+      - name: Archive Test Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: coverage/
+
+      - name: Archive Build
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-build
+          path: dist/
